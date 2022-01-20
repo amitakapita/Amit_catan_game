@@ -14,12 +14,15 @@ class Client(object):
         self.ip = ip1
         self.port = port1
         self.login_try_count = 0
+        self.current_lobby = "login"
 
         self.root = tk.Tk()
         self.root.title("Catan Game")
         self.root.geometry("500x500+30+30")
+        self.back_btn = tk.Button(self.root, text="Back", relief="solid")
 
         # Labels and Entries
+        self.lbl_welcome_message = tk.Label(self.root, text="Welcome to Catan game!", font="Arial 17")
         self.name1 = tk.Label(self.root, text="Username: ")
         self.name1_input = tk.Entry(self.root, font="Arial 13")
         self.password1 = tk.Label(self.root, text="Password: ")
@@ -39,12 +42,16 @@ class Client(object):
         self.enter_name = tk.Label(self.root, text="New Username: ", font="Arial 13")
         self.enter_name_input = tk.Entry(self.root, font="Arial 13")
         self.enter_password = tk.Label(self.root, text="Password: ", font="Arial 13")
-        self.enter_password_input = tk.Entry(self.root, font="Arial 13")
+        self.enter_password_input = tk.Entry(self.root, font="Arial 13", show="*")
         self.confirm_password_enter = tk.Label(self.root, text="Password confirm: ", font="Arial 13")
-        self.confirm_password_input_enter = tk.Entry(self.root, font="Arial 13")
+        self.confirm_password_input_enter = tk.Entry(self.root, font="Arial 13", show="*")
         self.Email_enter = tk.Label(self.root, text="E-mail address: ", font="Arial 13")
         self.Email_enter_input = tk.Entry(self.root, font="Arial 13")
         self.lbl2_message = tk.Label(self.root)
+
+        # Lobby
+        self.lbl1_welcome_message = tk.Label(self.root, font="Arial 35", bg="#2596be")
+
 
     def start(self):
         try:
@@ -62,8 +69,10 @@ class Client(object):
             self.submit_btn["command"] = lambda: self.check_in(client_socket)
             self.register_btn["command"] = lambda: self.register_menu()
             self.register_account_btn["command"] = lambda: self.register_account(client_socket)
+            self.back_btn["command"] = lambda: self.back_to_the_menu()
 
             # packs login
+            self.lbl_welcome_message.pack()
             self.name1.pack()
             self.name1_input.pack()
             self.password1.pack()
@@ -129,12 +138,17 @@ class Client(object):
 
     def open_menu(self):
         self.not_in_login_menu()
+        self.current_lobby = "main_lobby"
 
-        self.root.title(f"{self.username}'s Catan lobby")
+        self.root.title(f"{self.username}'s Catan main lobby")
         self.root.attributes("-fullscreen", True)
         self.root.configure(bg="#2596be")
+        self.lbl1_welcome_message["text"] = f"Welcome {self.username} to the main lobby!"
+        self.lbl1_welcome_message.place(x=400, y=20)
+        self.back_btn.place(x=1200, y=20)
 
     def register_menu(self):
+        self.current_lobby = "register"
         self.not_in_login_menu()
 
         self.root.title("Register an account")
@@ -149,6 +163,7 @@ class Client(object):
         self.Email_enter_input.pack()
         self.lbl2_message.pack()
         self.register_account_btn.pack()
+        self.back_btn.pack()
 
     def register_account(self, conn):
         self.username, self.password, self.confirmed_password, self.Email = self.enter_name_input.get(), self.enter_password_input.get(), self.confirm_password_input_enter.get(), self.Email_enter_input.get()
@@ -175,9 +190,9 @@ class Client(object):
         self.submit_btn.pack_forget()
         self.lbl1_message.pack_forget()
         self.register_btn.pack_forget()
+        self.lbl_welcome_message.pack_forget()
 
     def not_in_register_menu(self):
-        self.root.title("Catan Game")
         self.title.pack_forget()
         self.enter_name.pack_forget()
         self.enter_name_input.pack_forget()
@@ -189,9 +204,15 @@ class Client(object):
         self.Email_enter_input.pack_forget()
         self.lbl2_message.pack_forget()
         self.register_account_btn.pack_forget()
+        self.back_btn.pack_forget()
 
     def login_menu(self):
+        self.root.title("Catan Game")
+        if self.current_lobby == "main_lobby":
+            self.root.attributes("-fullscreen", False)
+            self.root.configure(bg="#f0f0f0")
         # packs login
+        self.lbl_welcome_message.pack()
         self.name1.pack()
         self.name1_input.pack()
         self.password1.pack()
@@ -199,6 +220,18 @@ class Client(object):
         self.submit_btn.pack()
         self.lbl1_message.pack()
         self.register_btn.pack()
+
+    def back_to_the_menu(self):
+        if self.current_lobby == "register":
+            self.not_in_register_menu()
+            self.login_menu()
+        elif self.current_lobby == "main_lobby":
+            self.not_in_main_lobby()
+            self.login_menu()
+
+    def not_in_main_lobby(self):
+        self.lbl1_welcome_message.place_forget()
+        self.back_btn.place_forget()
 
 
 if __name__ == "__main__":

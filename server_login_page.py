@@ -81,7 +81,9 @@ class Server(object):
 
         cur = con.cursor()
         cur.execute("SELECT Username, Password FROM accounts")
-        if (username_input, password_input) in cur.fetchall():  # in a list of a tuples
+        x = cur.fetchall()
+        print(x)
+        if (username_input, password_input) in x:  # in a list of a tuples
             return True
         return False
 
@@ -99,10 +101,11 @@ class Server(object):
             return "SIGN_UP_FAILED", "The name is already taken"
         elif email in sorted(list1, key=lambda x: x[1]):
             return "SIGN_UP_FAILED", "The Email is already used in another account"
-        elif password != confirm_password:
-            return "SIGN_UP_FAILED", "The password and the confirmed password do not match each other"
-        print(f"INSERT INTO accounts(Username, Password, Email) VALUES ({username}, {password}, {email})")
-        cur.execute(f"INSERT INTO accounts(Username, Password, Email) VALUES ({username}, {password}, {email})")
+        # elif password != confirm_password:
+        #    return "SIGN_UP_FAILED", "The password and the confirmed password do not match each other"
+        print(f"INSERT INTO accounts(Username, Password, Email) VALUES ('{username}', '{password}', '{email}')")
+        cur.execute(f"INSERT INTO accounts('Username', 'Password', 'Email') VALUES ('{username}', '{password}', '{email}')")
+        con.commit()
         return "SIGN_UP_OK"
 
     """def handle_DB(self, query):

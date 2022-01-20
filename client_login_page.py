@@ -2,6 +2,7 @@ import protocol_library
 import tkinter as tk
 import socket
 import threading
+import time
 
 # Constants:
 count1 = 1
@@ -27,7 +28,6 @@ class Client(object):
         self.lbl1_message = tk.Label(self.root)
         self.register_btn = tk.Button(self.root, text="Register", relief="solid")
 
-
         self.username = ""
         self.password = ""
         self.confirmed_password = ""
@@ -45,7 +45,6 @@ class Client(object):
         self.Email_enter = tk.Label(self.root, text="E-mail address: ", font="Arial 13")
         self.Email_enter_input = tk.Entry(self.root, font="Arial 13")
         self.lbl2_message = tk.Label(self.root)
-
 
     def start(self):
         try:
@@ -99,13 +98,21 @@ class Client(object):
             self.login_try_count = 0
             self.open_menu()
         elif cmd == "LOGIN_FAILED":
-            self.lbl1_message["text"] = f"login failed, you have {2-self.login_try_count} attempts to login"
+            self.lbl1_message["text"] = f"login failed, you have {2 - self.login_try_count} attempts to login"
             print("login failed")
             self.login_try_count += 1
             if self.login_try_count == 3:
                 self.submit_btn["state"] = tk.DISABLED
                 self.name1_input["state"] = tk.DISABLED
                 self.password1_input["state"] = tk.DISABLED
+        elif cmd == "SIGN_UP_OK":
+            self.register_btn["state"] = tk.DISABLED
+            self.lbl2_message["text"] = "Register succeeded"
+            time.sleep(2)
+            self.not_in_register_menu()
+            self.login_menu()
+        elif cmd == "SIGN_UP_FAILED":
+            self.lbl2_message["text"] = msg
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -143,16 +150,6 @@ class Client(object):
         self.lbl2_message.pack()
         self.register_account_btn.pack()
 
-
-    def not_in_login_menu(self):
-        self.name1.destroy()
-        self.name1_input.destroy()
-        self.password1.destroy()
-        self.password1_input.destroy()
-        self.submit_btn.destroy()
-        self.lbl1_message.destroy()
-        self.register_btn.destroy()
-
     def register_account(self, conn):
         self.username, self.password, self.confirmed_password, self.Email = self.enter_name_input.get(), self.enter_password_input.get(), self.confirm_password_input_enter.get(), self.Email_enter_input.get()
         if self.username == "":
@@ -163,11 +160,45 @@ class Client(object):
             self.lbl2_message["text"] = "the confirmed password isn't empty"
         elif self.Email == "":
             self.lbl2_message["text"] = "the email isn't empty"
+        elif self.password != self.confirmed_password:
+            self.lbl2_message["text"] = "the password does not match the confirmed password"
         else:
-            data, msg = "SIGN_UP", "{}#{}#{}#{}".format(self.username, self.password, self.confirmed_password, self.Email)
+            data, msg = "SIGN_UP", "{}#{}#{}#{}".format(self.username, self.password, self.confirmed_password,
+                                                        self.Email)
             self.send_messages(conn, data, msg)
 
+    def not_in_login_menu(self):
+        self.name1.pack_forget()
+        self.name1_input.pack_forget()
+        self.password1.pack_forget()
+        self.password1_input.pack_forget()
+        self.submit_btn.pack_forget()
+        self.lbl1_message.pack_forget()
+        self.register_btn.pack_forget()
 
+    def not_in_register_menu(self):
+        self.root.title("Catan Game")
+        self.title.pack_forget()
+        self.enter_name.pack_forget()
+        self.enter_name_input.pack_forget()
+        self.enter_password.pack_forget()
+        self.enter_password_input.pack_forget()
+        self.confirm_password_enter.pack_forget()
+        self.confirm_password_input_enter.pack_forget()
+        self.Email_enter.pack_forget()
+        self.Email_enter_input.pack_forget()
+        self.lbl2_message.pack_forget()
+        self.register_account_btn.pack_forget()
+
+    def login_menu(self):
+        # packs login
+        self.name1.pack()
+        self.name1_input.pack()
+        self.password1.pack()
+        self.password1_input.pack()
+        self.submit_btn.pack()
+        self.lbl1_message.pack()
+        self.register_btn.pack()
 
 
 if __name__ == "__main__":

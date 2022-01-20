@@ -56,7 +56,7 @@ class Server(object):
             self.count -= 1
 
     def handle_client_commands(self, conn, number_of_clients, request):
-        con = sql.connect("accounts_database.db")
+        con = sql.connect("Data_Bases/accounts_database.db")
         cmd, msg = protocol_library.disassemble_message(request)
         to_send = ""
         if cmd == "LOGIN":

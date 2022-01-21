@@ -3,6 +3,7 @@ import sqlite3
 import threading
 import protocol_library
 import sqlite3 as sql
+from protocol_library import server_commands, client_commands
 
 
 # data bases
@@ -59,12 +60,12 @@ class Server(object):
         con = sql.connect("Data_Bases/accounts_database.db")
         cmd, msg = protocol_library.disassemble_message(request)
         to_send = ""
-        if cmd == "LOGIN":
+        if cmd == client_commands["login_cmd"]:
             if self.check_login(conn, msg, con):
-                to_send = "LOGIN_OK"
+                to_send = server_commands["login_ok_cmd"]
             else:
-                to_send = "LOGIN_FAILED"
-        elif cmd == "SIGN_UP":
+                to_send = server_commands["login_failed_cmd"]
+        elif cmd == client_commands["sign_up_cmd"]:
             to_send = self.register_check(msg, con)
         to_send = protocol_library.build_message(to_send)
         print(f"[Server] -> [{wait_login[conn]}] {to_send}")
@@ -98,15 +99,15 @@ class Server(object):
         cur.execute("SELECT Username, Email FROM accounts")
         list1 = cur.fetchall()
         if username in sorted(list1, key=lambda x: x[0]):
-            return "SIGN_UP_FAILED", "The name is already taken"
+            return server_commands["sign_up_failed_cmd"], "The name is already taken"
         elif email in sorted(list1, key=lambda x: x[1]):
-            return "SIGN_UP_FAILED", "The Email is already used in another account"
+            return server_commands["sign_up_failed_cmd"], "The Email is already used in another account"
         # elif password != confirm_password:
         #    return "SIGN_UP_FAILED", "The password and the confirmed password do not match each other"
         print(f"INSERT INTO accounts(Username, Password, Email) VALUES ('{username}', '{password}', '{email}')")
         cur.execute(f"INSERT INTO accounts('Username', 'Password', 'Email') VALUES ('{username}', '{password}', '{email}')")
         con.commit()
-        return "SIGN_UP_OK"
+        return server_commands["sign_up_ok_cmd"]
 
     """def handle_DB(self, query):
         # con = sql.connect("accounts_database.db")

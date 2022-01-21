@@ -3,6 +3,7 @@ import tkinter as tk
 import socket
 import threading
 import time
+from protocol_library import client_commands, server_commands
 
 # Constants:
 count1 = 1
@@ -51,6 +52,9 @@ class Client(object):
 
         # Lobby
         self.lbl1_welcome_message = tk.Label(self.root, font="Arial 35", bg="#2596be")
+        self.profile_btn = tk.Button(self.root, text="View my profile", relief="solid", font="Arial 15")
+        self.game_rooms_lobby_btn = tk.Button(self.root, text="Game rooms lobby", relief="solid", font="Arial 15")
+
 
 
     def start(self):
@@ -101,12 +105,12 @@ class Client(object):
     def handle_received_connection(self, conn, data):
         print(f"[Server] {data}")
         cmd, msg = protocol_library.disassemble_message(data)
-        if cmd == "LOGIN_OK":
+        if cmd == server_commands["login_ok_cmd"]:
             self.lbl1_message["text"] = "login succeeded"
             print("login succeeded")
             self.login_try_count = 0
             self.open_menu()
-        elif cmd == "LOGIN_FAILED":
+        elif cmd == server_commands["login_failed_cmd"]:
             self.lbl1_message["text"] = f"login failed, you have {2 - self.login_try_count} attempts to login"
             print("login failed")
             self.login_try_count += 1
@@ -114,13 +118,13 @@ class Client(object):
                 self.submit_btn["state"] = tk.DISABLED
                 self.name1_input["state"] = tk.DISABLED
                 self.password1_input["state"] = tk.DISABLED
-        elif cmd == "SIGN_UP_OK":
-            self.register_btn["state"] = tk.DISABLED
+        elif cmd == server_commands["sign_up_ok_cmd"]:
+            # self.register_btn["state"] = tk.DISABLED
             self.lbl2_message["text"] = "Register succeeded"
             time.sleep(2)
             self.not_in_register_menu()
             self.login_menu()
-        elif cmd == "SIGN_UP_FAILED":
+        elif cmd == server_commands["sign_up_failed"]:
             self.lbl2_message["text"] = msg
 
     def check_in(self, conn):
@@ -133,7 +137,7 @@ class Client(object):
             self.lbl1_message["text"] = "the password isn't empty"
             print("the password isn't empty")
         else:
-            data, msg = "LOGIN", "%s#%s" % (self.username, self.password)
+            data, msg = client_commands["login_cmd"], "%s#%s" % (self.username, self.password)
             self.send_messages(conn, data, msg)
 
     def open_menu(self):
@@ -144,8 +148,10 @@ class Client(object):
         self.root.attributes("-fullscreen", True)
         self.root.configure(bg="#2596be")
         self.lbl1_welcome_message["text"] = f"Welcome {self.username} to the main lobby!"
-        self.lbl1_welcome_message.place(x=400, y=20)
+        self.lbl1_welcome_message.pack(side=tk.TOP)
         self.back_btn.place(x=1200, y=20)
+        self.profile_btn.place(x=350, y=500)
+        self.game_rooms_lobby_btn.place(x=850, y=500)
 
     def register_menu(self):
         self.current_lobby = "register"
@@ -178,7 +184,7 @@ class Client(object):
         elif self.password != self.confirmed_password:
             self.lbl2_message["text"] = "the password does not match the confirmed password"
         else:
-            data, msg = "SIGN_UP", "{}#{}#{}#{}".format(self.username, self.password, self.confirmed_password,
+            data, msg = client_commands["sign_up_cmd"], "{}#{}#{}#{}".format(self.username, self.password, self.confirmed_password,
                                                         self.Email)
             self.send_messages(conn, data, msg)
 
@@ -230,8 +236,10 @@ class Client(object):
             self.login_menu()
 
     def not_in_main_lobby(self):
-        self.lbl1_welcome_message.place_forget()
+        self.lbl1_welcome_message.pack_forget()
         self.back_btn.place_forget()
+        self.profile_btn.place_forget()
+        self.game_rooms_lobby_btn.place_forget()
 
 
 if __name__ == "__main__":

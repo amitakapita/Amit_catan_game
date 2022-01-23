@@ -21,6 +21,7 @@ class Client(object):
         self.root.title("Catan Game")
         self.root.geometry("500x500+30+30")
         self.back_btn = tk.Button(self.root, text="Back", relief="solid")
+        screen_width, screen_height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
 
         # Labels and Entries
         self.lbl_welcome_message = tk.Label(self.root, text="Welcome to Catan game!", font="Arial 17")
@@ -55,6 +56,10 @@ class Client(object):
         self.profile_btn = tk.Button(self.root, text="View my profile", relief="solid", font="Arial 15")
         self.game_rooms_lobby_btn = tk.Button(self.root, text="Game rooms lobby", relief="solid", font="Arial 15")
 
+        # Profile menu
+        self.canvas = tk.Canvas(self.root, width=screen_width, height=screen_height, background="#2596be", highlightbackground="#2596be")  # root, screen width, screen height
+        self.lbl_profile_message = tk.Label(self.root, text=f"{self.username}'s Profile")
+
 
 
     def start(self):
@@ -74,6 +79,7 @@ class Client(object):
             self.register_btn["command"] = lambda: self.register_menu()
             self.register_account_btn["command"] = lambda: self.register_account(client_socket)
             self.back_btn["command"] = lambda: self.back_to_the_menu()
+            self.profile_btn["command"] = lambda: self.profile_menu()
 
             # packs login
             self.lbl_welcome_message.pack()
@@ -240,6 +246,11 @@ class Client(object):
         self.back_btn.place_forget()
         self.profile_btn.place_forget()
         self.game_rooms_lobby_btn.place_forget()
+
+    def profile_menu(self):
+        self.canvas.pack()
+        self.canvas.create_rectangle(70, 30, 700, 500, fill="grey", outline="black")
+        self.lbl_profile_message.pack(side=tk.TOP)
 
 
 if __name__ == "__main__":

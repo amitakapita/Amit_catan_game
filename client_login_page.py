@@ -59,6 +59,9 @@ class Client(object):
         # Profile menu
         self.canvas = tk.Canvas(self.root, width=screen_width, height=screen_height, background="#2596be", highlightbackground="#2596be")  # root, screen width, screen height
         self.lbl_profile_message = tk.Label(self.root, text=f"{self.username}'s Profile")
+        self.lbl_games_played = tk.Label(self.root, text="Games played: ", font="Arial 16", bg="grey")
+        self.lbl_statistics = tk.Label(self.root, text="My statistics", font="Arial 22", bg="grey")
+        self.lbl_games_wins = tk.Label(self.root, text="Win Games: ", font="Arial 16", bg="grey")
 
 
 
@@ -240,6 +243,9 @@ class Client(object):
         elif self.current_lobby == "main_lobby":
             self.not_in_main_lobby()
             self.login_menu()
+        elif self.current_lobby == "profile":
+            self.not_in_profile_menu()
+            self.open_menu()
 
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
@@ -248,9 +254,21 @@ class Client(object):
         self.game_rooms_lobby_btn.place_forget()
 
     def profile_menu(self):
+        self.current_lobby = "profile"
         self.canvas.pack()
-        self.canvas.create_rectangle(70, 30, 700, 500, fill="grey", outline="black")
+        self.canvas.create_rectangle(70, 50, 550, 400, fill="grey", outline="black")
         self.lbl_profile_message.pack(side=tk.TOP)
+        self.lbl_statistics.place(x=220, y=122)
+        self.lbl_games_played.place(x=80, y=200)
+        self.lbl_games_wins.place(x=80, y=300)
+
+    def not_in_profile_menu(self):
+        self.canvas.pack_forget()
+        self.lbl_profile_message.pack_forget()
+        self.lbl_statistics.place_forget()
+        self.lbl_games_played.place_forget()
+        self.lbl_games_wins.place_forget()
+
 
 
 if __name__ == "__main__":

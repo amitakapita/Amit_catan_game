@@ -20,7 +20,7 @@ class Client(object):
         self.root = tk.Tk()
         self.root.title("Catan Game")
         self.root.geometry("500x500+30+30")
-        self.back_btn = tk.Button(self.root, text="Back", relief="solid")
+        self.back_btn = tk.Button(self.root, text="Back", relief="solid", font="Arial 15", background="#c76969")
         screen_width, screen_height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
 
         # Labels and Entries
@@ -58,10 +58,12 @@ class Client(object):
 
         # Profile menu
         self.canvas = tk.Canvas(self.root, width=screen_width, height=screen_height, background="#2596be", highlightbackground="#2596be")  # root, screen width, screen height
-        self.lbl_profile_message = tk.Label(self.root, text=f"{self.username}'s Profile")
+        self.lbl_profile_message = tk.Label(self.root, font="Arial 35", bg="#2596be")
         self.lbl_games_played = tk.Label(self.root, text="Games played: ", font="Arial 16", bg="grey")
         self.lbl_statistics = tk.Label(self.root, text="My statistics", font="Arial 22", bg="grey")
         self.lbl_games_wins = tk.Label(self.root, text="Win Games: ", font="Arial 16", bg="grey")
+        self.lbl_account_data = tk.Label(self.root, text="My account data", font="Arial 22", bg="grey")
+        self.lbl_email = tk.Label(self.root, text="E-mail: ", font="Arial 16", bg="grey")
 
 
 
@@ -158,7 +160,7 @@ class Client(object):
         self.root.configure(bg="#2596be")
         self.lbl1_welcome_message["text"] = f"Welcome {self.username} to the main lobby!"
         self.lbl1_welcome_message.pack(side=tk.TOP)
-        self.back_btn.place(x=1200, y=20)
+        self.back_btn.place(x=1200, y=15)
         self.profile_btn.place(x=350, y=500)
         self.game_rooms_lobby_btn.place(x=850, y=500)
 
@@ -249,18 +251,24 @@ class Client(object):
 
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
-        self.back_btn.place_forget()
+        if self.current_lobby != "profile":
+            self.back_btn.place_forget()
         self.profile_btn.place_forget()
         self.game_rooms_lobby_btn.place_forget()
 
     def profile_menu(self):
         self.current_lobby = "profile"
+        self.not_in_main_lobby()
+        self.lbl_profile_message["text"] = f"{self.username}'s Profile"
+        self.lbl_profile_message.pack(side=tk.TOP)
         self.canvas.pack()
         self.canvas.create_rectangle(70, 50, 550, 400, fill="grey", outline="black")
-        self.lbl_profile_message.pack(side=tk.TOP)
         self.lbl_statistics.place(x=220, y=122)
         self.lbl_games_played.place(x=80, y=200)
         self.lbl_games_wins.place(x=80, y=300)
+        self.canvas.create_rectangle(700, 50, 1200, 300, fill="grey", outline="black")
+        self.lbl_account_data.place(x=850, y=122)
+        self.lbl_email.place(x=710, y=200)
 
     def not_in_profile_menu(self):
         self.canvas.pack_forget()
@@ -268,6 +276,8 @@ class Client(object):
         self.lbl_statistics.place_forget()
         self.lbl_games_played.place_forget()
         self.lbl_games_wins.place_forget()
+        self.lbl_account_data.place_forget()
+        self.lbl_email.place_forget()
 
 
 

@@ -115,6 +115,12 @@ class Server(object):
         cur.execute(query)
         con.commit()
         return cur.fetchall()"""
+    def profile(self, conn):
+        """
+
+        :param conn:
+        :return: games_played#win_games
+        """
 
 if __name__ == "__main__":
     ip = "0.0.0.0"

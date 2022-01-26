@@ -84,7 +84,7 @@ class Client(object):
             self.register_btn["command"] = lambda: self.register_menu()
             self.register_account_btn["command"] = lambda: self.register_account(client_socket)
             self.back_btn["command"] = lambda: self.back_to_the_menu()
-            self.profile_btn["command"] = lambda: self.profile_menu()
+            self.profile_btn["command"] = lambda: self.profile_menu(client_socket)
 
             # packs login
             self.lbl_welcome_message.pack()
@@ -137,6 +137,10 @@ class Client(object):
             self.login_menu()
         elif cmd == server_commands["sign_up_failed"]:
             self.lbl2_message["text"] = msg
+        elif cmd == server_commands["get_profile_ok"]:
+            games_played, games_win = msg.split("#")
+            self.lbl_games_played["text"] += games_played
+            self.lbl_games_played["text"] += games_win
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -256,7 +260,7 @@ class Client(object):
         self.profile_btn.place_forget()
         self.game_rooms_lobby_btn.place_forget()
 
-    def profile_menu(self):
+    def profile_menu(self, conn):
         self.current_lobby = "profile"
         self.not_in_main_lobby()
         self.lbl_profile_message["text"] = f"{self.username}'s Profile"
@@ -268,7 +272,9 @@ class Client(object):
         self.lbl_games_wins.place(x=80, y=300)
         self.canvas.create_rectangle(700, 50, 1200, 300, fill="grey", outline="black")
         self.lbl_account_data.place(x=850, y=122)
+        self.lbl_email["text"] += self.Email
         self.lbl_email.place(x=710, y=200)
+        self.send_messages(conn, client_commands[""])
 
     def not_in_profile_menu(self):
         self.canvas.pack_forget()

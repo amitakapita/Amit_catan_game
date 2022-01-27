@@ -8,6 +8,7 @@ from protocol_library import server_commands, client_commands
 
 # data bases
 wait_login = {}
+login_dict = {}
 
 
 class Server(object):
@@ -59,7 +60,7 @@ class Server(object):
     def handle_client_commands(self, conn, number_of_clients, request):
         con = sql.connect("Data_Bases/accounts_database.db")
         cmd, msg = protocol_library.disassemble_message(request)
-        to_send = ""
+        to_send, msg_to_send = "", ""
         if cmd == client_commands["login_cmd"]:
             if self.check_login(conn, msg, con):
                 to_send = server_commands["login_ok_cmd"]
@@ -67,7 +68,9 @@ class Server(object):
                 to_send = server_commands["login_failed_cmd"]
         elif cmd == client_commands["sign_up_cmd"]:
             to_send = self.register_check(msg, con)
-        to_send = protocol_library.build_message(to_send)
+        elif cmd == client_commands["get_profile_cmd"]:
+            to_send, msg_to_send = self.profile(conn, con)
+        to_send = protocol_library.build_message(to_send, msg_to_send)
         print(f"[Server] -> [{wait_login[conn]}] {to_send}")
         conn.sendall(to_send.encode())
 
@@ -77,16 +80,18 @@ class Server(object):
         :rtype: bool
         :return: True - the login succeeded, False - the login failed
         """
+        try:
+            username_input, password_input = msg.split("#")
 
-        username_input, password_input = msg.split("#")
-
-        cur = con.cursor()
-        cur.execute("SELECT Username, Password FROM accounts")
-        x = cur.fetchall()
-        print(x)
-        if (username_input, password_input) in x:  # in a list of a tuples
-            return True
-        return False
+            cur = con.cursor()
+            cur.execute("SELECT Username, Password FROM accounts")
+            x = cur.fetchall()
+            print(x)
+            if (username_input, password_input) in x:  # in a list of a tuples
+                return True
+            return False
+        finally:
+            login_dict[conn] = wait_login[conn], username_input
 
     def register_check(self, msg, con):
         """
@@ -115,12 +120,20 @@ class Server(object):
         cur.execute(query)
         con.commit()
         return cur.fetchall()"""
-    def profile(self, conn):
-        """
+    def profile(self, conn, con):
+        """ takes the values of games_played and win_games and sends them to the client
+        to present the profile nemu to the client
 
-        :param conn:
+        :param conn: client conn
         :return: games_played#win_games
         """
+        cur = con.cursor()
+        print(login_dict[conn][1])
+        cur.execute(f"SELECT Played_games, Wined_games FROM 'accounts' WHERE Username = '{login_dict[conn][1]}'")
+        msg = cur.fetchall()
+        print(msg, type(f"{msg[0][0]}#{msg[0][1]}"))
+        return server_commands["get_profile_ok"], f"{msg[0][0]}#{msg[0][1]}"
+
 
 if __name__ == "__main__":
     ip = "0.0.0.0"

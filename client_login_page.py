@@ -121,7 +121,6 @@ class Client(object):
             print("login succeeded")
             self.login_try_count = 0
             self.open_menu()
-            self.Email = self.Email_enter_input.get()
         elif cmd == server_commands["login_failed_cmd"]:
             self.lbl1_message["text"] = f"login failed, you have {2 - self.login_try_count} attempts to login"
             print("login failed")
@@ -139,9 +138,10 @@ class Client(object):
         elif cmd == server_commands["sign_up_failed"]:
             self.lbl2_message["text"] = msg
         elif cmd == server_commands["get_profile_ok"]:
-            games_played, games_win = msg.split("#")
+            games_played, games_win, self.Email = msg.split("#")
             self.lbl_games_played["text"] += games_played
             self.lbl_games_wins["text"] += games_win
+            self.lbl_email["text"] += self.Email
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())

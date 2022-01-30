@@ -83,7 +83,7 @@ class Client(object):
             self.submit_btn["command"] = lambda: self.check_in(client_socket)
             self.register_btn["command"] = lambda: self.register_menu()
             self.register_account_btn["command"] = lambda: self.register_account(client_socket)
-            self.back_btn["command"] = lambda: self.back_to_the_menu()
+            self.back_btn["command"] = lambda: self.back_to_the_menu(client_socket)
             self.profile_btn["command"] = lambda: self.profile_menu(client_socket)
 
             # packs login
@@ -139,9 +139,9 @@ class Client(object):
             self.lbl2_message["text"] = msg
         elif cmd == server_commands["get_profile_ok"]:
             games_played, games_win, self.Email = msg.split("#")
-            self.lbl_games_played["text"] += games_played
-            self.lbl_games_wins["text"] += games_win
-            self.lbl_email["text"] += self.Email
+            self.lbl_games_played["text"] = "Games played: " + games_played
+            self.lbl_games_wins["text"] = "Win Games: " + games_win
+            self.lbl_email["text"] = "E-mail address: " + self.Email
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -243,12 +243,13 @@ class Client(object):
         self.lbl1_message.pack()
         self.register_btn.pack()
 
-    def back_to_the_menu(self):
+    def back_to_the_menu(self, conn=None):
         if self.current_lobby == "register":
             self.not_in_register_menu()
             self.login_menu()
         elif self.current_lobby == "main_lobby":
             self.not_in_main_lobby()
+            self.send_messages(conn, client_commands["logout_cmd"])
             self.login_menu()
         elif self.current_lobby == "profile":
             self.not_in_profile_menu()
@@ -273,7 +274,7 @@ class Client(object):
         self.lbl_games_wins.place(x=80, y=300)
         self.canvas.create_rectangle(700, 50, 1200, 300, fill="grey", outline="black")
         self.lbl_account_data.place(x=850, y=122)
-        self.lbl_email["text"] += self.Email
+        self.lbl_email["text"] = self.Email
         self.lbl_email.place(x=710, y=200)
         self.send_messages(conn, client_commands["get_profile_cmd"])
 

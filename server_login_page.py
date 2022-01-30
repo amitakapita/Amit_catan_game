@@ -75,6 +75,10 @@ class Server(object):
             to_send = self.register_check(msg, con)
         elif cmd == client_commands["get_profile_cmd"]:
             to_send, msg_to_send = self.profile(conn, con)
+        elif cmd == client_commands["logout_cmd"]:
+            wait_login[conn] = login_dict[conn][0]  # only the peer name
+            del login_dict[conn]
+            return
         to_send = protocol_library.build_message(to_send, msg_to_send)
         print(f"[Server] -> [{conn.getpeername()}] {to_send}")
         conn.sendall(to_send.encode())

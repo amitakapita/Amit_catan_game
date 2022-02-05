@@ -26,3 +26,5 @@ class GameRoom (object):
         # self.players.append({self.leader_name})
         self.current = "waiting"
 
+    def check_who_is_on(self):
+        # if the cubes got 5 so it searches in the tiles that has 5 which player has a settlement or a city on it, then gives the source to him.

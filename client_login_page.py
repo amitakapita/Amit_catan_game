@@ -65,6 +65,11 @@ class Client(object):
         self.lbl_account_data = tk.Label(self.root, text="My account data", font="Arial 22", bg="grey")
         self.lbl_email = tk.Label(self.root, text="E-mail: ", font="Arial 16", bg="grey")
 
+        # Game rooms lobby menu
+        self.scrollbar = tk.Scrollbar(self.root, orient=tk.VERTICAL)
+        self.game_rooms_lobby_lbl = tk.Label(self.root, font="Arial 35", bg="#2596be")
+
+
 
 
     def start(self):
@@ -85,6 +90,7 @@ class Client(object):
             self.register_account_btn["command"] = lambda: self.register_account(client_socket)
             self.back_btn["command"] = lambda: self.back_to_the_menu(client_socket)
             self.profile_btn["command"] = lambda: self.profile_menu(client_socket)
+            self.game_rooms_lobby_btn["command"] = lambda: self.Game_rooms_lobby_menu()
 
             # packs login
             self.lbl_welcome_message.pack()
@@ -254,6 +260,9 @@ class Client(object):
         elif self.current_lobby == "profile":
             self.not_in_profile_menu()
             self.open_menu()
+        elif self.current_lobby == "game_rooms_lobby":
+            self.not_in_main_lobby()
+            self.Game_rooms_lobby_menu()
 
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
@@ -286,6 +295,10 @@ class Client(object):
         self.lbl_games_wins.place_forget()
         self.lbl_account_data.place_forget()
         self.lbl_email.place_forget()
+
+    def Game_rooms_lobby_menu(self):
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.game_rooms_lobby_lbl.pack(side=tk.TOP)
 
 
 

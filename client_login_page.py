@@ -66,8 +66,30 @@ class Client(object):
         self.lbl_email = tk.Label(self.root, text="E-mail: ", font="Arial 16", bg="grey")
 
         # Game rooms lobby menu
-        self.scrollbar = tk.Scrollbar(self.root, orient=tk.VERTICAL)
-        self.game_rooms_lobby_lbl = tk.Label(self.root, font="Arial 35", bg="#2596be")
+        self.scrollbar_frame = tk.Frame(self.root, highlightbackground="black", highlightcolor="black", highlightthickness=2, bg="#2596be", height=300, width=150)
+        self.scrollbar = tk.Scrollbar(self.scrollbar_frame, orient=tk.VERTICAL)
+        self.game_rooms_lobby_lbl = tk.Label(self.root, font="Arial 35", bg="#2596be", text="Game rooms lobby")
+        self.games_rooms_list = tk.Listbox(self.scrollbar_frame)
+        # self.games_rooms_list.insert(1, game_room1)  # add an id and a game_room object
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
+        self.games_rooms_list.insert(1, "meow")
 
 
 
@@ -261,12 +283,12 @@ class Client(object):
             self.not_in_profile_menu()
             self.open_menu()
         elif self.current_lobby == "game_rooms_lobby":
-            self.not_in_main_lobby()
-            self.Game_rooms_lobby_menu()
+            self.not_in_Game_rooms_lobby_menu()
+            self.open_menu()
 
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
-        if self.current_lobby != "profile":
+        if self.current_lobby != "profile" and self.current_lobby != "game_rooms_lobby":
             self.back_btn.place_forget()
         self.profile_btn.place_forget()
         self.game_rooms_lobby_btn.place_forget()
@@ -297,8 +319,21 @@ class Client(object):
         self.lbl_email.place_forget()
 
     def Game_rooms_lobby_menu(self):
+        self.current_lobby = "game_rooms_lobby"
+        self.not_in_main_lobby()
+        self.game_rooms_lobby_lbl.place(x=483, y=50)
+        self.scrollbar_frame.pack(fill=tk.BOTH, padx=300, pady=150)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.game_rooms_lobby_lbl.pack(side=tk.TOP)
+        self.games_rooms_list.pack()
+        self.games_rooms_list["yscrollcommand"] = self.scrollbar.set
+        self.scrollbar["command"] = self.games_rooms_list.yview
+
+    def not_in_Game_rooms_lobby_menu(self):
+        self.game_rooms_lobby_lbl.place_forget()
+        self.scrollbar_frame.pack_forget()
+        self.scrollbar.pack_forget()
+        self.games_rooms_list.pack_forget()
+
 
 
 

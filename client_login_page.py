@@ -66,10 +66,10 @@ class Client(object):
         self.lbl_email = tk.Label(self.root, text="E-mail: ", font="Arial 16", bg="grey")
 
         # Game rooms lobby menu
-        self.scrollbar_frame = tk.Frame(self.root, highlightbackground="black", highlightcolor="black", highlightthickness=2, bg="#2596be", height=300, width=150)
+        self.scrollbar_frame = tk.Frame(self.root, highlightbackground="black", highlightcolor="black", highlightthickness=2, bg="#2596be")
         self.scrollbar = tk.Scrollbar(self.scrollbar_frame, orient=tk.VERTICAL)
         self.game_rooms_lobby_lbl = tk.Label(self.root, font="Arial 35", bg="#2596be", text="Game rooms lobby")
-        self.games_rooms_list = tk.Listbox(self.scrollbar_frame)
+        self.games_rooms_list = tk.Listbox(self.scrollbar_frame, font="Arial 40", bg="#2596be")
         # self.games_rooms_list.insert(1, game_room1)  # add an id and a game_room object
         self.games_rooms_list.insert(1, "meow")
         self.games_rooms_list.insert(1, "meow")

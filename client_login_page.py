@@ -69,7 +69,7 @@ class Client(object):
         self.scrollbar_frame = tk.Frame(self.root, highlightbackground="black", highlightcolor="black", highlightthickness=2, bg="#2596be")
         self.scrollbar = tk.Scrollbar(self.scrollbar_frame, orient=tk.VERTICAL)
         self.game_rooms_lobby_lbl = tk.Label(self.root, font="Arial 35", bg="#2596be", text="Game rooms lobby")
-        self.games_rooms_list = tk.Listbox(self.scrollbar_frame, font="Arial 40", bg="#2596be")
+        self.games_rooms_list = tk.Listbox(self.scrollbar_frame, font="Arial 40", bg="#2596be", width=26, relief="flat", highlightbackground="black", height=9)
         # self.games_rooms_list.insert(1, game_room1)  # add an id and a game_room object
         self.games_rooms_list.insert(1, "meow")
         self.games_rooms_list.insert(1, "meow")
@@ -90,6 +90,7 @@ class Client(object):
         self.games_rooms_list.insert(1, "meow")
         self.games_rooms_list.insert(1, "meow")
         self.games_rooms_list.insert(1, "meow")
+        self.game_rooms_lobby_canvas = tk.Canvas(self.scrollbar_frame)
 
 
 
@@ -327,6 +328,8 @@ class Client(object):
         self.games_rooms_list.pack()
         self.games_rooms_list["yscrollcommand"] = self.scrollbar.set
         self.scrollbar["command"] = self.games_rooms_list.yview
+        # self.game_rooms_lobby_canvas.pack()
+        # self.game_rooms_lobby_canvas.create_rectangle(300, 150, 500, 500)
 
     def not_in_Game_rooms_lobby_menu(self):
         self.game_rooms_lobby_lbl.place_forget()

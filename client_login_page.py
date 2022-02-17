@@ -90,7 +90,9 @@ class Client(object):
         self.games_rooms_list.insert(1, "meow")
         self.games_rooms_list.insert(1, "meow")
         self.games_rooms_list.insert(1, "meow")
-        self.game_rooms_lobby_canvas = tk.Canvas(self.scrollbar_frame)
+        self.game_rooms_lobby_canvas = tk.Canvas(self.scrollbar_frame, bg="#2596be", highlightbackground="#2596be", highlightcolor="#2596be", highlightthickness=2, height=900, width=755)
+        self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 700))
+        self.game_rooms_lobby_canvas.bind("<MouseWheel>", self.on_mousewheel)
 
 
 
@@ -325,18 +327,23 @@ class Client(object):
         self.game_rooms_lobby_lbl.place(x=483, y=50)
         self.scrollbar_frame.pack(fill=tk.BOTH, padx=300, pady=150)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.games_rooms_list.pack()
+        # self.games_rooms_list.pack()
         self.game_rooms_lobby_canvas.pack()
-        self.game_rooms_lobby_canvas.create_rectangle(300, 150, 500, 500)
+        self.game_rooms_lobby_canvas.create_rectangle(353, 170, 985, 300, activewidth=3, width=2, fill="#AFABAB")
+        self.scrollbar["command"] = self.game_rooms_lobby_canvas.yview
         self.game_rooms_lobby_canvas["yscrollcommand"] = self.scrollbar.set
-        self.games_rooms_list["yscrollcommand"] = self.scrollbar.set
-        self.scrollbar["command"] = self.games_rooms_list.yview
+        # self.games_rooms_list["yscrollcommand"] = self.scrollbar.set
+        # self.scrollbar["command"] = self.games_rooms_list.yview
 
     def not_in_Game_rooms_lobby_menu(self):
         self.game_rooms_lobby_lbl.place_forget()
         self.scrollbar_frame.pack_forget()
         self.scrollbar.pack_forget()
-        self.games_rooms_list.pack_forget()
+        # self.games_rooms_list.pack_forget()
+        self.game_rooms_lobby_canvas.pack_forget()
+
+    def on_mousewheel(self, event):
+        self.game_rooms_lobby_canvas.yview_scroll(-1*event.delta//100, "units")  # the speed of scrolling and the units of it?
 
 
 

@@ -4,6 +4,7 @@ import socket
 import threading
 import time
 from protocol_library import client_commands, server_commands
+import json
 
 # Constants:
 count1 = 1
@@ -115,7 +116,10 @@ class Client(object):
             self.register_account_btn["command"] = lambda: self.register_account(client_socket)
             self.back_btn["command"] = lambda: self.back_to_the_menu(client_socket)
             self.profile_btn["command"] = lambda: self.profile_menu(client_socket)
-            self.game_rooms_lobby_btn["command"] = lambda: self.Game_rooms_lobby_menu()
+            self.game_rooms_lobby_btn["command"] = lambda: self.Game_rooms_lobby_menu(client_socket)
+
+            self.scrollbar["command"] = self.game_rooms_lobby_canvas.yview
+            self.game_rooms_lobby_canvas["yscrollcommand"] = self.scrollbar.set
 
             # packs login
             self.lbl_welcome_message.pack()
@@ -173,6 +177,9 @@ class Client(object):
             self.lbl_games_played["text"] = "Games played: " + games_played
             self.lbl_games_wins["text"] = "Win Games: " + games_win
             self.lbl_email["text"] = "E-mail address: " + self.Email
+        elif cmd == server_commands["get_lr_ok_cmd"]:
+            lobby_rooms = json.loads(msg)
+            print(lobby_rooms)
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -321,7 +328,7 @@ class Client(object):
         self.lbl_account_data.place_forget()
         self.lbl_email.place_forget()
 
-    def Game_rooms_lobby_menu(self):
+    def Game_rooms_lobby_menu(self, conn):
         self.current_lobby = "game_rooms_lobby"
         self.not_in_main_lobby()
         self.game_rooms_lobby_lbl.place(x=483, y=50)
@@ -330,10 +337,7 @@ class Client(object):
         # self.games_rooms_list.pack()
         self.game_rooms_lobby_canvas.pack()
         self.game_rooms_lobby_canvas.create_rectangle(353, 170, 985, 300, activewidth=3, width=2, fill="#AFABAB")
-        self.scrollbar["command"] = self.game_rooms_lobby_canvas.yview
-        self.game_rooms_lobby_canvas["yscrollcommand"] = self.scrollbar.set
-        # self.games_rooms_list["yscrollcommand"] = self.scrollbar.set
-        # self.scrollbar["command"] = self.games_rooms_list.yview
+        self.send_messages(conn, client_commands["get_lobby_rooms_cmd"])
 
     def not_in_Game_rooms_lobby_menu(self):
         self.game_rooms_lobby_lbl.place_forget()

@@ -3,7 +3,8 @@ client_commands = {
     "login_cmd": "LOGIN",
     "logout_cmd": "LOGOUT",
     "sign_up_cmd": "SIGN_UP",
-    "get_profile_cmd": "GET_PROFILE"
+    "get_profile_cmd": "GET_PROFILE",
+    "get_lobby_rooms_cmd": "GET_LOBBY_ROOMS"
 }
 
 server_commands = {
@@ -11,7 +12,8 @@ server_commands = {
     "login_failed_cmd": "LOGIN_FAILED",
     "sign_up_ok_cmd": "SIGN_UP_OK",
     "sign_up_failed": "SIGN_UP_FAILED",
-    "get_profile_ok": "GET_PROFILE_OK"
+    "get_profile_ok": "GET_PROFILE_OK",
+    "get_lr_ok_cmd": "GET_LR_OK"
 }
 
 def build_message(cmd, msg=""):

@@ -4,6 +4,7 @@ import threading
 import protocol_library
 import sqlite3 as sql
 from protocol_library import server_commands, client_commands
+import json
 
 
 # data bases
@@ -79,6 +80,8 @@ class Server(object):
             wait_login[conn] = login_dict[conn][0]  # only the peer name
             del login_dict[conn]
             return
+        elif cmd == client_commands["get_lobby_rooms_cmd"]:
+            to_send, msg_to_send = self.lobby_rooms()
         to_send = protocol_library.build_message(to_send, msg_to_send)
         print(f"[Server] -> [{conn.getpeername()}] {to_send}")
         conn.sendall(to_send.encode())
@@ -139,6 +142,10 @@ class Server(object):
         msg = cur.fetchall()
         return server_commands["get_profile_ok"], f"{msg[0][0]}#{msg[0][1]}#{msg[0][2]}"
 
+    def lobby_rooms(self):
+        lobby_rooms = json.dumps({12345: ("w", 3, True)})
+        print(lobby_rooms)
+        return server_commands["get_lr_ok_cmd"], lobby_rooms
 
 if __name__ == "__main__":
     ip = "0.0.0.0"

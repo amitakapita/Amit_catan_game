@@ -180,6 +180,8 @@ class Client(object):
         elif cmd == server_commands["get_lr_ok_cmd"]:
             lobby_rooms = json.loads(msg)
             print(lobby_rooms)
+            self.show_game_rooms(lobby_rooms)
+
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -336,7 +338,6 @@ class Client(object):
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         # self.games_rooms_list.pack()
         self.game_rooms_lobby_canvas.pack()
-        self.game_rooms_lobby_canvas.create_rectangle(353, 170, 985, 300, activewidth=3, width=2, fill="#AFABAB")
         self.send_messages(conn, client_commands["get_lobby_rooms_cmd"])
 
     def not_in_Game_rooms_lobby_menu(self):
@@ -347,7 +348,22 @@ class Client(object):
         self.game_rooms_lobby_canvas.pack_forget()
 
     def on_mousewheel(self, event):
-        self.game_rooms_lobby_canvas.yview_scroll(-1*event.delta//100, "units")  # the speed of scrolling and the units of it?
+        self.game_rooms_lobby_canvas.yview_scroll(-1*event.delta//120, "units")  # the speed of scrolling and the units of it?
+
+    def show_game_rooms(self, game_rooms_dict):
+        space = 0
+        for lobby_room1 in game_rooms_dict:
+            # lbl1 = tk.Label(self.game_rooms_lobby_canvas, text=game_rooms_dict[lobby_room1][0], font="Arial 11")
+            # lbl1.place(x=100, y=100)
+            creator, max_players, is_full, players = game_rooms_dict[lobby_room1]
+            print(game_rooms_dict[lobby_room1])
+            self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space, activewidth=3, width=2, fill="#AFABAB")
+            self.game_rooms_lobby_canvas.create_text(460, 195 + space, text=f"{creator}'s looby room", font="Arial 16", fill="black", state=tk.DISABLED)
+            self.game_rooms_lobby_canvas.create_text(510, 230 + space, text=f"Number of players: {players} out of {max_players}", font="Arial 14", fill="black", state=tk.DISABLED)
+            space += 170
+            position1 = int(self.game_rooms_lobby_canvas["height"])
+            self.game_rooms_lobby_canvas["height"] = position1 + space
+            self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 150 + space))
 
 
 

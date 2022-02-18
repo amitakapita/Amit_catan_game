@@ -143,7 +143,7 @@ class Server(object):
         return server_commands["get_profile_ok"], f"{msg[0][0]}#{msg[0][1]}#{msg[0][2]}"
 
     def lobby_rooms(self):
-        lobby_rooms = json.dumps({12345: ("w", 3, True)})
+        lobby_rooms = json.dumps({12345: ("w", 3, True, 2), 54321: ("t", 2, True, 2), 23456: ("r", 2, False, 1), 34567: ("meow", 4, True, 4), 45678: ("hav", 4, True, 4)})
         print(lobby_rooms)
         return server_commands["get_lr_ok_cmd"], lobby_rooms
 

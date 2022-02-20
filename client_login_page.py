@@ -364,6 +364,9 @@ class Client(object):
             position1 = int(self.game_rooms_lobby_canvas["height"])
             self.game_rooms_lobby_canvas["height"] = position1 + space
             self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 150 + space))
+            button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47", font="Arial 15")
+            button_join_game.place(x=500, y=170 + space)
+            canvas_window = self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
 
 
 

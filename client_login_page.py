@@ -114,9 +114,10 @@ class Client(object):
             self.submit_btn["command"] = lambda: self.check_in(client_socket)
             self.register_btn["command"] = lambda: self.register_menu()
             self.register_account_btn["command"] = lambda: self.register_account(client_socket)
-            self.back_btn["command"] = lambda: self.back_to_the_menu(client_socket)
+            self.back_btn["command"] = lambda: self.back_to_the_menu(conn=client_socket)
             self.profile_btn["command"] = lambda: self.profile_menu(client_socket)
             self.game_rooms_lobby_btn["command"] = lambda: self.Game_rooms_lobby_menu(client_socket)
+            self.root.bind("<Escape>", lambda x: self.back_to_the_menu(conn=client_socket))
 
             self.scrollbar["command"] = self.game_rooms_lobby_canvas.yview
             self.game_rooms_lobby_canvas["yscrollcommand"] = self.scrollbar.set
@@ -130,6 +131,7 @@ class Client(object):
             self.submit_btn.pack()
             self.lbl1_message.pack()
             self.register_btn.pack()
+            self.name1_input.focus()
 
             self.root.mainloop()
 
@@ -273,6 +275,7 @@ class Client(object):
         if self.current_lobby == "main_lobby":
             self.root.attributes("-fullscreen", False)
             self.root.configure(bg="#f0f0f0")
+            self.current_lobby = "login"
         # packs login
         self.lbl_welcome_message.pack()
         self.name1.pack()
@@ -282,8 +285,9 @@ class Client(object):
         self.submit_btn.pack()
         self.lbl1_message.pack()
         self.register_btn.pack()
+        self.name1_input.focus_force()
 
-    def back_to_the_menu(self, conn=None):
+    def back_to_the_menu(self, event=None, conn=None):
         if self.current_lobby == "register":
             self.not_in_register_menu()
             self.login_menu()
@@ -357,7 +361,7 @@ class Client(object):
             # lbl1.place(x=100, y=100)
             creator, max_players, is_full, players = game_rooms_dict[lobby_room1]
             print(game_rooms_dict[lobby_room1])
-            self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space, activewidth=3, width=2, fill="#AFABAB")
+            rectangle1 = self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space, activewidth=3, width=2, fill="#AFABAB")
             self.game_rooms_lobby_canvas.create_text(460, 195 + space, text=f"{creator}'s looby room", font="Arial 16", fill="black", state=tk.DISABLED)
             self.game_rooms_lobby_canvas.create_text(510, 230 + space, text=f"Number of players: {players} out of {max_players}", font="Arial 14", fill="black", state=tk.DISABLED)
             space += 170
@@ -367,8 +371,7 @@ class Client(object):
             button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47", font="Arial 15")
             button_join_game.place(x=500, y=170 + space)
             canvas_window = self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
-
-
+            self.game_rooms_lobby_canvas.itemconfigure(rectangle1, state=tk.NORMAL)
 
 
 if __name__ == "__main__":

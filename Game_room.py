@@ -106,7 +106,7 @@ class GameRoom (object):
         return server_game_rooms_commands["get_players_information_ok"], list1
 
     def start_game(self):
-        self.current = "playing"
+        self.current = "playing"  # starting the game from the waiting room
         for value in self.players.values():
             conn = value.values()[-1]
             conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"]))

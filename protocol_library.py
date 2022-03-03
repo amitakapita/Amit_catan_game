@@ -4,7 +4,8 @@ client_commands = {
     "logout_cmd": "LOGOUT",
     "sign_up_cmd": "SIGN_UP",
     "get_profile_cmd": "GET_PROFILE",
-    "get_lobby_rooms_cmd": "GET_LOBBY_ROOMS"
+    "get_lobby_rooms_cmd": "GET_LOBBY_ROOMS",
+    "join_my_player_cmd": "JOIN_PLAYER"
 }
 
 server_commands = {
@@ -14,6 +15,11 @@ server_commands = {
     "sign_up_failed": "SIGN_UP_FAILED",
     "get_profile_ok": "GET_PROFILE_OK",
     "get_lr_ok_cmd": "GET_LR_OK"
+}
+
+server_game_rooms_commands = {
+    "join_player_ok_cmd": "JOIN_PLAYER_OK",
+    "join_player_failed_cmd": "JOIN_P_FAILED"
 }
 
 def build_message(cmd, msg=""):

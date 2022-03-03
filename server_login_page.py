@@ -55,10 +55,12 @@ class Server(object):
                 self.handle_client_commands(conn, number_of_clients, request)
         except ConnectionError:
             if conn in wait_login.keys():
+                wait_login[conn].close()
                 print(f"There was an error with the client {wait_login[conn]}, so the server closed the socket with him")
                 del wait_login[conn]
                 self.count -= 1
             else:
+                login_dict[conn].close()
                 print(f"There was an error with the client {login_dict[conn]}, so the server closed the socket with him")
                 del login_dict[conn]
                 self.count -= 1

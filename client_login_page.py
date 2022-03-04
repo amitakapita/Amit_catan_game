@@ -96,6 +96,9 @@ class Client(object):
         self.game_rooms_lobby_canvas.bind("<MouseWheel>", self.on_mousewheel)
         self.refresh_button = tk.Button(self.root, bg="#70ad47", text="Refresh", relief="solid", font="Arial 18")
         self.create_lobby_game_room_button = tk.Button(self.root, bg="#70ad47", text="Create", relief="solid", font="Arial 18")
+        self.from_creating = False
+        self.from_main_lobby = False
+        self.is_active = False
 
         # create lobby room menu
         self.lobby_name_game_room_lbl = tk.Label(self.root, font="Arial 30", bg="#2596be")
@@ -313,9 +316,11 @@ class Client(object):
             self.not_in_profile_menu()
             self.open_menu()
         elif self.current_lobby == "game_rooms_lobby":
+            self.refresh_lobby_rooms(from_refresh=False)
             self.not_in_Game_rooms_lobby_menu()
             self.open_menu()
         elif self.current_lobby == "creating_game_lobby_room":
+            self.refresh_lobby_rooms(from_refresh=False)
             self.not_in_create_lobby_game_room()
             self.Game_rooms_lobby_menu(conn)
 
@@ -361,7 +366,8 @@ class Client(object):
         self.game_rooms_lobby_canvas.pack()
         self.refresh_button.place(x=300, y=650)
         self.create_lobby_game_room_button.place(x=974, y=650)
-        self.send_messages(conn, client_commands["get_lobby_rooms_cmd"])
+        if not self.from_creating and not self.from_main_lobby:
+            self.send_messages(conn, client_commands["get_lobby_rooms_cmd"])
 
     def not_in_Game_rooms_lobby_menu(self):
         self.game_rooms_lobby_lbl.place_forget()
@@ -410,11 +416,16 @@ class Client(object):
         self.maximum_players_entry.place(x=702, y=180)
         self.create_lobby_game_room_create_button.place(x=890, y=330)
 
-    def refresh_lobby_rooms(self, conn, cmd, msg=""):
+    def refresh_lobby_rooms(self, conn="", cmd="", msg="", from_refresh=True):
         # self.not_in_Game_rooms_lobby_menu()
-        self.send_messages(conn, cmd, msg)
+        if from_refresh:
+            self.send_messages(conn, cmd, msg)
         self.refresh_button["state"] = tk.DISABLED
-        self.root.after(5000, lambda: self.set_refresh_button_enabled())  # self.refresh_button disabled for 5 seconds
+        self.from_creating = True
+        self.from_main_lobby = True
+        if not self.is_active:
+            self.root.after(5000, lambda: self.set_refresh_button_enabled())  # self.refresh_button disabled for 5 seconds
+            self.is_active = True
 
     def not_in_create_lobby_game_room(self):
         self.lobby_name_game_room_lbl.pack_forget()
@@ -434,6 +445,9 @@ class Client(object):
 
     def set_refresh_button_enabled(self):
         self.refresh_button["state"] = tk.NORMAL
+        self.from_creating = False
+        self.from_main_lobby = False
+        self.is_active = False
 
 
 if __name__ == "__main__":

@@ -7,7 +7,8 @@ client_commands = {
     "get_lobby_rooms_cmd": "GET_LOBBY_ROOMS",
     "join_my_player_cmd": "JOIN_PLAYER",
     "get_players_information_cmd": "GET_PL_IN",
-    "start_game_cmd": "START_GAME"
+    "start_game_cmd": "START_GAME",
+    "create_game_room_lobby_cmd": "CREATE_ROOM"
 }
 
 server_commands = {
@@ -16,7 +17,8 @@ server_commands = {
     "sign_up_ok_cmd": "SIGN_UP_OK",
     "sign_up_failed": "SIGN_UP_FAILED",
     "get_profile_ok": "GET_PROFILE_OK",
-    "get_lr_ok_cmd": "GET_LR_OK"
+    "get_lr_ok_cmd": "GET_LR_OK",
+    "create_room_game_lobby_ok_cmd": "CREATE_ROOM_OK"
 }
 
 server_game_rooms_commands = {

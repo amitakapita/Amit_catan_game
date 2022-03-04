@@ -94,6 +94,16 @@ class Client(object):
         self.game_rooms_lobby_canvas = tk.Canvas(self.scrollbar_frame, bg="#2596be", highlightbackground="#2596be", highlightcolor="#2596be", highlightthickness=2, height=900, width=755)
         self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 700))
         self.game_rooms_lobby_canvas.bind("<MouseWheel>", self.on_mousewheel)
+        self.refresh_button = tk.Button(self.root, bg="#70ad47", text="Refresh", relief="solid", font="Arial 18")
+        self.create_lobby_game_room_button = tk.Button(self.root, bg="#70ad47", text="Create", relief="solid", font="Arial 18")
+
+        # create lobby room menu
+        self.lobby_name_game_room_lbl = tk.Label(self.root, font="Arial 30", bg="#2596be")
+        self.game_room_lobby_create_canvas = tk.Canvas(self.root, bg="#d0cece", width=700, height=300, highlightcolor="black", highlightbackground="black")
+        self.maximum_players_entry = tk.Entry(self.root, bg="#AFABAB", font="Arial 20")
+        self.maximum_players_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 20", text="Maximum participants: {2-4}")
+        self.create_lobby_game_room_create_button = tk.Button(self.root, bg="#70ad47", text="Create lobby", font="Arial 15", relief="solid")
+        self.number_players_not_valid = tk.Label(self.root, bg="#d0cece", font="Arial 15", text="The maximum players should be between 2 (include 2) to 4 (include 4)")
 
 
 
@@ -118,9 +128,13 @@ class Client(object):
             self.profile_btn["command"] = lambda: self.profile_menu(client_socket)
             self.game_rooms_lobby_btn["command"] = lambda: self.Game_rooms_lobby_menu(client_socket)
             self.root.bind("<Escape>", lambda x: self.back_to_the_menu(conn=client_socket))
+            self.refresh_button["command"] = lambda: self.refresh_lobby_rooms(client_socket, client_commands["get_lobby_rooms_cmd"])
+            self.create_lobby_game_room_button["command"] = lambda: self.create_lobby_game_room()
+            self.create_lobby_game_room_create_button["command"] = lambda: self.send_create_game_room_lobby(client_socket)
 
             self.scrollbar["command"] = self.game_rooms_lobby_canvas.yview
             self.game_rooms_lobby_canvas["yscrollcommand"] = self.scrollbar.set
+            self.maximum_players_entry.focus_set()
 
             # packs login
             self.lbl_welcome_message.pack()
@@ -301,6 +315,9 @@ class Client(object):
         elif self.current_lobby == "game_rooms_lobby":
             self.not_in_Game_rooms_lobby_menu()
             self.open_menu()
+        elif self.current_lobby == "creating_game_lobby_room":
+            self.not_in_create_lobby_game_room()
+            self.Game_rooms_lobby_menu(conn)
 
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
@@ -342,6 +359,8 @@ class Client(object):
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         # self.games_rooms_list.pack()
         self.game_rooms_lobby_canvas.pack()
+        self.refresh_button.place(x=300, y=650)
+        self.create_lobby_game_room_button.place(x=974, y=650)
         self.send_messages(conn, client_commands["get_lobby_rooms_cmd"])
 
     def not_in_Game_rooms_lobby_menu(self):
@@ -350,11 +369,19 @@ class Client(object):
         self.scrollbar.pack_forget()
         # self.games_rooms_list.pack_forget()
         self.game_rooms_lobby_canvas.pack_forget()
+        self.create_lobby_game_room_button.place_forget()
+        self.refresh_button.place_forget()
 
     def on_mousewheel(self, event):
         self.game_rooms_lobby_canvas.yview_scroll(-1*event.delta//120, "units")  # the speed of scrolling and the units of it?
 
     def show_game_rooms(self, game_rooms_dict):
+        """self.scrollbar_frame.pack_forget()
+        self.scrollbar.pack_forget()
+        self.scrollbar_frame.pack(fill=tk.BOTH, padx=300, pady=150)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.game_rooms_lobby_canvas.pack_forget()
+        self.game_rooms_lobby_canvas.pack()"""
         space = 0
         for lobby_room1 in game_rooms_dict:
             # lbl1 = tk.Label(self.game_rooms_lobby_canvas, text=game_rooms_dict[lobby_room1][0], font="Arial 11")
@@ -372,6 +399,41 @@ class Client(object):
             button_join_game.place(x=500, y=170 + space)
             canvas_window = self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
             self.game_rooms_lobby_canvas.itemconfigure(rectangle1, state=tk.NORMAL)
+
+    def create_lobby_game_room(self):
+        self.current_lobby = "creating_game_lobby_room"
+        self.not_in_Game_rooms_lobby_menu()
+        self.lobby_name_game_room_lbl["text"] = f"Waiting room - {self.username}'s lobby"
+        self.lobby_name_game_room_lbl.pack(padx=450, pady=20, side=tk.TOP)
+        self.game_room_lobby_create_canvas.place(x=350, y=100)
+        self.maximum_players_lbl.place(x=360, y=180)
+        self.maximum_players_entry.place(x=702, y=180)
+        self.create_lobby_game_room_create_button.place(x=890, y=330)
+
+    def refresh_lobby_rooms(self, conn, cmd, msg=""):
+        # self.not_in_Game_rooms_lobby_menu()
+        self.send_messages(conn, cmd, msg)
+        self.refresh_button["state"] = tk.DISABLED
+        self.root.after(5000, lambda: self.set_refresh_button_enabled())  # self.refresh_button disabled for 5 seconds
+
+    def not_in_create_lobby_game_room(self):
+        self.lobby_name_game_room_lbl.pack_forget()
+        self.game_room_lobby_create_canvas.place_forget()
+        self.maximum_players_entry.place_forget()
+        self.maximum_players_lbl.place_forget()
+        self.create_lobby_game_room_create_button.place_forget()
+        self.number_players_not_valid.place_forget()
+
+    def send_create_game_room_lobby(self, conn):
+        maximum_players1 = self.maximum_players_entry.get()
+        print(maximum_players1)
+        if maximum_players1 in ("2", "3", "4"):
+            self.send_messages(conn, client_commands["create_game_room_lobby_cmd"], maximum_players1)
+        else:
+            self.number_players_not_valid.place(x=360, y=260)
+
+    def set_refresh_button_enabled(self):
+        self.refresh_button["state"] = tk.NORMAL
 
 
 if __name__ == "__main__":

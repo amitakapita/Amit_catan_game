@@ -55,12 +55,12 @@ class Server(object):
                 self.handle_client_commands(conn, number_of_clients, request)
         except ConnectionError:
             if conn in wait_login.keys():
-                wait_login[conn].close()
+                conn.close()
                 print(f"There was an error with the client {wait_login[conn]}, so the server closed the socket with him")
                 del wait_login[conn]
                 self.count -= 1
             else:
-                login_dict[conn].close()
+                conn.close()
                 print(f"There was an error with the client {login_dict[conn]}, so the server closed the socket with him")
                 del login_dict[conn]
                 self.count -= 1
@@ -84,6 +84,8 @@ class Server(object):
             return
         elif cmd == client_commands["get_lobby_rooms_cmd"]:
             to_send, msg_to_send = self.lobby_rooms()
+        elif cmd == client_commands["create_game_room_lobby_cmd"]:
+            to_send = server_commands["create_room_game_lobby_ok_cmd"]
         to_send = protocol_library.build_message(to_send, msg_to_send)
         print(f"[Server] -> [{conn.getpeername()}] {to_send}")
         conn.sendall(to_send.encode())

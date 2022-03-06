@@ -108,6 +108,10 @@ class Client(object):
         self.create_lobby_game_room_create_button = tk.Button(self.root, bg="#70ad47", text="Create lobby", font="Arial 15", relief="solid")
         self.number_players_not_valid = tk.Label(self.root, bg="#d0cece", font="Arial 15", text="The maximum players should be between 2 (include 2) to 4 (include 4)")
 
+        # waiting lobby room menu
+        self.waiting_to_start_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
+        
+
 
 
 
@@ -419,6 +423,7 @@ class Client(object):
     def refresh_lobby_rooms(self, conn="", cmd="", msg="", from_refresh=True):
         # self.not_in_Game_rooms_lobby_menu()
         if from_refresh:
+            self.game_rooms_lobby_canvas.delete("all")
             self.send_messages(conn, cmd, msg)
         self.refresh_button["state"] = tk.DISABLED
         self.from_creating = True

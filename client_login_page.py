@@ -18,6 +18,9 @@ class Client(object):
         self.login_try_count = 0
         self.current_lobby = "login"
 
+        self.ip2 = ""
+        self.port2 = 0
+
         self.root = tk.Tk()
         self.root.title("Catan Game")
         self.root.geometry("500x500+30+30")
@@ -110,7 +113,10 @@ class Client(object):
 
         # waiting lobby room menu
         self.waiting_to_start_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
-        
+        self.waiting_room_lobby_menu_canvas = tk.Canvas(self.root, bg="#d0cece", width=900, height=400, highlightcolor="black", highlightbackground="black")
+        self.start_game_menu_button = tk.Button(self.root, bg="#70ad47", text="Start", font="Arial 15", relief="solid")
+        self.session_id_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
+
 
 
 
@@ -118,8 +124,7 @@ class Client(object):
     def start(self):
         try:
             print("meow")
-            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client_socket.connect((self.ip, self.port))
+            client_socket = self.connect_to_server(self.ip, self.port)
 
             # send_connection_thread = threading.Thread(target=self.send_messages, args=(client_socket,))
             # send_connection_thread.start()
@@ -160,9 +165,12 @@ class Client(object):
             print(e)
 
     def receive_messages(self, conn):
-        while True:
-            data = conn.recv(1024).decode()
-            self.handle_received_connection(conn, data)
+        try:
+            while True:
+                data = conn.recv(1024).decode()
+                self.handle_received_connection(conn, data)
+        except BaseException:
+            return
 
     def send_messages(self, conn, data, msg=""):
         while True:
@@ -204,6 +212,11 @@ class Client(object):
             lobby_rooms = json.loads(msg)
             print(lobby_rooms)
             self.show_game_rooms(lobby_rooms)
+        elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
+            conn.close()
+            ip1_game_room_lobby_server, port1_game_room_lobby_server = msg.split("#")
+            self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
+            self.waiting_room_lobby_menu(("x", "x"))
 
 
     def check_in(self, conn):
@@ -215,6 +228,9 @@ class Client(object):
         elif self.password == "":
             self.lbl1_message["text"] = "the password isn't empty"
             print("the password isn't empty")
+        elif not protocol_library.check_username_validability(self.username):
+            self.lbl1_message["text"] = "the syntax of the username is not valid"
+            print("the syntax of the username is not valid")
         else:
             data, msg = client_commands["login_cmd"], "%s#%s" % (self.username, self.password)
             self.send_messages(conn, data, msg)
@@ -254,6 +270,8 @@ class Client(object):
         self.username, self.password, self.confirmed_password, self.Email = self.enter_name_input.get(), self.enter_password_input.get(), self.confirm_password_input_enter.get(), self.Email_enter_input.get()
         if self.username == "":
             self.lbl2_message["text"] = "the username isn't empty"
+        elif not protocol_library.check_username_validability(self.username):
+            self.lbl2_message["text"] = "the username must be built from characters between a-z, A-Z, 0-9 (including)"
         elif self.password == "":
             self.lbl2_message["text"] = "the password isn't empty"
         elif self.confirmed_password == "":
@@ -433,7 +451,8 @@ class Client(object):
             self.is_active = True
 
     def not_in_create_lobby_game_room(self):
-        self.lobby_name_game_room_lbl.pack_forget()
+        if self.current_lobby != "waiting_game_room_lobby":
+            self.lobby_name_game_room_lbl.pack_forget()
         self.game_room_lobby_create_canvas.place_forget()
         self.maximum_players_entry.place_forget()
         self.maximum_players_lbl.place_forget()
@@ -445,6 +464,7 @@ class Client(object):
         print(maximum_players1)
         if maximum_players1 in ("2", "3", "4"):
             self.send_messages(conn, client_commands["create_game_room_lobby_cmd"], maximum_players1)
+            self.create_lobby_game_room_create_button["state"] = tk.DISABLED
         else:
             self.number_players_not_valid.place(x=360, y=260)
 
@@ -453,6 +473,33 @@ class Client(object):
         self.from_creating = False
         self.from_main_lobby = False
         self.is_active = False
+
+    def waiting_room_lobby_menu(self, list_of_names=None, session_id=""):
+        self.current_lobby = "waiting_game_room_lobby"
+        self.not_in_create_lobby_game_room()
+        self.start_game_menu_button.place(x=1070, y=500)
+        self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
+        self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
+        self.session_id_lbl["text"] = session_id
+        self.waiting_to_start_lbl.pack(padx=400, pady=10, side=tk.TOP)
+        self.session_id_lbl.place(x=900, y=200)
+
+    def connect_to_game_room_server(self, ip2, port2):
+        try:
+            self.ip2 = ip2
+            self.port2 = int(port2)
+            print(ip2, port2)
+            conn = self.connect_to_server(self.ip2, self.port2)
+            receive_connection_thread = threading.Thread(target=self.receive_messages, args=(conn,))
+            receive_connection_thread.daemon = True
+            receive_connection_thread.start()
+        except socket.error as e:
+            print(e)
+
+    def connect_to_server(self, ip_server, port_server):
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((ip_server, port_server))
+        return client_socket
 
 
 if __name__ == "__main__":

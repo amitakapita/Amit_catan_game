@@ -6,18 +6,20 @@ import sqlite3 as sql
 from protocol_library import client_commands, server_game_rooms_commands
 import json
 from player_game import  Player
+import sys
+import time
 
 colors = ["red", "blue", "green", "yellow"]
 
 
 class GameRoom (object):
-    def __init__(self, leader_name, maximum_players, ip1, port1):
-        self.session_id = random.randint(10000, 100000)
+    def __init__(self, leader_name, maximum_players, ip1, port1, session_id):
+        self.session_id = session_id
         self.leader_name = leader_name
         self.players = []
-        self.maximum_players = maximum_players
+        self.maximum_players = int(maximum_players)
         self.current = "waiting"  # "creating"
-        self.count_players = 1
+        self.count_players = 0
         self.ip = ip1
         self.port = port1
         self.is_full = False
@@ -45,6 +47,7 @@ class GameRoom (object):
         try:
             print(f"The server start in ip: {self.ip}, and port: {self.port}")
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            print("meow hi hav")
             server_socket.bind((self.ip, self.port))
             server_socket.listen()
 
@@ -59,6 +62,7 @@ class GameRoom (object):
                         self.join_a_player()"""
                     self.count_players += 1
                     self.handle_client(client_socket)
+                print("hi meow hav")
 
         except socket.error as e:
             print(e)
@@ -84,6 +88,7 @@ class GameRoom (object):
         client_handler.start()
 
     def handle_client_cmd(self, conn, request):
+        print(f"[Client {conn.getpeername()}]")
         con = sql.connect("Data_Bases/accounts_database.db")
         cmd, msg = protocol_library.disassemble_message(request)
         cmd_send, msg_send = "", ""
@@ -110,6 +115,18 @@ class GameRoom (object):
 
     def start_game(self):
         self.current = "playing"  # starting the game from the waiting room
-        for value in self.players.values():
-            conn = value.values()[-1]
+        for value in self.players:
+            conn = value[3]  # conn
             conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"]))
+
+if __name__ == "__main__":
+    try:
+        ip = "0.0.0.0"
+        print("meow hav hav meow meow hav meow hav")
+        leader_name, maximum_players, session_id, port = sys.argv[1:]
+        print(leader_name, maximum_players, port, ip, session_id)
+        game_server1 = GameRoom(leader_name=leader_name, ip1=ip, port1=int(port), maximum_players=maximum_players, session_id=session_id)
+        game_server1.start()
+    except BaseException as e:
+        print(e)
+        time.sleep(5)

@@ -49,3 +49,14 @@ def disassemble_message(message):
     cmd = message[:16].replace(" ", "")  # the command without spaces and whitespaces
     msg = message[22:]  # the msg, could be empty
     return cmd, msg
+
+
+def check_username_validability(username):
+    if username == "" or username is None:
+        return False
+    for char in username:
+        if not ("a" < char < "z" or \
+            "A" < char < "Z" or \
+            "0" < char < "9"):
+            return False
+    return True

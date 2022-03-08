@@ -24,3 +24,5 @@ class Player(object):
     def change_turn(self, state: bool):
         self.is_my_turn = state
 
+    def __repr__(self):
+        return self.id_game, self.color, self.is_my_turn, self.conn, self.player_name, self.materials, self.points

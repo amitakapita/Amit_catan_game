@@ -8,6 +8,7 @@ import json
 
 # Constants:
 count1 = 1
+colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
 
 
 class Client(object):
@@ -418,8 +419,8 @@ class Client(object):
             creator, max_players, is_full, players = game_rooms_dict[lobby_room1]
             print(game_rooms_dict[lobby_room1])
             rectangle1 = self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space, activewidth=3, width=2, fill="#AFABAB")
-            self.game_rooms_lobby_canvas.create_text(460, 195 + space, text=f"{creator}'s looby room", font="Arial 16", fill="black", state=tk.DISABLED)
-            self.game_rooms_lobby_canvas.create_text(510, 230 + space, text=f"Number of players: {players} out of {max_players}", font="Arial 14", fill="black", state=tk.DISABLED)
+            self.game_rooms_lobby_canvas.create_text(370, 195 + space, text=f"{creator}'s looby room", font="Arial 16", fill="black", state=tk.DISABLED, anchor=tk.NW)
+            self.game_rooms_lobby_canvas.create_text(370, 230 + space, text=f"Number of players: {players} out of {max_players}", font="Arial 14", fill="black", state=tk.DISABLED, anchor=tk.NW)
             space += 170
             position1 = int(self.game_rooms_lobby_canvas["height"])
             self.game_rooms_lobby_canvas["height"] = position1 + space
@@ -487,8 +488,8 @@ class Client(object):
         self.participants_lbl["text"] = "Players:"
         space = 0
         print(list_of_names)
-        for name, color in list_of_names:
-            self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17", state=tk.DISABLED)
+        for color_index, name in enumerate(list_of_names):
+            self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=colors[color_index], font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
             space += 30
         self.participants_lbl.place(x=280, y=180)
 

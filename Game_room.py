@@ -45,7 +45,7 @@ class GameRoom (object):
 
     def start(self):
         try:
-            print(f"The server start in ip: {self.ip}, and port: {self.port}")
+            print(f"The server start in ip: {self.ip}, and port: {self.port}, session_id: {self.session_id}")
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             print("meow hi hav")
             server_socket.bind((self.ip, self.port))

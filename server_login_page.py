@@ -103,7 +103,7 @@ class Server(object):
             thread_server_game_room_lobby_menu.start()
             # self.create_lobby_rooms_games(conn, msg, session_id, port_server)
             to_send = server_commands["create_room_game_lobby_ok_cmd"]
-            list_of_names = [(login_dict[conn][1], "red")]
+            list_of_names = [(login_dict[conn][1]), ("meow hav 1"), ("hav hav 1 meow"), ("meow meow 1 hav")]
             msg_to_send = "127.0.0.1#" + port_server + "#" + session_id + "#" + json.dumps(list_of_names)
             to_send = protocol_library.build_message(to_send, msg_to_send)
             print(f"[Server] -> [{conn.getpeername()}] {to_send}")

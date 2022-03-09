@@ -92,7 +92,7 @@ class Server(object):
             to_send, msg_to_send = self.lobby_rooms()
         elif cmd == client_commands["create_game_room_lobby_cmd"]:
             session_id = str(random.randint(10000, 100000))
-            port_server = str(random.randint(10000, 100000))
+            port_server = str(random.randint(10000, 65536))  # ports available - 10000 - 65535
             while session_id in game_room_server_lobbies_session_ids_and_ports or port_server == self.port:
                 session_id = str(random.randint(10000, 100000))
                 port_server = str(random.randint(10000, 65536))  # ports available - 10000 - 65535
@@ -103,7 +103,8 @@ class Server(object):
             thread_server_game_room_lobby_menu.start()
             # self.create_lobby_rooms_games(conn, msg, session_id, port_server)
             to_send = server_commands["create_room_game_lobby_ok_cmd"]
-            msg_to_send = "127.0.0.1#" + port_server
+            list_of_names = [(login_dict[conn][1], "red")]
+            msg_to_send = "127.0.0.1#" + port_server + "#" + session_id + "#" + json.dumps(list_of_names)
             to_send = protocol_library.build_message(to_send, msg_to_send)
             print(f"[Server] -> [{conn.getpeername()}] {to_send}")
             conn.sendall(to_send.encode())

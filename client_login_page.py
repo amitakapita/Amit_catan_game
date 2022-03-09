@@ -115,7 +115,8 @@ class Client(object):
         self.waiting_to_start_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
         self.waiting_room_lobby_menu_canvas = tk.Canvas(self.root, bg="#d0cece", width=900, height=400, highlightcolor="black", highlightbackground="black")
         self.start_game_menu_button = tk.Button(self.root, bg="#70ad47", text="Start", font="Arial 15", relief="solid")
-        self.session_id_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
+        self.session_id_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 15")
+        self.participants_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 17")
 
 
 
@@ -214,9 +215,9 @@ class Client(object):
             self.show_game_rooms(lobby_rooms)
         elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
             conn.close()
-            ip1_game_room_lobby_server, port1_game_room_lobby_server = msg.split("#")
+            ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id, list_of_names = msg.split("#")
             self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
-            self.waiting_room_lobby_menu(("x", "x"))
+            self.waiting_room_lobby_menu(json.loads(list_of_names), session_id)
 
 
     def check_in(self, conn):
@@ -474,15 +475,22 @@ class Client(object):
         self.from_main_lobby = False
         self.is_active = False
 
-    def waiting_room_lobby_menu(self, list_of_names=None, session_id=""):
+    def waiting_room_lobby_menu(self, list_of_names: list, session_id=""):
         self.current_lobby = "waiting_game_room_lobby"
         self.not_in_create_lobby_game_room()
         self.start_game_menu_button.place(x=1070, y=500)
         self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
         self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
-        self.session_id_lbl["text"] = session_id
+        self.session_id_lbl["text"] = "Game room id: " + session_id
         self.waiting_to_start_lbl.pack(padx=400, pady=10, side=tk.TOP)
-        self.session_id_lbl.place(x=900, y=200)
+        self.session_id_lbl.place(x=920, y=180)
+        self.participants_lbl["text"] = "Players:"
+        space = 0
+        print(list_of_names)
+        for name, color in list_of_names:
+            self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17", state=tk.DISABLED)
+            space += 30
+        self.participants_lbl.place(x=280, y=180)
 
     def connect_to_game_room_server(self, ip2, port2):
         try:

@@ -25,15 +25,15 @@ class GameRoom (object):
         self.is_full = False
 
     def join_a_player(self, player_name, conn):
-        if self.count_players > self.maximum_players:
+        if self.count_players < self.maximum_players:
             player1 = Player(self.session_id, colors[self.count_players - 1], conn, player_name)
-            self.players[player_name].append(player1)
+            self.players.append(player1)
 
-    def player_exits_the_room(self, player_name):
+    def player_exits_the_room(self, index):
         self.count_players -= 1
         if self.current == "waiting" and self.is_full:
             self.is_full = False
-        self.players[player_name].remove()
+        del self.players[index]
 
     """def create_lobby(self):
         # self.players.append({self.leader_name})
@@ -73,7 +73,7 @@ class GameRoom (object):
                 request = conn.recv(1024).decode()
                 if request is None or request == "":
                     raise ConnectionError
-                print(f"\n[Client] {request}")
+                print(f"\n[Client {conn.getpeername()}] {request}")
                 self.handle_client_cmd(conn, request)
         except ConnectionError:
             print(f"There was an error with the client {conn.getpeername()}, so the server closed the socket with him")
@@ -94,6 +94,7 @@ class GameRoom (object):
         cmd_send, msg_send = "", ""
         if cmd == client_commands["join_my_player_cmd"]:
             if not self.is_full:
+                print("meow hav meow 2 1 hav")
                 self.join_a_player(msg, conn)
                 cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
             else:  # just in case
@@ -103,8 +104,19 @@ class GameRoom (object):
         elif cmd == client_commands["start_game_cmd"]:
             self.start_game()
             return
+        elif cmd == client_commands["close_lobby_cmd"]:
+            print(self.players)
+            if self.players[0].conn == conn:
+                message = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"], "game server closed, switched back to the main server")
+                for player_index in range(len(self.players)):
+                    print(f"[Server] -> [Client {self.players[player_index].conn.getpeername()}] {message}")
+                    conn.sendall(message.encode())
+                    self.players[player_index].conn.close()
+                    self.player_exits_the_room(player_index)
+                exit()
+
         message = protocol_library.build_message(cmd_send, msg_send)
-        print(f"[Server] -> [{conn.getpeername()}] {message}")
+        print(f"[Server] -> [Client {conn.getpeername()}] {message}")
         conn.sendall(message.encode())
 
     def players_information(self):

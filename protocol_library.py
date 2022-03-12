@@ -8,7 +8,8 @@ client_commands = {
     "join_my_player_cmd": "JOIN_PLAYER",
     "get_players_information_cmd": "GET_PL_IN",
     "start_game_cmd": "START_GAME",
-    "create_game_room_lobby_cmd": "CREATE_ROOM"
+    "create_game_room_lobby_cmd": "CREATE_ROOM",
+    "close_lobby_cmd": "CLOSE_LOBBY"
 }
 
 server_commands = {
@@ -25,7 +26,8 @@ server_game_rooms_commands = {
     "join_player_ok_cmd": "JOIN_PLAYER_OK",
     "join_player_failed_cmd": "JOIN_PL_FAILED",
     "get_players_information_ok": "GET_PL_IN_OK",
-    "start_game_ok": "START_GAME_OK"
+    "start_game_ok": "START_GAME_OK",
+    "close_lobby_ok_cmd": "CLOSE_LOBBY_OK"
 }
 
 def build_message(cmd, msg=""):

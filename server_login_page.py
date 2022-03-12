@@ -13,6 +13,7 @@ import random
 wait_login = {}
 login_dict = {}
 game_room_server_lobbies_session_ids_and_ports = []
+in_game_dict = {}
 
 
 class Server(object):
@@ -110,6 +111,7 @@ class Server(object):
             print(f"[Server] -> [{conn.getpeername()}] {to_send}")
             conn.sendall(to_send.encode())
             print(f"{login_dict[conn][0]} has been switched to game room {session_id}")
+            in_game_dict[conn] = login_dict[conn], True, conn
             del login_dict[conn]
             conn.close()
 

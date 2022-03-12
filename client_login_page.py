@@ -3,7 +3,7 @@ import tkinter as tk
 import socket
 import threading
 import time
-from protocol_library import client_commands, server_commands
+from protocol_library import client_commands, server_commands, server_game_rooms_commands
 import json
 
 # Constants:
@@ -21,6 +21,8 @@ class Client(object):
 
         self.ip2 = ""
         self.port2 = 0
+        self.second_time_connect = False
+        self.main_server = True
 
         self.root = tk.Tk()
         self.root.title("Catan Game")
@@ -128,13 +130,6 @@ class Client(object):
             print("meow")
             client_socket = self.connect_to_server(self.ip, self.port)
 
-            # send_connection_thread = threading.Thread(target=self.send_messages, args=(client_socket,))
-            # send_connection_thread.start()
-            receive_connection_thread = threading.Thread(target=self.receive_messages, args=(client_socket,))
-            receive_connection_thread.daemon = True
-            receive_connection_thread.start()
-            # while True:
-            # data = client_socket.recv(1024).decode()
             self.submit_btn["command"] = lambda: self.check_in(client_socket)
             self.register_btn["command"] = lambda: self.register_menu()
             self.register_account_btn["command"] = lambda: self.register_account(client_socket)
@@ -142,24 +137,38 @@ class Client(object):
             self.profile_btn["command"] = lambda: self.profile_menu(client_socket)
             self.game_rooms_lobby_btn["command"] = lambda: self.Game_rooms_lobby_menu(client_socket)
             self.root.bind("<Escape>", lambda x: self.back_to_the_menu(conn=client_socket))
-            self.refresh_button["command"] = lambda: self.refresh_lobby_rooms(client_socket, client_commands["get_lobby_rooms_cmd"])
+            self.refresh_button["command"] = lambda: self.refresh_lobby_rooms(client_socket,
+                                                                              client_commands["get_lobby_rooms_cmd"])
             self.create_lobby_game_room_button["command"] = lambda: self.create_lobby_game_room()
-            self.create_lobby_game_room_create_button["command"] = lambda: self.send_create_game_room_lobby(client_socket)
+            self.create_lobby_game_room_create_button["command"] = lambda: self.send_create_game_room_lobby(
+                client_socket)
 
-            self.scrollbar["command"] = self.game_rooms_lobby_canvas.yview
-            self.game_rooms_lobby_canvas["yscrollcommand"] = self.scrollbar.set
-            self.maximum_players_entry.focus_set()
+            # send_connection_thread = threading.Thread(target=self.send_messages, args=(client_socket,))
+            # send_connection_thread.start()
+            if not self.second_time_connect:
+                receive_connection_thread = threading.Thread(target=self.receive_messages, args=(client_socket,))
+                receive_connection_thread.daemon = True
+                receive_connection_thread.start()
+                # while True:
+                # data = client_socket.recv(1024).decode()
 
-            # packs login
-            self.lbl_welcome_message.pack()
-            self.name1.pack()
-            self.name1_input.pack()
-            self.password1.pack()
-            self.password1_input.pack()
-            self.submit_btn.pack()
-            self.lbl1_message.pack()
-            self.register_btn.pack()
-            self.name1_input.focus()
+                self.scrollbar["command"] = self.game_rooms_lobby_canvas.yview
+                self.game_rooms_lobby_canvas["yscrollcommand"] = self.scrollbar.set
+                self.maximum_players_entry.focus_set()
+
+                # packs login
+                self.lbl_welcome_message.pack()
+                self.name1.pack()
+                self.name1_input.pack()
+                self.password1.pack()
+                self.password1_input.pack()
+                self.submit_btn.pack()
+                self.lbl1_message.pack()
+                self.register_btn.pack()
+                self.name1_input.focus()
+            else:
+                self.Game_rooms_lobby_menu(conn=client_socket)
+                self.main_server = True
 
             self.root.mainloop()
 
@@ -184,42 +193,51 @@ class Client(object):
     def handle_received_connection(self, conn, data):
         print(f"[Server] {data}")
         cmd, msg = protocol_library.disassemble_message(data)
-        if cmd == server_commands["login_ok_cmd"]:
-            self.lbl1_message["text"] = "login succeeded"
-            print("login succeeded")
-            self.login_try_count = 0
-            self.open_menu()
-        elif cmd == server_commands["login_failed_cmd"]:
-            self.lbl1_message["text"] = f"login failed, you have {2 - self.login_try_count} attempts to login"
-            print("login failed")
-            self.login_try_count += 1
-            if self.login_try_count == 3:
-                self.submit_btn["state"] = tk.DISABLED
-                self.name1_input["state"] = tk.DISABLED
-                self.password1_input["state"] = tk.DISABLED
-        elif cmd == server_commands["sign_up_ok_cmd"]:
-            # self.register_btn["state"] = tk.DISABLED
-            self.lbl2_message["text"] = "Register succeeded"
-            time.sleep(2)
-            self.not_in_register_menu()
-            self.login_menu()
-        elif cmd == server_commands["sign_up_failed"]:
-            self.lbl2_message["text"] = msg
-        elif cmd == server_commands["get_profile_ok"]:
-            games_played, games_win, self.Email = msg.split("#")
-            self.lbl_games_played["text"] = "Games played: " + games_played
-            self.lbl_games_wins["text"] = "Win Games: " + games_win
-            self.lbl_email["text"] = "E-mail address: " + self.Email
-        elif cmd == server_commands["get_lr_ok_cmd"]:
-            lobby_rooms = json.loads(msg)
-            print(lobby_rooms)
-            self.show_game_rooms(lobby_rooms)
-        elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
-            conn.close()
-            ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id, list_of_names = msg.split("#")
-            self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
-            self.waiting_room_lobby_menu(json.loads(list_of_names), session_id)
-
+        if self.main_server:
+            if cmd == server_commands["login_ok_cmd"]:
+                self.lbl1_message["text"] = "login succeeded"
+                print("login succeeded")
+                self.login_try_count = 0
+                self.open_menu()
+            elif cmd == server_commands["login_failed_cmd"]:
+                self.lbl1_message["text"] = f"login failed, you have {2 - self.login_try_count} attempts to login"
+                print("login failed")
+                self.login_try_count += 1
+                if self.login_try_count == 3:
+                    self.submit_btn["state"] = tk.DISABLED
+                    self.name1_input["state"] = tk.DISABLED
+                    self.password1_input["state"] = tk.DISABLED
+            elif cmd == server_commands["sign_up_ok_cmd"]:
+                # self.register_btn["state"] = tk.DISABLED
+                self.lbl2_message["text"] = "Register succeeded"
+                time.sleep(2)
+                self.not_in_register_menu()
+                self.login_menu()
+            elif cmd == server_commands["sign_up_failed"]:
+                self.lbl2_message["text"] = msg
+            elif cmd == server_commands["get_profile_ok"]:
+                games_played, games_win, self.Email = msg.split("#")
+                self.lbl_games_played["text"] = "Games played: " + games_played
+                self.lbl_games_wins["text"] = "Win Games: " + games_win
+                self.lbl_email["text"] = "E-mail address: " + self.Email
+            elif cmd == server_commands["get_lr_ok_cmd"]:
+                lobby_rooms = json.loads(msg)
+                print(lobby_rooms)
+                self.show_game_rooms(lobby_rooms)
+            elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
+                conn.close()
+                ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id, list_of_names = msg.split("#")
+                conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
+                self.waiting_room_lobby_menu(json.loads(list_of_names), session_id)
+                self.send_messages(conn, client_commands["join_my_player_cmd"])
+                self.main_server = False
+        else:
+            if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
+                print("meow meow hav hav")
+            elif cmd == server_game_rooms_commands["close_lobby_ok_cmd"]:
+                print(msg)
+                conn.close()
+                self.back_to_the_menu()
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -347,6 +365,11 @@ class Client(object):
             self.refresh_lobby_rooms(from_refresh=False)
             self.not_in_create_lobby_game_room()
             self.Game_rooms_lobby_menu(conn)
+        elif self.current_lobby == "waiting_game_room_lobby":
+            self.back_btn["text"] = "Back"
+            self.second_time_connect = True
+            self.not_in_waiting_room_lobby_menu()
+            self.start()
 
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
@@ -479,6 +502,7 @@ class Client(object):
     def waiting_room_lobby_menu(self, list_of_names: list, session_id=""):
         self.current_lobby = "waiting_game_room_lobby"
         self.not_in_create_lobby_game_room()
+        self.back_btn["text"] = "Close lobby"
         self.start_game_menu_button.place(x=1070, y=500)
         self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
         self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
@@ -502,13 +526,25 @@ class Client(object):
             receive_connection_thread = threading.Thread(target=self.receive_messages, args=(conn,))
             receive_connection_thread.daemon = True
             receive_connection_thread.start()
+            self.back_btn["command"] = lambda: self.send_messages(conn, client_commands["close_lobby_cmd"])
+            return conn
         except socket.error as e:
             print(e)
+            print("meow hav meow hav 1 2 1 2", conn)
 
     def connect_to_server(self, ip_server, port_server):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((ip_server, port_server))
         return client_socket
+
+    def not_in_waiting_room_lobby_menu(self):
+        self.lobby_name_game_room_lbl.pack_forget()
+        self.start_game_menu_button.place_forget()
+        self.waiting_room_lobby_menu_canvas.delete()
+        self.waiting_room_lobby_menu_canvas.place_forget()
+        self.waiting_to_start_lbl.pack_forget()
+        self.session_id_lbl.place_forget()
+        self.participants_lbl.place_forget()
 
 
 if __name__ == "__main__":

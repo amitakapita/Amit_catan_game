@@ -68,7 +68,6 @@ class GameRoom (object):
                     self.count_players += 1
                     self.handle_client(client_socket)
                 print("hi meow hav")
-            time.sleep(5)
 
         except socket.error as e:
             print(e)

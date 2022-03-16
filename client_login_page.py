@@ -105,6 +105,7 @@ class Client(object):
         self.from_creating = False
         self.from_main_lobby = False
         self.is_active = False
+        self.from_lobby_game_waiting_or_in_actual_game = False
 
         # create lobby room menu
         self.lobby_name_game_room_lbl = tk.Label(self.root, font="Arial 30", bg="#2596be")
@@ -374,7 +375,8 @@ class Client(object):
         elif self.current_lobby == "waiting_game_room_lobby":
             self.back_btn["text"] = "Back"
             self.second_time_connect = True
-            self.not_in_waiting_room_lobby_menu()
+            self.not_in_waiting_room_lobby_menu(conn)
+            self.refresh_lobby_rooms(from_refresh=False)
             self.start()
 
     def not_in_main_lobby(self):
@@ -419,7 +421,7 @@ class Client(object):
         self.game_rooms_lobby_canvas.pack()
         self.refresh_button.place(x=300, y=650)
         self.create_lobby_game_room_button.place(x=974, y=650)
-        if not self.from_creating and not self.from_main_lobby:
+        if not self.from_creating and not self.from_main_lobby and not self.from_lobby_game_waiting_or_in_actual_game:
             self.send_messages(conn, client_commands["get_lobby_rooms_cmd"])
 
     def not_in_Game_rooms_lobby_menu(self):
@@ -441,23 +443,26 @@ class Client(object):
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.game_rooms_lobby_canvas.pack_forget()
         self.game_rooms_lobby_canvas.pack()"""
-        space = 0
-        for lobby_room1 in game_rooms_dict:
-            # lbl1 = tk.Label(self.game_rooms_lobby_canvas, text=game_rooms_dict[lobby_room1][0], font="Arial 11")
-            # lbl1.place(x=100, y=100)
-            creator, max_players, is_full, players = game_rooms_dict[lobby_room1]
-            print(game_rooms_dict[lobby_room1])
-            rectangle1 = self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space, activewidth=3, width=2, fill="#AFABAB")
-            self.game_rooms_lobby_canvas.create_text(370, 195 + space, text=f"{creator}'s looby room", font="Arial 16", fill="black", state=tk.DISABLED, anchor=tk.NW)
-            self.game_rooms_lobby_canvas.create_text(370, 230 + space, text=f"Number of players: {players} out of {max_players}", font="Arial 14", fill="black", state=tk.DISABLED, anchor=tk.NW)
-            space += 170
-            position1 = int(self.game_rooms_lobby_canvas["height"])
-            self.game_rooms_lobby_canvas["height"] = position1 + space
-            self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 150 + space))
-            button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47", font="Arial 15")
-            button_join_game.place(x=500, y=170 + space)
-            canvas_window = self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
-            self.game_rooms_lobby_canvas.itemconfigure(rectangle1, state=tk.NORMAL)
+        if game_rooms_dict == {}:
+            self.game_rooms_lobby_canvas.create_text(675, 195, text="There are no game lobby rooms", font="Arial 16", anchor=tk.CENTER, state=tk.DISABLED)
+        else:
+            space = 0
+            for lobby_room1 in game_rooms_dict:
+                # lbl1 = tk.Label(self.game_rooms_lobby_canvas, text=game_rooms_dict[lobby_room1][0], font="Arial 11")
+                # lbl1.place(x=100, y=100)
+                creator, max_players, is_full, players, port_server = game_rooms_dict[lobby_room1]
+                print(game_rooms_dict[lobby_room1])
+                rectangle1 = self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space, activewidth=3, width=2, fill="#AFABAB")
+                self.game_rooms_lobby_canvas.create_text(370, 195 + space, text=f"{creator}'s looby room", font="Arial 16", fill="black", state=tk.DISABLED, anchor=tk.NW)
+                self.game_rooms_lobby_canvas.create_text(370, 230 + space, text=f"Number of players: {players} out of {max_players}", font="Arial 14", fill="black", state=tk.DISABLED, anchor=tk.NW)
+                space += 170
+                position1 = int(self.game_rooms_lobby_canvas["height"])
+                self.game_rooms_lobby_canvas["height"] = position1 + space
+                self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 150 + space))
+                button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47", font="Arial 15")
+                button_join_game.place(x=500, y=170 + space)
+                canvas_window = self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
+                self.game_rooms_lobby_canvas.itemconfigure(rectangle1, state=tk.NORMAL)
 
     def create_lobby_game_room(self):
         self.current_lobby = "creating_game_lobby_room"
@@ -477,6 +482,7 @@ class Client(object):
         self.refresh_button["state"] = tk.DISABLED
         self.from_creating = True
         self.from_main_lobby = True
+        self.from_lobby_game_waiting_or_in_actual_game = True
         if not self.is_active:
             self.root.after(5000, lambda: self.set_refresh_button_enabled())  # self.refresh_button disabled for 5 seconds
             self.is_active = True
@@ -504,6 +510,7 @@ class Client(object):
         self.from_creating = False
         self.from_main_lobby = False
         self.is_active = False
+        self.from_lobby_game_waiting_or_in_actual_game = False
 
     def waiting_room_lobby_menu(self, list_of_names: list, session_id=""):
         self.current_lobby = "waiting_game_room_lobby"
@@ -543,7 +550,7 @@ class Client(object):
         client_socket.connect((ip_server, port_server))
         return client_socket
 
-    def not_in_waiting_room_lobby_menu(self):
+    def not_in_waiting_room_lobby_menu(self, conn):
         self.lobby_name_game_room_lbl.pack_forget()
         self.start_game_menu_button.place_forget()
         self.waiting_room_lobby_menu_canvas.delete()

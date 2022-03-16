@@ -16,7 +16,7 @@ import multiprocessing
 # data bases
 wait_login = {}
 login_dict = {}
-game_room_server_lobbies_session_ids_and_ports = []
+game_room_server_lobbies_session_ids_and_ports = {}
 in_game_dict = {}
 
 
@@ -103,7 +103,7 @@ class Server(object):
                 # conn.connect_ex() tries to connect but if there is an error it returns an executing code instead of raising an exception
                 session_id = str(random.randint(10000, 100000))
                 port_server = str(random.randint(10000, 65536))  # ports available - 10000 - 65535
-            game_room_server_lobbies_session_ids_and_ports.append(session_id)
+            game_room_server_lobbies_session_ids_and_ports[session_id] = login_dict[conn][1], msg, False, 1, port_server
             print(f"[Server] Server [{session_id}, {port_server}] is opening")
             thread_server_game_room_lobby_menu = threading.Thread(target=self.create_lobby_rooms_games, args=(conn, msg, session_id, port_server))
             thread_server_game_room_lobby_menu.daemon = True
@@ -119,8 +119,8 @@ class Server(object):
             in_game_dict[conn] = login_dict[conn], True, conn
             del login_dict[conn]
             conn.close()
-
             return
+
         to_send = protocol_library.build_message(to_send, msg_to_send)
         print(f"[Server] -> [{conn.getpeername()}] {to_send}")
         conn.sendall(to_send.encode())
@@ -186,13 +186,15 @@ class Server(object):
         return server_commands["get_profile_ok"], f"{msg[0][0]}#{msg[0][1]}#{msg[0][2]}"
 
     def lobby_rooms(self):
-        lobby_rooms = json.dumps({12345: ("w", 3, True, 2), 54321: ("t", 2, True, 2), 23456: ("r", 2, False, 1), 34567: ("meow", 4, True, 4), 45678: ("hav", 4, True, 4)})
+        lobby_rooms = json.dumps(game_room_server_lobbies_session_ids_and_ports)
         print(lobby_rooms)
         return server_commands["get_lr_ok_cmd"], lobby_rooms
 
     def create_lobby_rooms_games(self, conn, max_players, session_id, port):
         try:
             process = subprocess.run(["python", "Game_room.py", login_dict[conn][1], max_players, session_id, port], creationflags=subprocess.CREATE_NEW_CONSOLE)
+            print(f"closing the game room: {session_id}, {port}")
+            del game_room_server_lobbies_session_ids_and_ports[session_id]
         except subprocess.CalledProcessError as e:
             print(e)
 

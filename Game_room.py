@@ -8,8 +8,12 @@ import json
 from player_game import  Player
 import sys
 import time
+import subprocess
+import signal
+import os
 
 colors = ["red", "blue", "green", "yellow"]
+subprocess1 = ""
 
 
 class GameRoom (object):
@@ -23,6 +27,7 @@ class GameRoom (object):
         self.ip = ip1
         self.port = port1
         self.is_full = False
+        self.server_open = True
 
     def join_a_player(self, player_name, conn):
         if self.count_players < self.maximum_players:
@@ -51,7 +56,7 @@ class GameRoom (object):
             server_socket.bind((self.ip, self.port))
             server_socket.listen()
 
-            while True:
+            while self.server_open:
                 if self.count_players < self.maximum_players and self.current == "waiting":
                     print(f"Players: {self.count_players} out of {self.maximum_players}")
                     client_socket, client_address = server_socket.accept()
@@ -63,6 +68,7 @@ class GameRoom (object):
                     self.count_players += 1
                     self.handle_client(client_socket)
                 print("hi meow hav")
+            time.sleep(5)
 
         except socket.error as e:
             print(e)
@@ -74,18 +80,26 @@ class GameRoom (object):
                 if request is None or request == "":
                     raise ConnectionError
                 print(f"\n[Client {conn.getpeername()}] {request}")
-                self.handle_client_cmd(conn, request)
+                status = self.handle_client_cmd(conn, request)
+                if status is not None and status == "CLOSING SERVER":
+                    raise BaseException
         except ConnectionError:
             print(f"There was an error with the client {conn.getpeername()}, so the server closed the socket with him")
             self.count_players -= 1
             if self.current == "waiting":
                 self.is_full = False
             conn.close()
+        except BaseException:
+            print("meow hav meow meow hav hav meow hav")
+            conn.close()
+            sys.exit(0)
 
     def handle_client(self, conn):
         client_handler = threading.Thread(target=self.handle_player_conn,
                                           args=(conn,))  # the comma is necessary
+        client_handler.daemon = True
         client_handler.start()
+        client_handler.join()
 
     def handle_client_cmd(self, conn, request):
         print(f"[Client {conn.getpeername()}]")
@@ -113,7 +127,10 @@ class GameRoom (object):
                     conn.sendall(message.encode())
                     self.players[player_index].conn.close()
                     self.player_exits_the_room(player_index)
-                exit()
+                print("CLOSING SERVER")
+                self.server_open = False
+                sys.exit(1)
+                return "CLOSING SERVER"
 
         message = protocol_library.build_message(cmd_send, msg_send)
         print(f"[Server] -> [Client {conn.getpeername()}] {message}")
@@ -134,11 +151,14 @@ class GameRoom (object):
 if __name__ == "__main__":
     try:
         ip = "0.0.0.0"
-        print("meow hav hav meow meow hav meow hav")
+        # print("meow hav hav meow meow hav meow hav")
         leader_name, maximum_players, session_id, port = sys.argv[1:]
         print(leader_name, maximum_players, port, ip, session_id)
+        print(sys.argv[:])
+        time.sleep(0.5)
         game_server1 = GameRoom(leader_name=leader_name, ip1=ip, port1=int(port), maximum_players=maximum_players, session_id=session_id)
         game_server1.start()
-    except BaseException as e:
-        print(e)
+        print("meow meow hav hav 123")
+    except Exception as e:
+        print(e, "meow hav")
         time.sleep(5)

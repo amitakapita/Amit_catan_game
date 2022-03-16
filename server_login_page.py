@@ -7,6 +7,10 @@ from protocol_library import server_commands, client_commands
 import json
 import subprocess
 import random
+import signal
+import os
+import asyncio
+import multiprocessing
 
 
 # data bases
@@ -46,6 +50,7 @@ class Server(object):
     def handle_client(self, conn, number_of_clients):
         client_handler = threading.Thread(target=self.handle_client_connection,
                                           args=(conn, number_of_clients,))  # the comma is necessary
+        client_handler.daemon = True
         client_handler.start()
 
     def handle_client_connection(self, conn, number_of_clients):
@@ -186,8 +191,10 @@ class Server(object):
         return server_commands["get_lr_ok_cmd"], lobby_rooms
 
     def create_lobby_rooms_games(self, conn, max_players, session_id, port):
-        process = subprocess.run(["python", "Game_room.py", login_dict[conn][1], max_players, session_id, port], creationflags=subprocess.CREATE_NEW_CONSOLE)
-        print(process)
+        try:
+            process = subprocess.run(["python", "Game_room.py", login_dict[conn][1], max_players, session_id, port], creationflags=subprocess.CREATE_NEW_CONSOLE)
+        except subprocess.CalledProcessError as e:
+            print(e)
 
 if __name__ == "__main__":
     ip = "0.0.0.0"

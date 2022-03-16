@@ -167,8 +167,13 @@ class Client(object):
                 self.register_btn.pack()
                 self.name1_input.focus()
             else:
+                receive_connection_thread = threading.Thread(target=self.receive_messages, args=(client_socket,))
+                receive_connection_thread.daemon = True
+                receive_connection_thread.start()
+                self.send_messages(client_socket, client_commands["login_cmd"], "%s#%s" % (self.username, self.password))
                 self.Game_rooms_lobby_menu(conn=client_socket)
                 self.main_server = True
+                self.create_lobby_game_room_create_button["state"] = tk.NORMAL
 
             self.root.mainloop()
 
@@ -195,10 +200,11 @@ class Client(object):
         cmd, msg = protocol_library.disassemble_message(data)
         if self.main_server:
             if cmd == server_commands["login_ok_cmd"]:
-                self.lbl1_message["text"] = "login succeeded"
-                print("login succeeded")
-                self.login_try_count = 0
-                self.open_menu()
+                if not self.second_time_connect:
+                    self.lbl1_message["text"] = "login succeeded"
+                    print("login succeeded")
+                    self.login_try_count = 0
+                    self.open_menu()
             elif cmd == server_commands["login_failed_cmd"]:
                 self.lbl1_message["text"] = f"login failed, you have {2 - self.login_try_count} attempts to login"
                 print("login failed")

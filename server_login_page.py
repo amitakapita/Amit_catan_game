@@ -26,6 +26,7 @@ class Server(object):
         self.ip = ip1
         self.port = port1
         self.count = 0
+        self.count_in_lobby_games_rooms = 0
 
 
     def start(self):
@@ -42,7 +43,7 @@ class Server(object):
                 print(f"A new client has connected! {client_address}")
                 wait_login[client_socket] = client_address
                 self.count += 1
-                print(f"Number of connected clients: {self.count}")
+                print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
                 self.handle_client(client_socket, self.count)
         except socket.error as e:
             print(e)
@@ -119,6 +120,7 @@ class Server(object):
             in_game_dict[conn] = login_dict[conn], True, conn
             del login_dict[conn]
             conn.close()
+            self.count_in_lobby_games_rooms += 1
             return
 
         to_send = protocol_library.build_message(to_send, msg_to_send)
@@ -194,6 +196,7 @@ class Server(object):
         try:
             process = subprocess.run(["python", "Game_room.py", login_dict[conn][1], max_players, session_id, port], creationflags=subprocess.CREATE_NEW_CONSOLE)
             print(f"closing the game room: {session_id}, {port}")
+            self.count_in_lobby_games_rooms -= game_room_server_lobbies_session_ids_and_ports[session_id][3]
             del game_room_server_lobbies_session_ids_and_ports[session_id]
         except subprocess.CalledProcessError as e:
             print(e)

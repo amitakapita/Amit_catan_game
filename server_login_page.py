@@ -180,7 +180,7 @@ class Server(object):
         to present the profile nemu to the client
 
         :param conn: client conn
-        :return: games_played#win_games
+        :return: games_played#win_games#Email
         """
         cur = con.cursor()
         cur.execute(f"SELECT Played_games, Wined_games, Email FROM 'accounts' WHERE Username = '{login_dict[conn][1]}'")

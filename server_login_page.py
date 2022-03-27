@@ -111,8 +111,7 @@ class Server(object):
             thread_server_game_room_lobby_menu.start()
             # self.create_lobby_rooms_games(conn, msg, session_id, port_server)
             to_send = server_commands["create_room_game_lobby_ok_cmd"]
-            list_of_names = [(login_dict[conn][1]), ("meow hav 1"), ("hav hav 1 meow"), ("meow meow 1 hav")]
-            msg_to_send = "127.0.0.1#" + port_server + "#" + session_id + "#" + json.dumps(list_of_names)
+            msg_to_send = "127.0.0.1#" + port_server + "#" + session_id
             to_send = protocol_library.build_message(to_send, msg_to_send)
             print(f"[Server] -> [{conn.getpeername()}] {to_send}")
             conn.sendall(to_send.encode())
@@ -139,7 +138,7 @@ class Server(object):
         cur = con.cursor()
         cur.execute("SELECT * FROM accounts WHERE Username = ? and Password = ?", (username_input, password_input))
         x = cur.fetchall()
-        if x:  # in a list of a tuples
+        if x and conn not in login_dict.keys():  # in a list of a tuples
             login_dict[conn] = wait_login[conn], username_input
             print("meow and hav")
             del wait_login[conn]

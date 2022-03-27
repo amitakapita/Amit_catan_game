@@ -50,7 +50,7 @@ class GameRoom (object):
 
     def start(self):
         try:
-            print(f"The server start in ip: {self.ip}, and port: {self.port}, session_id: {self.session_id}")
+            print(f"The server starts in ip: {self.ip}, and port: {self.port}, session_id is: {self.session_id}")
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             print("meow hi hav")
             server_socket.bind((self.ip, self.port))
@@ -110,6 +110,12 @@ class GameRoom (object):
                 print("meow hav meow 2 1 hav")
                 self.join_a_player(msg, conn)
                 cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
+                msg_send = self.players_information()
+                message = protocol_library.build_message(cmd_send, msg_send)
+                for player in self.players:
+                    print(f"[Server] -> [Client {conn.getpeername()}] {message}")
+                    conn.sendall(message.encode())
+                    return
             else:  # just in case
                 cmd_send = server_game_rooms_commands["join_player_failed_cmd"]
         elif cmd == client_commands["get_players_information_cmd"]:
@@ -136,10 +142,17 @@ class GameRoom (object):
         conn.sendall(message.encode())
 
     def players_information(self):
-        list1 = [(player_name, self.players[player_name]) for player_name in self.players.keys()]
-        list1.append((self.count_players, self.maximum_players))
-        list1 = json.dumps(list1)
-        return server_game_rooms_commands["get_players_information_ok"], list1
+        try:
+            list1 = []
+            player_name: Player
+            for index, player_name in enumerate(self.players):
+                if player_name.get_color() != colors[index] and self.current == "waiting":
+                    player_name.change_color(colors[index])
+                    list1.append(player_name.player_name)
+            list1 = json.dumps(list1 if list1 != [] else [player.player_name for player in self.players])
+            return list1
+        except Exception as e:
+            print(e)
 
     def start_game(self):
         self.current = "playing"  # starting the game from the waiting room

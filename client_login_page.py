@@ -233,18 +233,21 @@ class Client(object):
                 self.show_game_rooms(lobby_rooms)
             elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
                 conn.close()
-                ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id, list_of_names = msg.split("#")
+                ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
                 conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
-                self.waiting_room_lobby_menu(json.loads(list_of_names), session_id)
-                self.send_messages(conn, client_commands["join_my_player_cmd"])
+                self.waiting_room_lobby_menu(self.username, session_id)
+                self.send_messages(conn, client_commands["join_my_player_cmd"], self.username)
                 self.main_server = False
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
                 print("meow meow hav hav")
+                self.update_list_of_players(json.loads(msg))
             elif cmd == server_game_rooms_commands["close_lobby_ok_cmd"]:
                 print(msg)
                 conn.close()
                 self.back_to_the_menu()
+            elif cmd == protocol_library["get_players_information_ok"]:
+                self.update_list_of_players(msg)
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -444,6 +447,7 @@ class Client(object):
         self.game_rooms_lobby_canvas.pack_forget()
         self.game_rooms_lobby_canvas.pack()"""
         if game_rooms_dict == {}:
+            self.game_rooms_lobby_canvas.delete("all")
             self.game_rooms_lobby_canvas.create_text(675, 195, text="There are no game lobby rooms", font="Arial 16", anchor=tk.CENTER, state=tk.DISABLED)
         else:
             space = 0
@@ -512,13 +516,16 @@ class Client(object):
         self.is_active = False
         self.from_lobby_game_waiting_or_in_actual_game = False
 
-    def waiting_room_lobby_menu(self, list_of_names: list, session_id=""):
+    def waiting_room_lobby_menu(self, list_of_names, session_id=""):
         self.current_lobby = "waiting_game_room_lobby"
         self.not_in_create_lobby_game_room()
         self.back_btn["text"] = "Close lobby"
         self.start_game_menu_button.place(x=1070, y=500)
         self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
-        self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
+        if type(list_of_names) is list:
+            self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
+        else:
+            self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names} to start the game"
         self.session_id_lbl["text"] = "Game room id: " + session_id
         self.waiting_to_start_lbl.pack(padx=400, pady=10, side=tk.TOP)
         self.session_id_lbl.place(x=920, y=180)
@@ -558,6 +565,15 @@ class Client(object):
         self.waiting_to_start_lbl.pack_forget()
         self.session_id_lbl.place_forget()
         self.participants_lbl.place_forget()
+
+    def update_list_of_players(self, new_list_of_players):
+        if self.current_lobby == "waiting_game_room_lobby":
+            space = 0
+            for color_index, name in enumerate(new_list_of_players):
+                self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=colors[color_index],
+                                                                font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
+                space += 30
+
 
 
 if __name__ == "__main__":

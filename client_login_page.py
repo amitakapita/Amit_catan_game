@@ -121,6 +121,7 @@ class Client(object):
         self.start_game_menu_button = tk.Button(self.root, bg="#70ad47", text="Start", font="Arial 15", relief="solid")
         self.session_id_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 15")
         self.participants_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 17")
+        self.name_leader = tk.Label(self.root, bg="#2596be", font="Arial 30")
 
 
 
@@ -190,11 +191,18 @@ class Client(object):
             return
 
     def send_messages(self, conn, data, msg=""):
-        while True:
-            message = protocol_library.build_message(data, msg)
-            print(f"[Client] {message}")
-            conn.sendall(message.encode())
-            break
+        try:
+            while True:
+                message = protocol_library.build_message(data, msg)
+                print(f"[Client] {message}")
+                conn.sendall(message.encode())
+                break
+        except ConnectionResetError:
+            self.back_btn["text"] = "Back"
+            self.second_time_connect = True
+            self.not_in_waiting_room_lobby_menu()
+            self.refresh_lobby_rooms(from_refresh=False)
+            self.start()
 
     def handle_received_connection(self, conn, data):
         print(f"[Server] {data}")
@@ -230,14 +238,18 @@ class Client(object):
             elif cmd == server_commands["get_lr_ok_cmd"]:
                 lobby_rooms = json.loads(msg)
                 print(lobby_rooms)
-                self.show_game_rooms(lobby_rooms)
+                self.show_game_rooms(lobby_rooms, conn)
             elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
                 conn.close()
                 ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
                 conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
-                self.waiting_room_lobby_menu(self.username, session_id)
+                self.waiting_room_lobby_menu([(self.username, colors[0])], session_id)
                 self.send_messages(conn, client_commands["join_my_player_cmd"], self.username)
                 self.main_server = False
+            elif cmd == server_commands["join_player_game_room_server_ok_cmd"]:
+                conn.close()
+                msg = msg.split("#")
+                self.join_room_game_lobby(msg[0], msg[2], msg[1], msg[3])
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
                 print("meow meow hav hav")
@@ -248,6 +260,8 @@ class Client(object):
                 self.back_to_the_menu()
             elif cmd == protocol_library["get_players_information_ok"]:
                 self.update_list_of_players(msg)
+            elif cmd == server_game_rooms_commands["leave_player_ok_cmd"]:
+                self.update_list_of_players(json.loads(msg))
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -378,7 +392,7 @@ class Client(object):
         elif self.current_lobby == "waiting_game_room_lobby":
             self.back_btn["text"] = "Back"
             self.second_time_connect = True
-            self.not_in_waiting_room_lobby_menu(conn)
+            self.not_in_waiting_room_lobby_menu()
             self.refresh_lobby_rooms(from_refresh=False)
             self.start()
 
@@ -439,7 +453,7 @@ class Client(object):
     def on_mousewheel(self, event):
         self.game_rooms_lobby_canvas.yview_scroll(-1*event.delta//120, "units")  # the speed of scrolling and the units of it?
 
-    def show_game_rooms(self, game_rooms_dict):
+    def show_game_rooms(self, game_rooms_dict, conn):
         """self.scrollbar_frame.pack_forget()
         self.scrollbar.pack_forget()
         self.scrollbar_frame.pack(fill=tk.BOTH, padx=300, pady=150)
@@ -463,7 +477,7 @@ class Client(object):
                 position1 = int(self.game_rooms_lobby_canvas["height"])
                 self.game_rooms_lobby_canvas["height"] = position1 + space
                 self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 150 + space))
-                button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47", font="Arial 15")
+                button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47", font="Arial 15", command=lambda: self.send_messages(conn, client_commands["join_game_room_cmd"], lobby_room1))
                 button_join_game.place(x=500, y=170 + space)
                 canvas_window = self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
                 self.game_rooms_lobby_canvas.itemconfigure(rectangle1, state=tk.NORMAL)
@@ -516,28 +530,33 @@ class Client(object):
         self.is_active = False
         self.from_lobby_game_waiting_or_in_actual_game = False
 
-    def waiting_room_lobby_menu(self, list_of_names, session_id=""):
+    def waiting_room_lobby_menu(self, list_of_names: list, session_id="", from_creating=True, conn = None):
         self.current_lobby = "waiting_game_room_lobby"
-        self.not_in_create_lobby_game_room()
-        self.back_btn["text"] = "Close lobby"
+        if from_creating:
+            self.not_in_create_lobby_game_room()
+            self.back_btn["text"] = "Close lobby"
+        else:
+            self.not_in_Game_rooms_lobby_menu()
+            self.back_btn["text"] = "Leave Room"
+            self.name_leader["text"] = f"Waiting room - {list_of_names[0][0]}'s lobby"
+            self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
+            self.name_leader.pack(padx=450, pady=20, side=tk.TOP)
         self.start_game_menu_button.place(x=1070, y=500)
         self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
-        if type(list_of_names) is list:
-            self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
-        else:
-            self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names} to start the game"
+        self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
         self.session_id_lbl["text"] = "Game room id: " + session_id
         self.waiting_to_start_lbl.pack(padx=400, pady=10, side=tk.TOP)
         self.session_id_lbl.place(x=920, y=180)
         self.participants_lbl["text"] = "Players:"
         space = 0
-        print(list_of_names)
-        for color_index, name in enumerate(list_of_names):
-            self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=colors[color_index], font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
-            space += 30
         self.participants_lbl.place(x=280, y=180)
+        print(list_of_names)
+        for name, color in list_of_names:
+            print("meow hav 1 1")
+            self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
+            space += 30
 
-    def connect_to_game_room_server(self, ip2, port2):
+    def connect_to_game_room_server(self, ip2, port2, leader_lobby_game_room=True):
         try:
             self.ip2 = ip2
             self.port2 = int(port2)
@@ -546,7 +565,11 @@ class Client(object):
             receive_connection_thread = threading.Thread(target=self.receive_messages, args=(conn,))
             receive_connection_thread.daemon = True
             receive_connection_thread.start()
-            self.back_btn["command"] = lambda: self.send_messages(conn, client_commands["close_lobby_cmd"])
+            if leader_lobby_game_room:
+                self.back_btn["command"] = lambda: self.send_messages(conn, client_commands["close_lobby_cmd"])
+            else:
+                self.back_btn["command"] = lambda: self.send_messages(conn, client_commands["leave_my_player_cmd"])
+            print(f"you have been switched to game room lobby menu server: ip :{self.ip2}, port :{self.port2}")
             return conn
         except socket.error as e:
             print(e)
@@ -555,9 +578,10 @@ class Client(object):
     def connect_to_server(self, ip_server, port_server):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((ip_server, port_server))
+        print(client_socket)
         return client_socket
 
-    def not_in_waiting_room_lobby_menu(self, conn):
+    def not_in_waiting_room_lobby_menu(self):
         self.lobby_name_game_room_lbl.pack_forget()
         self.start_game_menu_button.place_forget()
         self.waiting_room_lobby_menu_canvas.delete()
@@ -565,15 +589,28 @@ class Client(object):
         self.waiting_to_start_lbl.pack_forget()
         self.session_id_lbl.place_forget()
         self.participants_lbl.place_forget()
+        self.name_leader.pack_forget()
 
     def update_list_of_players(self, new_list_of_players):
         if self.current_lobby == "waiting_game_room_lobby":
             space = 0
-            for color_index, name in enumerate(new_list_of_players):
-                self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=colors[color_index],
+            self.waiting_room_lobby_menu_canvas.delete("all")
+            for name, color in new_list_of_players:
+                self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color,
                                                                 font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
                 space += 30
 
+    def join_room_game_lobby(self, ip1, port1, session_id, leader_name):
+        conn1 = self.connect_to_game_room_server(ip1, port1)
+        self.main_server = False
+        self.send_messages(conn1, client_commands["join_my_player_cmd"], self.username)
+        self.waiting_room_lobby_menu([leader_name, colors[0]], session_id, False, conn1)
+
+    def leave_room_game_lobby(self, conn):
+        self.send_messages(conn, client_commands["leave_my_player_cmd"])
+        conn.close()
+        time.sleep(2)
+        self.back_to_the_menu()
 
 
 if __name__ == "__main__":

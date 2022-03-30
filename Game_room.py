@@ -12,7 +12,7 @@ import subprocess
 import signal
 import os
 
-colors = ["red", "blue", "green", "yellow"]
+colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
 subprocess1 = ""
 
 
@@ -30,15 +30,19 @@ class GameRoom (object):
         self.server_open = True
 
     def join_a_player(self, player_name, conn):
-        if self.count_players < self.maximum_players:
+        if self.count_players <= self.maximum_players:
             player1 = Player(self.session_id, colors[self.count_players - 1], conn, player_name)
             self.players.append(player1)
+        print(self.players)
 
-    def player_exits_the_room(self, index):
+    def player_exits_the_room(self, conn):
         self.count_players -= 1
         if self.current == "waiting" and self.is_full:
             self.is_full = False
-        del self.players[index]
+        for index, player in enumerate(self.players):
+            if player.conn == conn:
+                del self.players[index]
+                break
 
     """def create_lobby(self):
         # self.players.append({self.leader_name})
@@ -57,17 +61,17 @@ class GameRoom (object):
             server_socket.listen()
 
             while self.server_open:
-                if self.count_players < self.maximum_players and self.current == "waiting":
-                    print(f"Players: {self.count_players} out of {self.maximum_players}")
-                    client_socket, client_address = server_socket.accept()
-                    print(f"A new client has conencted! {client_address}")
-                    """if self.count_players == 1:
-                        self.join_a_player(self.leader_name)
-                    else:
-                        self.join_a_player()"""
-                    self.count_players += 1
-                    self.handle_client(client_socket)
+                print("meow meow hav hav 1 1 hav meow")
+                print(f"Players: {self.count_players} out of {self.maximum_players}")
+                client_socket, client_address = server_socket.accept()
+                print(f"A new client has conencted! {client_address}")
+                """if self.count_players == 1:
+                    self.join_a_player(self.leader_name)
+                else:
+                    self.join_a_player()"""
+                self.count_players += 1
                 print("hi meow hav")
+                self.handle_client(client_socket)
 
         except socket.error as e:
             print(e)
@@ -98,24 +102,24 @@ class GameRoom (object):
                                           args=(conn,))  # the comma is necessary
         client_handler.daemon = True
         client_handler.start()
-        client_handler.join()
+        # client_handler.join()
 
     def handle_client_cmd(self, conn, request):
-        print(f"[Client {conn.getpeername()}]")
         con = sql.connect("Data_Bases/accounts_database.db")
         cmd, msg = protocol_library.disassemble_message(request)
         cmd_send, msg_send = "", ""
         if cmd == client_commands["join_my_player_cmd"]:
-            if not self.is_full:
+            if not self.is_full and self.current == "waiting":
                 print("meow hav meow 2 1 hav")
                 self.join_a_player(msg, conn)
                 cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
                 msg_send = self.players_information()
                 message = protocol_library.build_message(cmd_send, msg_send)
                 for player in self.players:
+                    conn = player.conn
                     print(f"[Server] -> [Client {conn.getpeername()}] {message}")
                     conn.sendall(message.encode())
-                    return
+                return
             else:  # just in case
                 cmd_send = server_game_rooms_commands["join_player_failed_cmd"]
         elif cmd == client_commands["get_players_information_cmd"]:
@@ -127,16 +131,22 @@ class GameRoom (object):
             print(self.players)
             if self.players[0].conn == conn:
                 message = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"], "game server closed, switched back to the main server")
-                for player_index in range(len(self.players)):
-                    print(f"[Server] -> [Client {self.players[player_index].conn.getpeername()}] {message}")
+                for player in self.players:
+                    print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
                     conn.sendall(message.encode())
-                    self.players[player_index].conn.close()
-                    self.player_exits_the_room(player_index)
+                    player.conn.close()
+                    self.player_exits_the_room(player.conn)
                 print("CLOSING SERVER")
                 self.server_open = False
                 sys.exit(1)
                 return "CLOSING SERVER"
-
+        elif cmd == client_commands["leave_my_player_cmd"]:
+            self.player_exits_the_room(conn)
+            message = protocol_library.build_message(server_game_rooms_commands["leave_player_ok_cmd"], self.players_information())
+            for player in self.players:
+                print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
+                conn.sendall(message.encode())
+            return
         message = protocol_library.build_message(cmd_send, msg_send)
         print(f"[Server] -> [Client {conn.getpeername()}] {message}")
         conn.sendall(message.encode())
@@ -148,8 +158,10 @@ class GameRoom (object):
             for index, player_name in enumerate(self.players):
                 if player_name.get_color() != colors[index] and self.current == "waiting":
                     player_name.change_color(colors[index])
-                    list1.append(player_name.player_name)
-            list1 = json.dumps(list1 if list1 != [] else [player.player_name for player in self.players])
+                    list1.append((player_name.player_name, player_name.color))
+                elif self.current != "waiting" or player_name.get_color() == colors[index]:
+                    list1.append((player_name.player_name, player_name.color))
+            list1 = json.dumps(list1 if list1 != [] else [(player_name.player_name, player_name.color) for player in self.players])
             return list1
         except Exception as e:
             print(e)

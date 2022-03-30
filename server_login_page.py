@@ -104,7 +104,7 @@ class Server(object):
                 # conn.connect_ex() tries to connect but if there is an error it returns an executing code instead of raising an exception
                 session_id = str(random.randint(10000, 100000))
                 port_server = str(random.randint(10000, 65536))  # ports available - 10000 - 65535
-            game_room_server_lobbies_session_ids_and_ports[session_id] = login_dict[conn][1], msg, False, 1, port_server
+            game_room_server_lobbies_session_ids_and_ports[session_id] = [login_dict[conn][1], msg, False, 1, port_server]
             print(f"[Server] Server [{session_id}, {port_server}] is opening")
             thread_server_game_room_lobby_menu = threading.Thread(target=self.create_lobby_rooms_games, args=(conn, msg, session_id, port_server))
             thread_server_game_room_lobby_menu.daemon = True
@@ -121,6 +121,15 @@ class Server(object):
             conn.close()
             self.count_in_lobby_games_rooms += 1
             return
+        elif cmd == client_commands["join_game_room_cmd"]:
+            to_send, msg_to_send = self.join_a_player_to_game_room(conn, msg)
+            to_send = protocol_library.build_message(to_send, msg_to_send)
+            print(f"[Server] -> [{conn.getpeername()}] {to_send}")
+            conn.sendall(to_send.encode())
+            print(f"{login_dict[conn][0]} has been switched to game room {msg}")
+            in_game_dict[conn] = login_dict[conn], True, conn
+            del login_dict[conn]
+            conn.close()
 
         to_send = protocol_library.build_message(to_send, msg_to_send)
         print(f"[Server] -> [{conn.getpeername()}] {to_send}")
@@ -199,6 +208,18 @@ class Server(object):
             del game_room_server_lobbies_session_ids_and_ports[session_id]
         except subprocess.CalledProcessError as e:
             print(e)
+
+    def join_a_player_to_game_room(self, conn, session_id):
+        try:
+            print(type(game_room_server_lobbies_session_ids_and_ports[session_id][3]))
+            if game_room_server_lobbies_session_ids_and_ports[session_id][2]:
+                return server_commands["join_player_game_room_server_failed_cmd"], "game room lobby is full or the game has started"
+            in_game_dict[conn] = login_dict[conn], True, conn
+            self.count_in_lobby_games_rooms += 1
+            game_room_server_lobbies_session_ids_and_ports[session_id][3] += 1
+            return server_commands["join_player_game_room_server_ok_cmd"], f"127.0.0.1#{session_id}#{game_room_server_lobbies_session_ids_and_ports[session_id][4]}#{game_room_server_lobbies_session_ids_and_ports[session_id][0]}"
+        except KeyError:
+            return server_commands["join_player_game_room_server_failed_cmd"], "no such game room lobby, try to refresh"
 
 if __name__ == "__main__":
     ip = "0.0.0.0"

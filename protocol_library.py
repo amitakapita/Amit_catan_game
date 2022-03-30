@@ -9,7 +9,9 @@ client_commands = {
     "get_players_information_cmd": "GET_PL_IN",
     "start_game_cmd": "START_GAME",
     "create_game_room_lobby_cmd": "CREATE_ROOM",
-    "close_lobby_cmd": "CLOSE_LOBBY"
+    "close_lobby_cmd": "CLOSE_LOBBY",
+    "leave_my_player_cmd": "LEAVE_PLAYER",
+    "join_game_room_cmd": "JGR"
 }
 
 server_commands = {
@@ -19,7 +21,9 @@ server_commands = {
     "sign_up_failed": "SIGN_UP_FAILED",
     "get_profile_ok": "GET_PROFILE_OK",
     "get_lr_ok_cmd": "GET_LR_OK",
-    "create_room_game_lobby_ok_cmd": "CREATE_ROOM_OK"
+    "create_room_game_lobby_ok_cmd": "CREATE_ROOM_OK",
+    "join_player_game_room_server_ok_cmd": "JP_GR_OK",
+    "join_player_game_room_server_failed_cmd": "JP_GR_FAILED"
 }
 
 server_game_rooms_commands = {
@@ -27,7 +31,8 @@ server_game_rooms_commands = {
     "join_player_failed_cmd": "JOIN_PL_FAILED",
     "get_players_information_ok": "GET_PL_IN_OK",
     "start_game_ok": "START_GAME_OK",
-    "close_lobby_ok_cmd": "CLOSE_LOBBY_OK"
+    "close_lobby_ok_cmd": "CLOSE_LOBBY_OK",
+    "leave_player_ok_cmd": "LEAVE_PLAYER_OK"
 }
 
 def build_message(cmd, msg=""):

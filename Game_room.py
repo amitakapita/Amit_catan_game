@@ -61,10 +61,12 @@ class GameRoom (object):
             server_socket.listen()
 
             while self.server_open:
+                if self.count_players == 0:
+                    print("Listening for new clients...")
                 print("meow meow hav hav 1 1 hav meow")
-                print(f"Players: {self.count_players} out of {self.maximum_players}")
                 client_socket, client_address = server_socket.accept()
                 print(f"A new client has conencted! {client_address}")
+                print(f"Players: {self.count_players} out of {self.maximum_players}")
                 """if self.count_players == 1:
                     self.join_a_player(self.leader_name)
                 else:
@@ -92,6 +94,7 @@ class GameRoom (object):
             if self.current == "waiting":
                 self.is_full = False
             conn.close()
+            self.send_information_of_players()
         except BaseException:
             print("meow hav meow meow hav hav meow hav")
             conn.close()
@@ -112,13 +115,7 @@ class GameRoom (object):
             if not self.is_full and self.current == "waiting":
                 print("meow hav meow 2 1 hav")
                 self.join_a_player(msg, conn)
-                cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
-                msg_send = self.players_information()
-                message = protocol_library.build_message(cmd_send, msg_send)
-                for player in self.players:
-                    conn = player.conn
-                    print(f"[Server] -> [Client {conn.getpeername()}] {message}")
-                    conn.sendall(message.encode())
+                self.send_information_of_players()
                 return
             else:  # just in case
                 cmd_send = server_game_rooms_commands["join_player_failed_cmd"]
@@ -171,6 +168,15 @@ class GameRoom (object):
         for value in self.players:
             conn = value[3]  # conn
             conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"]))
+
+    def send_information_of_players(self):
+        cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
+        msg_send = self.players_information()
+        message = protocol_library.build_message(cmd_send, msg_send)
+        for player in self.players:
+            conn = player.conn
+            print(f"[Server] -> [Client {conn.getpeername()}] {message}")
+            conn.sendall(message.encode())
 
 if __name__ == "__main__":
     try:

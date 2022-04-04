@@ -393,8 +393,8 @@ class Client(object):
             self.back_btn["text"] = "Back"
             self.second_time_connect = True
             self.not_in_waiting_room_lobby_menu()
-            self.refresh_lobby_rooms(from_refresh=False)
             self.start()
+            self.refresh_lobby_rooms(from_refresh=True)
 
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
@@ -540,6 +540,7 @@ class Client(object):
             self.back_btn["text"] = "Leave Room"
             self.name_leader["text"] = f"Waiting room - {list_of_names[0][0]}'s lobby"
             self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
+            print("button is set")
             self.name_leader.pack(padx=450, pady=20, side=tk.TOP)
         self.start_game_menu_button.place(x=1070, y=500)
         self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
@@ -608,8 +609,8 @@ class Client(object):
 
     def leave_room_game_lobby(self, conn):
         self.send_messages(conn, client_commands["leave_my_player_cmd"])
-        conn.close()
         time.sleep(2)
+        conn.close()
         self.back_to_the_menu()
 
 

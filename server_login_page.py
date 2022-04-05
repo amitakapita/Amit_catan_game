@@ -17,7 +17,7 @@ import multiprocessing
 wait_login = {}  # {client_socket: client_address}
 login_dict = {}  # {client_socket: wait_login[client_socket], username}
 game_room_server_lobbies_session_ids_and_ports = {}  # {session_id: [creator, max_players, is_full, players, port_server]}
-in_game_dict = {}  # {username: login_dict[client_socket], True ?, client_socket, session_id}
+in_game_dict = {}  # {username: True ?, session_id}
 
 
 class Server(object):
@@ -43,6 +43,7 @@ class Server(object):
                 print(f"A new client has connected! {client_address}")
                 wait_login[client_socket] = client_address
                 self.count += 1
+                print(self.count)
                 print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
                 self.handle_client(client_socket, self.count)
         except socket.error as e:
@@ -106,9 +107,6 @@ class Server(object):
                 port_server = str(random.randint(10000, 65536))  # ports available - 10000 - 65535
             game_room_server_lobbies_session_ids_and_ports[session_id] = [login_dict[conn][1], msg, False, 1, port_server]
             print(f"[Server] Server [{session_id}, {port_server}] is opening")
-            thread_server_game_room_lobby_menu = threading.Thread(target=self.create_lobby_rooms_games, args=(conn, msg, session_id, port_server))
-            thread_server_game_room_lobby_menu.daemon = True
-            thread_server_game_room_lobby_menu.start()
             # self.create_lobby_rooms_games(conn, msg, session_id, port_server)
             to_send = server_commands["create_room_game_lobby_ok_cmd"]
             msg_to_send = "127.0.0.1#" + port_server + "#" + session_id
@@ -116,12 +114,14 @@ class Server(object):
             print(f"[Server] -> [{conn.getpeername()}] {to_send}")
             conn.sendall(to_send.encode())
             print(f"{login_dict[conn][0]} has been switched to game room {session_id}")
-            in_game_dict[conn] = login_dict[conn], True, conn
+            in_game_dict[login_dict[conn][-1]] = True, conn
+            temp_name = login_dict[conn][1]
             del login_dict[conn]
             conn.close()
             self.count_in_lobby_games_rooms += 1
             self.count -= 1
             print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
+            self.create_lobby_rooms_games(temp_name, msg, session_id, port_server)
             return
         elif cmd == client_commands["join_game_room_cmd"]:
             to_send, msg_to_send = self.join_a_player_to_game_room(conn, msg)
@@ -129,7 +129,7 @@ class Server(object):
             print(f"[Server] -> [{conn.getpeername()}] {to_send}")
             conn.sendall(to_send.encode())
             print(f"{login_dict[conn][0]} has been switched to game room {msg}")
-            in_game_dict[conn] = login_dict[conn], True, conn, msg
+            in_game_dict[login_dict[conn][-1]] = True, msg
             del login_dict[conn]
             conn.close()
             print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
@@ -151,21 +151,25 @@ class Server(object):
         cur = con.cursor()
         cur.execute("SELECT * FROM accounts WHERE Username = ? and Password = ?", (username_input, password_input))
         x = cur.fetchall()
-        if x and username_input not in map(lambda client: client[-1], login_dict.values()):  # in a list of a tuples
-            login_dict[conn] = wait_login[conn], username_input
-            print("meow and hav")
-            del wait_login[conn]
-            return True
-        elif x and username_input in map(lambda client: client[-1], login_dict.values()):
+        if x:  # in a list of a tuples
             if in_game_dict != {}:
-                for player_name in in_game_dict.values():
+                for player_name in in_game_dict.keys():
+                    print(player_name)
                     if player_name == username_input:
                         print("mewo meow meow")
-                        del in_game_dict[player_name]
                         self.count_in_lobby_games_rooms -= 1
-                        if game_room_server_lobbies_session_ids_and_ports[player_name][2]:
-                            game_room_server_lobbies_session_ids_and_ports[player_name][2] = False
-                        game_room_server_lobbies_session_ids_and_ports[player_name][3] -= 1  # decreasing number of players that are connected
+                        self.count += 1
+                        session_id1 = in_game_dict[player_name][-1]
+                        if game_room_server_lobbies_session_ids_and_ports[session_id1][2]:
+                            game_room_server_lobbies_session_ids_and_ports[session_id1][2] = False
+                        game_room_server_lobbies_session_ids_and_ports[session_id1][3] -= 1  # decreasing number of players that are connected
+                        del in_game_dict[player_name]
+                        break
+            if username_input not in map(lambda client: client[-1], login_dict.values()):
+                login_dict[conn] = wait_login[conn], username_input
+                print("meow and hav")
+                del wait_login[conn]
+                return True
         return False
 
     def register_check(self, msg, con):
@@ -214,9 +218,9 @@ class Server(object):
         print(lobby_rooms)
         return server_commands["get_lr_ok_cmd"], lobby_rooms
 
-    def create_lobby_rooms_games(self, conn, max_players, session_id, port):
+    def create_lobby_rooms_games(self, player_name, max_players, session_id, port):
         try:
-            process = subprocess.run(["python", "Game_room.py", login_dict[conn][1], max_players, session_id, port], creationflags=subprocess.CREATE_NEW_CONSOLE)
+            process = subprocess.run(["python", "Game_room.py", player_name, max_players, session_id, port], creationflags=subprocess.CREATE_NEW_CONSOLE)
             print(f"closing the game room: {session_id}, {port}")
             self.count_in_lobby_games_rooms -= game_room_server_lobbies_session_ids_and_ports[session_id][3]
             del game_room_server_lobbies_session_ids_and_ports[session_id]
@@ -228,8 +232,9 @@ class Server(object):
             print(type(game_room_server_lobbies_session_ids_and_ports[session_id][3]))
             if game_room_server_lobbies_session_ids_and_ports[session_id][2]:
                 return server_commands["join_player_game_room_server_failed_cmd"], "game room lobby is full or the game has started"
-            in_game_dict[login_dict[conn][-1]] = login_dict[conn], True, conn, session_id
+            in_game_dict[login_dict[conn][-1]] = True, session_id
             self.count_in_lobby_games_rooms += 1
+            self.count -= 1
             game_room_server_lobbies_session_ids_and_ports[session_id][3] += 1
             if int(game_room_server_lobbies_session_ids_and_ports[session_id][1]) == game_room_server_lobbies_session_ids_and_ports[session_id][3]:
                 game_room_server_lobbies_session_ids_and_ports[session_id][2] = True

@@ -106,6 +106,7 @@ class Client(object):
         self.from_main_lobby = False
         self.is_active = False
         self.from_lobby_game_waiting_or_in_actual_game = False
+        self.message_failed_join_error_game = tk.Label(self.root, bg="#2596be", font="Arial 16")
 
         # create lobby room menu
         self.lobby_name_game_room_lbl = tk.Label(self.root, font="Arial 30", bg="#2596be")
@@ -250,6 +251,9 @@ class Client(object):
                 conn.close()
                 msg = msg.split("#")
                 self.join_room_game_lobby(msg[0], msg[2], msg[1], msg[3])
+            elif cmd == server_commands["join_player_game_room_server_failed_cmd"]:
+                self.message_failed_join_error_game["text"] = msg
+                self.message_failed_join_error_game.place(x=465, y=115)
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
                 print("meow meow hav hav")
@@ -449,6 +453,7 @@ class Client(object):
         self.game_rooms_lobby_canvas.pack_forget()
         self.create_lobby_game_room_button.place_forget()
         self.refresh_button.place_forget()
+        self.message_failed_join_error_game.place_forget()
 
     def on_mousewheel(self, event):
         self.game_rooms_lobby_canvas.yview_scroll(-1*event.delta//120, "units")  # the speed of scrolling and the units of it?
@@ -478,6 +483,8 @@ class Client(object):
                 self.game_rooms_lobby_canvas["height"] = position1 + space
                 self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 150 + space))
                 button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47", font="Arial 15", command=lambda: self.send_messages(conn, client_commands["join_game_room_cmd"], lobby_room1))
+                if is_full:
+                    button_join_game["state"] = tk.DISABLED
                 button_join_game.place(x=500, y=170 + space)
                 canvas_window = self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
                 self.game_rooms_lobby_canvas.itemconfigure(rectangle1, state=tk.NORMAL)

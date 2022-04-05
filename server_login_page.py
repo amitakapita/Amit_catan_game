@@ -114,7 +114,7 @@ class Server(object):
             print(f"[Server] -> [{conn.getpeername()}] {to_send}")
             conn.sendall(to_send.encode())
             print(f"{login_dict[conn][0]} has been switched to game room {session_id}")
-            in_game_dict[login_dict[conn][-1]] = True, conn
+            in_game_dict[login_dict[conn][-1]] = True, session_id
             temp_name = login_dict[conn][1]
             del login_dict[conn]
             conn.close()
@@ -159,10 +159,13 @@ class Server(object):
                         print("mewo meow meow")
                         self.count_in_lobby_games_rooms -= 1
                         self.count += 1
-                        session_id1 = in_game_dict[player_name][-1]
+                        session_id1 = in_game_dict[player_name][1]
+                        print(session_id1)
                         if game_room_server_lobbies_session_ids_and_ports[session_id1][2]:
                             game_room_server_lobbies_session_ids_and_ports[session_id1][2] = False
                         game_room_server_lobbies_session_ids_and_ports[session_id1][3] -= 1  # decreasing number of players that are connected
+                        # if game_room_server_lobbies_session_ids_and_ports[session_id1][0] == player_name:
+
                         del in_game_dict[player_name]
                         break
             if username_input not in map(lambda client: client[-1], login_dict.values()):

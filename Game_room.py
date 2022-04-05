@@ -14,6 +14,7 @@ import os
 
 colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
 subprocess1 = ""
+threads1 = []
 
 
 class GameRoom (object):
@@ -97,15 +98,17 @@ class GameRoom (object):
             self.send_information_of_players()
         except BaseException:
             print("meow hav meow meow hav hav meow hav")
-            conn.close()
             sys.exit(0)
+            conn.close()
+        except ConnectionRefusedError or ConnectionResetError or ConnectionAbortedError:
+            pass
 
     def handle_client(self, conn):
         client_handler = threading.Thread(target=self.handle_player_conn,
                                           args=(conn,))  # the comma is necessary
         client_handler.daemon = True
         client_handler.start()
-        # client_handler.join()
+        threads1.append(client_handler)
 
     def handle_client_cmd(self, conn, request):
         con = sql.connect("Data_Bases/accounts_database.db")
@@ -131,8 +134,10 @@ class GameRoom (object):
                 for player in self.players:
                     print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
                     conn.sendall(message.encode())
-                    player.conn.close()
                     self.player_exits_the_room(player.conn)
+                    player.conn.close()
+                for thread in threads1:
+                    thread.join()
                 print("CLOSING SERVER")
                 self.server_open = False
                 sys.exit(1)

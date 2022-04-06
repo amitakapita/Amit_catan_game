@@ -170,13 +170,14 @@ class Client(object):
                 self.register_btn.pack()
                 self.name1_input.focus()
             else:
+                self.main_server = True
                 receive_connection_thread = threading.Thread(target=self.receive_messages, args=(client_socket,))
                 receive_connection_thread.daemon = True
                 receive_connection_thread.start()
                 self.send_messages(client_socket, client_commands["login_cmd"], "%s#%s" % (self.username, self.password))
                 self.Game_rooms_lobby_menu(conn=client_socket)
-                self.main_server = True
                 self.create_lobby_game_room_create_button["state"] = tk.NORMAL
+                self.second_time_connect = False
 
             self.root.mainloop()
 
@@ -199,6 +200,7 @@ class Client(object):
                 conn.sendall(message.encode())
                 break
         except ConnectionResetError:
+            print("hi meow")
             self.back_btn["text"] = "Back"
             self.second_time_connect = True
             self.not_in_waiting_room_lobby_menu()
@@ -394,6 +396,7 @@ class Client(object):
             self.not_in_create_lobby_game_room()
             self.Game_rooms_lobby_menu(conn)
         elif self.current_lobby == "waiting_game_room_lobby":
+            time.sleep(2)
             self.back_btn["text"] = "Back"
             self.second_time_connect = True
             self.not_in_waiting_room_lobby_menu()
@@ -576,7 +579,7 @@ class Client(object):
             if leader_lobby_game_room:
                 self.back_btn["command"] = lambda: self.send_messages(conn, client_commands["close_lobby_cmd"])
             else:
-                self.back_btn["command"] = lambda: self.send_messages(conn, client_commands["leave_my_player_cmd"])
+                self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
             print(f"you have been switched to game room lobby menu server: ip :{self.ip2}, port :{self.port2}")
             return conn
         except socket.error as e:
@@ -615,6 +618,7 @@ class Client(object):
         self.waiting_room_lobby_menu([leader_name, colors[0]], session_id, False, conn1)
 
     def leave_room_game_lobby(self, conn):
+        print("meow meow hav bye hav")
         self.send_messages(conn, client_commands["leave_my_player_cmd"])
         time.sleep(2)
         conn.close()

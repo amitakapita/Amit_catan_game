@@ -89,7 +89,7 @@ class GameRoom (object):
                 status = self.handle_client_cmd(conn, request)
                 if status is not None and status == "CLOSING SERVER":
                     raise BaseException
-        except ConnectionError:
+        except ConnectionError or OSError:
             print(f"There was an error with the client {conn.getpeername()}, so the server closed the socket with him")
             self.count_players -= 1
             if self.current == "waiting":

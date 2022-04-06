@@ -170,6 +170,7 @@ class Client(object):
                 self.register_btn.pack()
                 self.name1_input.focus()
             else:
+                self.current_lobby = "game_rooms_lobby"
                 self.main_server = True
                 receive_connection_thread = threading.Thread(target=self.receive_messages, args=(client_socket,))
                 receive_connection_thread.daemon = True
@@ -177,6 +178,7 @@ class Client(object):
                 self.send_messages(client_socket, client_commands["login_cmd"], "%s#%s" % (self.username, self.password))
                 self.Game_rooms_lobby_menu(conn=client_socket)
                 self.create_lobby_game_room_create_button["state"] = tk.NORMAL
+                time.sleep(2)
                 self.second_time_connect = False
 
             self.root.mainloop()
@@ -256,6 +258,7 @@ class Client(object):
             elif cmd == server_commands["join_player_game_room_server_failed_cmd"]:
                 self.message_failed_join_error_game["text"] = msg
                 self.message_failed_join_error_game.place(x=465, y=115)
+                return
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
                 print("meow meow hav hav")
@@ -505,6 +508,7 @@ class Client(object):
     def refresh_lobby_rooms(self, conn="", cmd="", msg="", from_refresh=True):
         # self.not_in_Game_rooms_lobby_menu()
         if from_refresh:
+            self.message_failed_join_error_game.place_forget()  # even if the label is not placed it won't do an error
             self.game_rooms_lobby_canvas.delete("all")
             self.send_messages(conn, cmd, msg)
         self.refresh_button["state"] = tk.DISABLED

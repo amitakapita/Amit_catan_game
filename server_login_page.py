@@ -11,6 +11,7 @@ import signal
 import os
 import asyncio
 import multiprocessing
+import time
 
 
 # data bases
@@ -128,11 +129,11 @@ class Server(object):
             to_send = protocol_library.build_message(to_send, msg_to_send)
             print(f"[Server] -> [{conn.getpeername()}] {to_send}")
             conn.sendall(to_send.encode())
-            print(f"{login_dict[conn][0]} has been switched to game room {msg}")
-            in_game_dict[login_dict[conn][-1]] = True, msg
-            del login_dict[conn]
-            conn.close()
-            print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
+            if to_send == server_commands["join_player_game_room_server_ok_cmd"]:
+                print(f"{login_dict[conn][0]} has been switched to game room {msg}")
+                in_game_dict[login_dict[conn][-1]] = True, msg
+                del login_dict[conn]
+                print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
             return
 
         to_send = protocol_library.build_message(to_send, msg_to_send)
@@ -212,7 +213,7 @@ class Server(object):
         :return: games_played#win_games#Email
         """
         cur = con.cursor()
-        cur.execute(f"SELECT Played_games, Wined_games, Email FROM 'accounts' WHERE Username = '{login_dict[conn][1]}'")
+        cur.execute("SELECT Played_games, Wined_games, Email FROM 'accounts' WHERE Username = ?", (login_dict[conn][1]))
         msg = cur.fetchall()
         return server_commands["get_profile_ok"], f"{msg[0][0]}#{msg[0][1]}#{msg[0][2]}"
 

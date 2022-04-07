@@ -91,10 +91,7 @@ class GameRoom (object):
                     raise BaseException
         except ConnectionError or OSError:
             print(f"There was an error with the client {conn.getpeername()}, so the server closed the socket with him")
-            self.count_players -= 1
-            if self.current == "waiting":
-                self.is_full = False
-            conn.close()
+            self.player_exits_the_room(conn)
             self.send_information_of_players()
         except BaseException:
             print("meow hav meow meow hav hav meow hav")

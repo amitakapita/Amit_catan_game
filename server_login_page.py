@@ -58,13 +58,14 @@ class Server(object):
 
     def handle_client_connection(self, conn, number_of_clients):
         try:
+            con = sql.connect("Data_Bases/accounts_database.db")
             while True:
                 request = conn.recv(1024).decode()
                 if request is None or request == "":
                     raise ConnectionError
                 print(f"\n[Client] {request}")
                 # conn.sendall(request.upper().encode())
-                self.handle_client_commands(conn, number_of_clients, request)
+                self.handle_client_commands(conn, number_of_clients, request, con)
         except ConnectionError:
             if conn in wait_login.keys():
                 conn.close()
@@ -80,8 +81,7 @@ class Server(object):
             self.count -= 1
             return
 
-    def handle_client_commands(self, conn, number_of_clients, request):
-        con = sql.connect("Data_Bases/accounts_database.db")
+    def handle_client_commands(self, conn, number_of_clients, request, con):
         cmd, msg = protocol_library.disassemble_message(request)
         to_send, msg_to_send = "", ""
         if cmd == client_commands["login_cmd"]:

@@ -70,6 +70,8 @@ place_numbers_path = r"assets\place_numbers.png"
 place_numbers_image = Image.open(place_numbers_path)
 numbers_path = r"assets\numbers2.png"
 numbers1_image = Image.open(numbers_path)
+colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
+colors1 = ["red", "blue", "green", "yellow"]
 
 
 class HexTile1(object):
@@ -200,21 +202,29 @@ class Map(object):
 class StatsScreen(object):
     def __init__(self, root):
         self.root = root
-        self.note_book_players = ttk.Notebook(self.root, height=200, width=self.root.winfo_screenheight() - 900, padding="0.05i", style="TNotebook")
+        self.note_book_players = ttk.Notebook(self.root, width=self.root.winfo_screenwidth() - 900, padding="0.05i", style="TNotebook")
+        self.list_of_contents = []
 
     def start(self, list1):
         self.note_book_players.pack(anchor=tk.NE, expand=True, pady=20, padx=20)
         self.note_book_players.enable_traversal()  # can navigate with Ctrl + Shift + Tab, Ctrl + Tab
-        for name in list1:
-            self.add_note(name)
+        for i, name in enumerate(list1):
+            self.add_note(name, i)
 
-    def add_note(self, name):
-        frame = tk.Frame(self.note_book_players, height=200, width=400, bg="#2596be")
+    def add_note(self, name, i):
+        frame = tk.Frame(self.note_book_players, bg="#2596be")
+        lbl0 = tk.Label(frame, text=f"color: {colors1[i]}", font="Arial 15", bg="#2596be", fg=colors[i])
         lbl1 = tk.Label(frame, text=f"points: 12", font="Arial 15", bg="#2596be")
         lbl2 = tk.Label(frame, text="number of resources: 7", font="Arial 15", bg="#2596be")
         lbl3 = tk.Label(frame, text="number of development cards: 3", font="Arial 15", bg="#2596be")
+        self.list_of_contents.append(frame)
+        self.list_of_contents.append(lbl0)
+        self.list_of_contents.append(lbl1)
+        self.list_of_contents.append(lbl2)
+        self.list_of_contents.append(lbl3)
         frame.pack(fill="both", expand=True)
-        lbl1.pack(padx=10, pady=10, anchor=tk.NW)
+        lbl0.pack(padx=10, pady=10, anchor=tk.NW)
+        lbl1.pack(padx=10, pady=5, anchor=tk.NW)
         lbl2.pack(padx=10, pady=5, anchor=tk.NW)
         lbl3.pack(padx=10, pady=5, anchor=tk.NW)
         self.note_book_players.add(frame, text=name)
@@ -224,6 +234,10 @@ class StatsScreen(object):
 
     def names_of_the_tabs(self):
         return self.note_book_players.tabs()
+
+    def change_notes(self, list1):
+        for index, content in list1:
+            self.list_of_contents[index] = content
 
 
 if __name__ == "__main__":
@@ -258,10 +272,18 @@ if __name__ == "__main__":
     #     lbl1.pack(side=tk.RIGHT)
     # stats_screen1.add_note("meow")
     # stats_screen1.add_note("meow") not to delete
-    button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
-    button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
-    button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
-    button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
-    button_buy_development_card = tk.Button(root, text="Buy Development Card", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
-    button_declare_victory = tk.Button(root, text="Declare Victory", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
+    button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
+    button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
+    button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
+    button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
+    button_buy_development_card = tk.Button(root, text="Buy Development Card", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
+    button_declare_victory = tk.Button(root, text="Declare Victory", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
+    button_next_turn = tk.Button(root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
+    button_buy_road.place(x=root.winfo_screenwidth() - 125, y=root.winfo_screenheight() - 400)
+    button_buy_boat.place(x=root.winfo_screenwidth() - 250, y=root.winfo_screenheight() - 400)
+    button_buy_settlement.place(x=root.winfo_screenwidth() - 430, y=root.winfo_screenheight() - 400)
+    button_buy_city.place(x=root.winfo_screenwidth() - 112, y=root.winfo_screenheight() - 300)
+    button_buy_development_card.place(x=root.winfo_screenwidth() - 352, y=root.winfo_screenheight() - 300)
+    button_declare_victory.place(x=root.winfo_screenwidth() - 174, y=root.winfo_screenheight() - 200)
+    button_next_turn.place(x=root.winfo_screenwidth() - 367, y=root.winfo_screenheight() - 200)
     root.mainloop()

@@ -151,7 +151,6 @@ class Map(object):
             temp_tile1 = TerrainTile1(temp_number, place, temp_tile, index)
             self.tiles.append(temp_tile1)
         self.check_tile_validation()
-        self.check_number_validation()
 
     def check_tile_validation(self):
         """
@@ -165,12 +164,12 @@ class Map(object):
         for gold_mine_tile in gold_mine_tiles:
             if gold_mine_tile.number == 6 or gold_mine_tile.number == 8:
                 temp_tile = random.choice([tile1 for tile1 in self.tiles if
-                                           tile1.number != 6 and tile1.number != 8 and tile1.terrain_kind != "gold_mine"])
+                                           tile1.number != 6 and tile1.number != 8 and tile1.terrain_kind != "gold_mine" and tile1.terrain_kind != "sea"])
                 print(gold_mine_tile, temp_tile)
-                self.tiles[gold_mine_tile.index].placement, self.tiles[
-                    temp_tile.index].placement = temp_tile.placement, gold_mine_tile.placement
-                self.tiles[gold_mine_tile.index].index, self.tiles[temp_tile.index].index = temp_tile.index, gold_mine_tile.index
-                self.tiles[gold_mine_tile.index], self.tiles[temp_tile.index] = self.tiles[temp_tile.index], self.tiles[gold_mine_tile.index]
+                self.tiles[gold_mine_tile.index].number, self.tiles[
+                    temp_tile.index].number = temp_tile.number, gold_mine_tile.number
+                self.tiles[gold_mine_tile.index].change_photo_number()
+                self.tiles[temp_tile.index].change_photo_number()
                 print(gold_mine_tile, temp_tile)
         if gold_mine_tiles[0].index in forbidden_placements[gold_mine_tiles[1].index]:
             tile_xchange = random.choice(
@@ -195,40 +194,6 @@ class Map(object):
 
     def __repr__(self):
         return [tile.__repr__() for tile in self.tiles]
-
-    def check_number_validation(self):
-        tiles_numbered8_or6 = []
-        for tile in self.tiles:
-            if tile.number == 6 or tile.number == 8:
-                tiles_numbered8_or6.append(tile)
-        for tile in tiles_numbered8_or6:
-            for tile2 in tiles_numbered8_or6:
-                if tile.index in forbidden_placements[tile2.index]:
-                    forbidden_placements_with_the_index_of_the_tile = []
-                    for index1, index in enumerate(forbidden_placements):  # [(1, 2), (1, 2), (2, 3)], index = 1 - > [(1, 2), (1, 2)] just with the index
-                        if tile.index not in index:
-                            forbidden_placements_with_the_index_of_the_tile.append(index)
-                    for place in forbidden_placements_with_the_index_of_the_tile:
-                        print(tile, forbidden_placements.index(place), place)
-                    list1 = [tile for tile in self.tiles if tile.number != 6 and tile.number != 8 and
-                             tile.terrain_kind != "gold_mine" and tile.terrain_kind != "sea"
-                             and self.check_is_forbidden(forbidden_placements[tile.index], forbidden_placements_with_the_index_of_the_tile)]
-                    print(" ---\n list1:", list1)
-                    number_tile_xchange = random.choice(list1)
-                    print(self.tiles[tile.index].number, self.tiles[number_tile_xchange.index].number,
-                          self.tiles[tile.index], self.tiles[number_tile_xchange.index])
-                    """self.tiles[tile.index].number, self.tiles[
-                        number_tile_xchange.index].number = number_tile_xchange.number, tile.number
-                    print(self.tiles[tile.index].number, self.tiles[number_tile_xchange.index].number,
-                          self.tiles[tile.index], self.tiles[number_tile_xchange.index])
-                    # self.tiles[tile.index].change_photo_number()
-                    # self.tiles[number_tile_xchange.index].change_photo_number()"""
-
-    def check_is_forbidden(self, index, list1):
-        for index1 in index:
-            if index1 in list1:
-                return False
-        return True
 
 
 if __name__ == "__main__":

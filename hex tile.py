@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import PIL
 import random
+from tkinter import ttk
 
 x_start, y_start = 250, 95
 placements = [(x_start, y_start),
@@ -120,17 +121,17 @@ class TerrainTile1(HexTile1):
 
 
 class Map(object):
-    def __init__(self):
-        self.root = tk.Tk()
+    def __init__(self, root):
+        self.root = root
         self.root.attributes("-fullscreen", True)
-        self.canvas = tk.Canvas(self.root, bg="#2596be", height=750, width=1000)
+        self.canvas = tk.Canvas(self.root, bg="#2596be", width=900, highlightbackground="black", highlightthickness=3)
         self.tiles = []
 
     def start(self):
-        self.canvas.pack(anchor=tk.W)
+        self.canvas.pack(side=tk.LEFT)
+        self.canvas["height"] = self.root.winfo_screenheight()
         self.generate_map()
         self.draw_map()
-        self.root.mainloop()
 
     def draw_map(self):
         for index, tile in enumerate(self.tiles):
@@ -196,6 +197,35 @@ class Map(object):
         return [tile.__repr__() for tile in self.tiles]
 
 
+class StatsScreen(object):
+    def __init__(self, root):
+        self.root = root
+        self.note_book_players = ttk.Notebook(self.root, height=200, width=self.root.winfo_screenheight() - 900, padding="0.05i", style="TNotebook")
+
+    def start(self, list1):
+        self.note_book_players.pack(anchor=tk.NE, expand=True, pady=20, padx=20)
+        self.note_book_players.enable_traversal()  # can navigate with Ctrl + Shift + Tab, Ctrl + Tab
+        for name in list1:
+            self.add_note(name)
+
+    def add_note(self, name):
+        frame = tk.Frame(self.note_book_players, height=200, width=400, bg="#2596be")
+        lbl1 = tk.Label(frame, text=f"points: 12", font="Arial 15", bg="#2596be")
+        lbl2 = tk.Label(frame, text="number of resources: 7", font="Arial 15", bg="#2596be")
+        lbl3 = tk.Label(frame, text="number of development cards: 3", font="Arial 15", bg="#2596be")
+        frame.pack(fill="both", expand=True)
+        lbl1.pack(padx=10, pady=10, anchor=tk.NW)
+        lbl2.pack(padx=10, pady=5, anchor=tk.NW)
+        lbl3.pack(padx=10, pady=5, anchor=tk.NW)
+        self.note_book_players.add(frame, text=name)
+
+    def number_of_notes(self):
+        return self.note_book_players.index("end") + 1  # the number of the last index + 1 I think
+
+    def names_of_the_tabs(self):
+        return self.note_book_players.tabs()
+
+
 if __name__ == "__main__":
     # tile1 = TerrainTile1(0, (0, 0), "field")
     # print(tiles_count)
@@ -203,5 +233,35 @@ if __name__ == "__main__":
     # print(tiles) not to delete
     # tile1.start()
 
-    map1 = Map()
+    root = tk.Tk()
+    root.configure(bg="#2596be")
+    map1 = Map(root=root)
     map1.start()
+    style1 = ttk.Style()
+    style1.theme_create("notebook_style_catan", settings={
+        "TNotebook":
+            {"configure":
+                 {"background": "DeepSkyBlue4"}},
+        "TNotebook.Tab":
+            {"configure":
+                 {"background": "SkyBlue2",
+                  "font": "Arial 15"},
+             "map":
+                 {"background": [("selected", "SkyBlue3")],  # when selected
+                  "expand": [("selected", [0, 5, 0, 0])]}}  # when selected the expanding of the tab
+    })
+    style1.configure("Catan_game_style.TNotebook", highlightbackground="black", highlightthickness=3)
+    style1.theme_use("notebook_style_catan")
+    stats_screen1 = StatsScreen(root)
+    stats_screen1.start(["meow", "meow"])
+    #     lbl1 = tk.Label(root, text="meow", font="Arial 15")
+    #     lbl1.pack(side=tk.RIGHT)
+    # stats_screen1.add_note("meow")
+    # stats_screen1.add_note("meow") not to delete
+    button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
+    button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
+    button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
+    button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
+    button_buy_development_card = tk.Button(root, text="Buy Development Card", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
+    button_declare_victory = tk.Button(root, text="Declare Victory", relief="solid", font="Arial 15", bg="DeepSkyBlue4")
+    root.mainloop()

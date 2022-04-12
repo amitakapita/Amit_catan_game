@@ -72,6 +72,49 @@ numbers_path = r"assets\numbers2.png"
 numbers1_image = Image.open(numbers_path)
 colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
 colors1 = ["red", "blue", "green", "yellow"]
+placements_middle_hexes_vertex_hexes = [([(placement[0] + 30, placement[1] - 42),
+                                          (placement[0] + 51, placement[1]),
+                                          (placement[0] + 30, placement[1] + 42),
+                                          (placement[0] - 30, placement[1] + 42),
+                                          (placement[0] - 51, placement[1]),
+                                          (placement[0] - 30, placement[1] - 42)],
+                                         [(placement[0] + 1, placement[1] - 58),
+                                          (placement[0] + 52, placement[1] - 29),
+                                          (placement[0] + 52, placement[1] + 29), (placement[0] + 1, placement[1] + 58),
+                                          (placement[0] - 52, placement[1] + 29),
+                                          (placement[0] - 52, placement[1] - 29)]) for placement in
+                                        placements]  # [(places_middle, places_vertex)]
+placements_parts_builds_in_game = [[(220, 53), (280, 53), (320, 53), (380, 53), (420, 53), (480, 53), (520, 53), (580, 53), (620, 53), (680, 53),
+                                   (199, 95), (301, 95), (401, 95), (501, 95), (601, 95), (701, 95),
+                                   (170, 137), (220, 137), (280, 137), (320, 137), (380, 137), (420, 137), (480, 137), (520, 137), (580, 137), (620, 137), (680, 137), (720, 137),
+                                   (148, 181), (250, 181), (350, 181), (450, 181), (550, 181), (650, 181), (750, 181),
+                                   (118, 225), (178, 225), (218, 225), (278, 225), (318, 225), (378, 225), (418, 225), (478, 225), (518, 225), (578, 225), (618, 225), (678, 225), (718, 225), (768, 225),
+                                   (97, 267), (197, 267), (297, 267), (397, 267), (497, 267), (597, 267), (697, 267), (797, 267),
+                                   (69, 309), (129, 309), (169, 309), (229, 309), (269, 309), (329, 309), (369, 309), (420, 309), (480, 309), (520, 309), (580, 309), (620, 309), (680, 309), (720, 309), (780, 309), (820, 309),
+                                   (46, 353), (146, 353), (246, 353), (346, 353), (446, 353), (546, 353), (646, 353), (746, 353), (846, 353),
+                                   (69, 395), (129, 395), (169, 395), (229, 395), (269, 395), (329, 395), (369, 395), (420, 395), (480, 395), (520, 395), (580, 395), (620, 395), (680, 395), (720, 395), (780, 395), (820, 395),
+                                   (97, 439), (197, 439), (297, 439), (397, 439), (497, 439), (597, 439), (697, 439), (797, 439),
+                                   (118, 481), (178, 481), (218, 481), (278, 481), (318, 481), (378, 481), (418, 481), (478, 481), (518, 481), (578, 481), (618, 481), (678, 481), (718, 481), (768, 481),
+                                   (148, 525), (250, 525), (350, 525), (450, 525), (550, 525), (650, 525), (750, 525),
+                                   (170, 567), (220, 567), (280, 567), (320, 567), (380, 567), (420, 567), (480, 567), (520, 567), (580, 567), (620, 567), (680, 567), (720, 567),
+                                   (199, 611), (301, 611), (401, 611), (501, 611), (601, 611), (701, 611),
+                                   (220, 653), (280, 653), (320, 653), (380, 653), (420, 653), (480, 653), (520, 653), (580, 653), (620, 653), (680, 653)],
+                                   [(250, 37), (350, 37), (450, 37), (550, 37), (650, 37),
+                                    (200, 66), (300, 66), (400, 66), (500, 66), (600, 66), (700, 66),
+                                    (200, 124), (300, 124), (400, 124), (500, 124), (600, 124), (700, 124),
+                                    (150, 153), (250, 153), (350, 153), (450, 153), (550, 153), (650, 153), (750, 153),
+                                    (150, 210), (250, 210), (350, 210), (450, 210), (550, 210), (650, 210), (750, 210),
+                                    (100, 239), (200, 239), (300, 239), (398, 239), (498, 239), (598, 239), (698, 239), (800, 239),
+                                    (100, 297), (200, 297), (300, 297), (398, 297), (498, 297), (598, 297), (698, 297), (800, 297),
+                                    (46, 324), (146, 324), (246, 324), (346, 324), (446, 324), (546, 324), (646, 324), (746, 324), (850, 324),
+                                    (46, 382), (146, 382), (246, 382), (346, 382), (446, 382), (546, 382), (646, 382), (746, 382), (846, 382),
+                                    (94, 411), (194, 411), (294, 411), (394, 411), (494, 411), (594, 411), (696, 411), (794, 411),
+                                    (94, 469), (194, 469), (294, 469), (394, 469), (494, 469), (594, 469), (696, 469), (794, 469),
+                                    (144, 496), (244, 496), (344, 496), (444, 496), (544, 496), (644, 496), (744, 496),
+                                    (144, 554), (244, 554), (344, 554), (444, 554), (544, 554), (644, 554), (744, 554),
+                                    (194, 583), (294, 583), (394, 583), (494, 583), (594, 583), (694, 583),
+                                    (194, 639), (294, 641), (394, 641), (494, 641), (594, 641), (694, 641),
+                                    (243, 667), (343, 667), (443, 667), (543, 667), (643, 667)]]
 
 
 class HexTile1(object):
@@ -115,6 +158,7 @@ class TerrainTile1(HexTile1):
         if self.terrain_kind != "sea":
             canvas.create_image(self.placement[0], self.placement[1], image=self.place_numbers_image)
             canvas.create_image(self.placement[0], self.placement[1], image=self.number_photo)
+        canvas.create_text(self.placement[0], self.placement[1], text=self.index)
 
     def change_photo_number(self):
         self.number_photo = numbers1_image.crop((0 + 40 * (self.number - 1) - 2, 0, 0 + 40 * self.number, 40))
@@ -138,6 +182,15 @@ class Map(object):
     def draw_map(self):
         for index, tile in enumerate(self.tiles):
             tile.draw_tile(self.canvas)
+        # for index in range(len(self.tiles)):
+            # for index1, middle in enumerate(placements_middle_hexes_vertex_hexes[index][0]):
+            #     self.canvas.create_text(middle[0], middle[1], text=str(index1))
+            # for index1, vertex in enumerate(placements_middle_hexes_vertex_hexes[index][1]):
+            #     self.canvas.create_text(vertex[0], vertex[1], text=str(index1))
+        # for index1, placement1 in enumerate(placements_parts_builds_in_game[0]):
+        #     self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
+        for index1, placement1 in enumerate(placements_parts_builds_in_game[1]):
+            self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
 
     def generate_map(self):
         tiles_count_copy = tiles_count[:]
@@ -202,7 +255,8 @@ class Map(object):
 class StatsScreen(object):
     def __init__(self, root):
         self.root = root
-        self.note_book_players = ttk.Notebook(self.root, width=self.root.winfo_screenwidth() - 900, padding="0.05i", style="TNotebook")
+        self.note_book_players = ttk.Notebook(self.root, width=self.root.winfo_screenwidth() - 900, padding="0.05i",
+                                              style="TNotebook")
         self.list_of_contents = []
 
     def start(self, list1):
@@ -217,16 +271,22 @@ class StatsScreen(object):
         lbl1 = tk.Label(frame, text=f"points: 12", font="Arial 15", bg="#2596be")
         lbl2 = tk.Label(frame, text="number of resources: 7", font="Arial 15", bg="#2596be")
         lbl3 = tk.Label(frame, text="number of development cards: 3", font="Arial 15", bg="#2596be")
+        lbl4 = tk.Label(frame, text="number of roads and boats: 5", font="Arial 15", bg="#2596be")
+        lbl5 = tk.Label(frame, text="number of knights used: 2", font="Arial 15", bg="#2596be")
         self.list_of_contents.append(frame)
         self.list_of_contents.append(lbl0)
         self.list_of_contents.append(lbl1)
         self.list_of_contents.append(lbl2)
         self.list_of_contents.append(lbl3)
+        self.list_of_contents.append(lbl4)
+        self.list_of_contents.append(lbl5)
         frame.pack(fill="both", expand=True)
         lbl0.pack(padx=10, pady=10, anchor=tk.NW)
         lbl1.pack(padx=10, pady=5, anchor=tk.NW)
         lbl2.pack(padx=10, pady=5, anchor=tk.NW)
         lbl3.pack(padx=10, pady=5, anchor=tk.NW)
+        lbl4.pack(padx=10, pady=5, anchor=tk.NW)
+        lbl5.pack(padx=10, pady=5, anchor=tk.NW)
         self.note_book_players.add(frame, text=name)
 
     def number_of_notes(self):
@@ -272,13 +332,20 @@ if __name__ == "__main__":
     #     lbl1.pack(side=tk.RIGHT)
     # stats_screen1.add_note("meow")
     # stats_screen1.add_note("meow") not to delete
-    button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
-    button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
-    button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
-    button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
-    button_buy_development_card = tk.Button(root, text="Buy Development Card", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
-    button_declare_victory = tk.Button(root, text="Declare Victory", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
-    button_next_turn = tk.Button(root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3", activebackground="SkyBlue2")
+    button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                activebackground="SkyBlue2")
+    button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                activebackground="SkyBlue2")
+    button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                      activebackground="SkyBlue2")
+    button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                activebackground="SkyBlue2")
+    button_buy_development_card = tk.Button(root, text="Buy Development Card", relief="solid", font="Arial 15",
+                                            bg="SkyBlue3", activebackground="SkyBlue2")
+    button_declare_victory = tk.Button(root, text="Declare Victory", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                       activebackground="SkyBlue2")
+    button_next_turn = tk.Button(root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                 activebackground="SkyBlue2")
     button_buy_road.place(x=root.winfo_screenwidth() - 125, y=root.winfo_screenheight() - 400)
     button_buy_boat.place(x=root.winfo_screenwidth() - 250, y=root.winfo_screenheight() - 400)
     button_buy_settlement.place(x=root.winfo_screenwidth() - 430, y=root.winfo_screenheight() - 400)

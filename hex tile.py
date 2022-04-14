@@ -54,30 +54,30 @@ tiles_count = ["lumber" for _ in range(5)] + ["field" for _ in range(5)] + ["whe
                                                                                                           range(5)] + [
                   "bricks" for _ in range(5)] + ["gold_mine" for _ in range(2)] + ["sea" for _ in range(17)]
 numbers = [2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 12, 12]
-forbidden_placements = [(1, 5, 6), (0, 2, 6, 7), (1, 3, 7, 8), (2, 4, 8, 9), (3, 9, 10),
-                        (0, 6, 11, 12), (0, 1, 5, 7, 12, 13), (1, 2, 6, 8, 13, 14), (2, 3, 7, 9, 14, 15),
-                        (3, 4, 8, 10, 15, 16), (4, 9, 16, 17), (5, 12, 18, 19), (5, 6, 11, 13, 19, 20),
+forbidden_placements = [(None, None, None, 1, 5, 6), (None, None, 0, 2, 6, 7), (None, None, 1, 3, 7, 8), (None, None, 2, 4, 8, 9), (None, None, 3, None, 9, 10),
+                        (None, 0, None, 6, 11, 12), (0, 1, 5, 7, 12, 13), (1, 2, 6, 8, 13, 14), (2, 3, 7, 9, 14, 15),
+                        (3, 4, 8, 10, 15, 16), (4, None, 9, None, 16, 17), (None, 5, None, 12, 18, 19), (5, 6, 11, 13, 19, 20),
                         (6, 7, 12, 14, 20, 21), (7, 8, 13, 15, 21, 22), (8, 9, 14, 16, 22, 23), (9, 10, 15, 17, 23, 24),
-                        (10, 16, 24, 25), (11, 19, 26), (11, 12, 18, 20, 26, 27), (12, 13, 19, 21, 27, 28),
+                        (10, None, 16, None, 24, 25), (None, 11, None, 19, None, 26), (11, 12, 18, 20, 26, 27), (12, 13, 19, 21, 27, 28),
                         (13, 14, 20, 22, 28, 29),
-                        (14, 15, 21, 23, 29, 30), (15, 16, 22, 24, 30, 31), (16, 17, 23, 25, 31, 32), (17, 24, 32),
-                        (18, 19, 27, 33), (19, 20, 26, 28, 33, 34), (20, 21, 27, 29, 34, 35), (21, 22, 28, 30, 35, 36),
-                        (22, 23, 29, 31, 36, 37), (23, 24, 30, 32, 37, 38), (24, 25, 31, 38), (26, 27, 34, 39),
+                        (14, 15, 21, 23, 29, 30), (15, 16, 22, 24, 30, 31), (16, 17, 23, 25, 31, 32), (17, None, 24, None, 32, None),
+                        (18, 19, None, 27, None, 33), (19, 20, 26, 28, 33, 34), (20, 21, 27, 29, 34, 35), (21, 22, 28, 30, 35, 36),
+                        (22, 23, 29, 31, 36, 37), (23, 24, 30, 32, 37, 38), (24, 25, None, 31, None, 38), (26, 27, None, 34, None, 39),
                         (27, 28, 33, 35, 39, 40), (28, 29, 34, 36, 40, 41),
-                        (29, 30, 35, 37, 41, 42), (30, 31, 36, 38, 42, 43), (31, 32, 37, 43), (33, 34, 40),
-                        (34, 35, 39, 41), (35, 36, 40, 42), (36, 37, 41, 43), (37, 38, 42)]
+                        (29, 30, 35, 37, 41, 42), (30, 31, 36, 38, 42, 43), (31, 32, 37, None, 43, None), (33, 34, None, 40, None, None),
+                        (34, 35, 39, 41), (35, 36, 40, 42), (36, 37, 41, 43), (37, 38, 42, None, None, None)]
 place_numbers_path = r"assets\place_numbers.png"
 place_numbers_image = Image.open(place_numbers_path)
 numbers_path = r"assets\numbers2.png"
 numbers1_image = Image.open(numbers_path)
 colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
 colors1 = ["red", "blue", "green", "yellow"]
-placements_middle_hexes_vertex_hexes = [([(placement[0] + 30, placement[1] - 42),
-                                          (placement[0] + 51, placement[1]),
-                                          (placement[0] + 30, placement[1] + 42),
-                                          (placement[0] - 30, placement[1] + 42),
-                                          (placement[0] - 51, placement[1]),
-                                          (placement[0] - 30, placement[1] - 42)],
+placements_middle_hexes_vertex_hexes = [([(placement[0] - 27, placement[1] - 44),
+                                        (placement[0] + 27, placement[1] - 44),
+                                        (placement[0] - 54, placement[1]),
+                                        (placement[0] + 54, placement[1]),
+                                        (placement[0] - 27, placement[1] + 46),
+                                        (placement[0] + 27, placement[1] + 46)],
                                          [(placement[0] + 1, placement[1] - 58),
                                           (placement[0] + 52, placement[1] - 29),
                                           (placement[0] + 52, placement[1] + 29), (placement[0] + 1, placement[1] + 58),
@@ -115,6 +115,10 @@ placements_parts_builds_in_game = [[(220, 53), (280, 53), (320, 53), (380, 53), 
                                     (194, 583), (294, 583), (394, 583), (494, 583), (594, 583), (694, 583),
                                     (194, 639), (294, 641), (394, 641), (494, 641), (594, 641), (694, 641),
                                     (243, 667), (343, 667), (443, 667), (543, 667), (643, 667)]]
+port_game_degrees30 = [0, 2, 4, 6, 8, 16, 18, 20, 22, 24, 26, 35, 37, 39, 41, 43, 45, 47, 57, 59, 61, 63, 65, 67, 69, 71,
+                       ]
+ports_games_kinds = ["3:1" for _ in range(5)] + ["bricks", "iron", "wood", "wool", "wheat"]
+ports_games_degrees = [30, -30, 90, -90, 150, -150]
 
 
 class HexTile1(object):
@@ -146,6 +150,7 @@ class TerrainTile1(HexTile1):
             self.number_photo = numbers1_image.crop((0 + 40 * (self.number - 1) - 2, 0, 0 + 40 * self.number, 40))
             self.number_photo = self.number_photo.resize((30, 30), PIL.Image.Resampling.LANCZOS)
             self.number_photo = ImageTk.PhotoImage(self.number_photo)
+        self.has_is_port = False
 
     def get_number(self):
         return self.number
@@ -158,7 +163,7 @@ class TerrainTile1(HexTile1):
         if self.terrain_kind != "sea":
             canvas.create_image(self.placement[0], self.placement[1], image=self.place_numbers_image)
             canvas.create_image(self.placement[0], self.placement[1], image=self.number_photo)
-        canvas.create_text(self.placement[0], self.placement[1], text=self.index)
+        # canvas.create_text(self.placement[0], self.placement[1], text=self.index)
 
     def change_photo_number(self):
         self.number_photo = numbers1_image.crop((0 + 40 * (self.number - 1) - 2, 0, 0 + 40 * self.number, 40))
@@ -172,6 +177,7 @@ class Map(object):
         self.root.attributes("-fullscreen", True)
         self.canvas = tk.Canvas(self.root, bg="#2596be", width=900, highlightbackground="black", highlightthickness=3)
         self.tiles = []
+        self.ports = []
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -189,13 +195,15 @@ class Map(object):
             #     self.canvas.create_text(vertex[0], vertex[1], text=str(index1))
         # for index1, placement1 in enumerate(placements_parts_builds_in_game[0]):
         #     self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
-        for index1, placement1 in enumerate(placements_parts_builds_in_game[1]):
-            self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
+        # for index1, placement1 in enumerate(placements_parts_builds_in_game[0]):
+        #     self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
+        for index1, port in enumerate(self.ports):
+            port.draw_port(self.canvas)
 
     def generate_map(self):
         tiles_count_copy = tiles_count[:]
         numbers_copy = numbers[:]
-        print(len(tiles_count_copy), len(numbers_copy), len(tiles_count), len(numbers))
+        print(len(tiles_count_copy), len(numbers_copy), len(tiles_count), len(numbers))  # not to delete
         for index, place in enumerate(placements):
             temp_tile = random.choice(tiles_count_copy)
             tiles_count_copy.remove(temp_tile)
@@ -207,6 +215,31 @@ class Map(object):
             temp_tile1 = TerrainTile1(temp_number, place, temp_tile, index)
             self.tiles.append(temp_tile1)
         self.check_tile_validation()
+        ports_games_kinds_copy = ports_games_kinds[:]
+        for _ in range(10):
+            tiles_count_copy = []
+            for index, tile in enumerate(self.tiles):
+                if tile.terrain_kind != "sea":
+                    list1 = []
+                    for index1, placement in enumerate(forbidden_placements[index]):
+                        if placement is not None and self.tiles[placement].terrain_kind == "sea" and not self.tiles[placement].has_is_port and not tile.has_is_port:
+                            list1.append(index1)
+                    if list1 is not None and list1 != []:
+                        tiles_count_copy.append((tile, list1))  # [(tile, list1)]
+            if tiles_count_copy is None or tiles_count_copy == []:  # in case that there are not enough shores and beaches (sea near land) in the map, the generator will give up generating placements and ports
+                break
+            tile_temp = random.choice(tiles_count_copy)
+            print(tile_temp)
+            placement_for_the_port = random.choice(tile_temp[1])
+            print(placement_for_the_port)
+            self.tiles[forbidden_placements[tile_temp[0].index][placement_for_the_port]].has_is_port = True
+            self.tiles[tile_temp[0].index].has_is_port = True
+            tiles_count_copy.remove(tile_temp)
+            placement1 = placements_middle_hexes_vertex_hexes[tile_temp[0].index][0][placement_for_the_port]
+            kind_of_the_port = random.choice(ports_games_kinds_copy)
+            ports_games_kinds_copy.remove(kind_of_the_port)
+            port1 = PortGame(placement_for_the_port, kind_of_the_port, placement1, ports_games_degrees[placement_for_the_port], tile_temp)
+            self.ports.append(port1)
 
     def check_tile_validation(self):
         """
@@ -299,6 +332,26 @@ class StatsScreen(object):
         for index, content in list1:
             self.list_of_contents[index] = content
 
+
+class PortGame(object):
+    def __init__(self, index, port_kind, placement, degree_rotate_to, on_tile):
+        self.index = index
+        self.port_kind = port_kind
+        self.placement = placement
+        self.image_port_game_path = None
+        self.degree_rotate_to = degree_rotate_to
+        if self.port_kind != "3:1":
+            self.image_port_game_path = fr"assets\catan_port_21_{self.port_kind}4.png"
+        else:
+            self.image_port_game_path = fr"assets\catan_port_31__6.png"
+        self.image_port_game_path_image = Image.open(self.image_port_game_path).convert("RGBA")
+        self.image_port_game_path_image = self.image_port_game_path_image.resize((84, 84), PIL.Image.Resampling.LANCZOS)
+        self.image_port_game_path_image = self.image_port_game_path_image.rotate(self.degree_rotate_to)
+        self.image_port_game_path_image = ImageTk.PhotoImage(self.image_port_game_path_image)
+        self.on_tile = on_tile
+
+    def draw_port(self, canvas):
+        canvas.create_image(self.placement[0], self.placement[1], image=self.image_port_game_path_image)
 
 if __name__ == "__main__":
     # tile1 = TerrainTile1(0, (0, 0), "field")

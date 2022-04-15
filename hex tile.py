@@ -54,68 +54,84 @@ tiles_count = ["lumber" for _ in range(5)] + ["field" for _ in range(5)] + ["whe
                                                                                                           range(5)] + [
                   "bricks" for _ in range(5)] + ["gold_mine" for _ in range(2)] + ["sea" for _ in range(17)]
 numbers = [2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 12, 12]
-forbidden_placements = [(None, None, None, 1, 5, 6), (None, None, 0, 2, 6, 7), (None, None, 1, 3, 7, 8), (None, None, 2, 4, 8, 9), (None, None, 3, None, 9, 10),
+forbidden_placements = [(None, None, None, 1, 5, 6), (None, None, 0, 2, 6, 7), (None, None, 1, 3, 7, 8),
+                        (None, None, 2, 4, 8, 9), (None, None, 3, None, 9, 10),
                         (None, 0, None, 6, 11, 12), (0, 1, 5, 7, 12, 13), (1, 2, 6, 8, 13, 14), (2, 3, 7, 9, 14, 15),
-                        (3, 4, 8, 10, 15, 16), (4, None, 9, None, 16, 17), (None, 5, None, 12, 18, 19), (5, 6, 11, 13, 19, 20),
+                        (3, 4, 8, 10, 15, 16), (4, None, 9, None, 16, 17), (None, 5, None, 12, 18, 19),
+                        (5, 6, 11, 13, 19, 20),
                         (6, 7, 12, 14, 20, 21), (7, 8, 13, 15, 21, 22), (8, 9, 14, 16, 22, 23), (9, 10, 15, 17, 23, 24),
-                        (10, None, 16, None, 24, 25), (None, 11, None, 19, None, 26), (11, 12, 18, 20, 26, 27), (12, 13, 19, 21, 27, 28),
+                        (10, None, 16, None, 24, 25), (None, 11, None, 19, None, 26), (11, 12, 18, 20, 26, 27),
+                        (12, 13, 19, 21, 27, 28),
                         (13, 14, 20, 22, 28, 29),
-                        (14, 15, 21, 23, 29, 30), (15, 16, 22, 24, 30, 31), (16, 17, 23, 25, 31, 32), (17, None, 24, None, 32, None),
-                        (18, 19, None, 27, None, 33), (19, 20, 26, 28, 33, 34), (20, 21, 27, 29, 34, 35), (21, 22, 28, 30, 35, 36),
-                        (22, 23, 29, 31, 36, 37), (23, 24, 30, 32, 37, 38), (24, 25, None, 31, None, 38), (26, 27, None, 34, None, 39),
+                        (14, 15, 21, 23, 29, 30), (15, 16, 22, 24, 30, 31), (16, 17, 23, 25, 31, 32),
+                        (17, None, 24, None, 32, None),
+                        (18, 19, None, 27, None, 33), (19, 20, 26, 28, 33, 34), (20, 21, 27, 29, 34, 35),
+                        (21, 22, 28, 30, 35, 36),
+                        (22, 23, 29, 31, 36, 37), (23, 24, 30, 32, 37, 38), (24, 25, None, 31, None, 38),
+                        (26, 27, None, 34, None, 39),
                         (27, 28, 33, 35, 39, 40), (28, 29, 34, 36, 40, 41),
-                        (29, 30, 35, 37, 41, 42), (30, 31, 36, 38, 42, 43), (31, 32, 37, None, 43, None), (33, 34, None, 40, None, None),
+                        (29, 30, 35, 37, 41, 42), (30, 31, 36, 38, 42, 43), (31, 32, 37, None, 43, None),
+                        (33, 34, None, 40, None, None),
                         (34, 35, 39, 41), (35, 36, 40, 42), (36, 37, 41, 43), (37, 38, 42, None, None, None)]
 place_numbers_path = r"assets\place_numbers.png"
 place_numbers_image = Image.open(place_numbers_path)
 numbers_path = r"assets\numbers2.png"
 numbers1_image = Image.open(numbers_path)
-colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
+colors = ["firebrick4", "SteelBlue4", "chartreuse4", "#DBB600"]
 colors1 = ["red", "blue", "green", "yellow"]
 placements_middle_hexes_vertex_hexes = [([(placement[0] - 27, placement[1] - 44),
-                                        (placement[0] + 27, placement[1] - 44),
-                                        (placement[0] - 54, placement[1]),
-                                        (placement[0] + 54, placement[1]),
-                                        (placement[0] - 27, placement[1] + 46),
-                                        (placement[0] + 27, placement[1] + 46)],
+                                          (placement[0] + 27, placement[1] - 44),
+                                          (placement[0] - 54, placement[1]),
+                                          (placement[0] + 54, placement[1]),
+                                          (placement[0] - 27, placement[1] + 46),
+                                          (placement[0] + 27, placement[1] + 46)],
                                          [(placement[0] + 1, placement[1] - 58),
                                           (placement[0] + 52, placement[1] - 29),
                                           (placement[0] + 52, placement[1] + 29), (placement[0] + 1, placement[1] + 58),
                                           (placement[0] - 52, placement[1] + 29),
                                           (placement[0] - 52, placement[1] - 29)]) for placement in
                                         placements]  # [(places_middle, places_vertex)]
-placements_parts_builds_in_game = [[(220, 53), (280, 53), (320, 53), (380, 53), (420, 53), (480, 53), (520, 53), (580, 53), (620, 53), (680, 53),
-                                   (199, 95), (301, 95), (401, 95), (501, 95), (601, 95), (701, 95),
-                                   (170, 137), (220, 137), (280, 137), (320, 137), (380, 137), (420, 137), (480, 137), (520, 137), (580, 137), (620, 137), (680, 137), (720, 137),
-                                   (148, 181), (250, 181), (350, 181), (450, 181), (550, 181), (650, 181), (750, 181),
-                                   (118, 225), (178, 225), (218, 225), (278, 225), (318, 225), (378, 225), (418, 225), (478, 225), (518, 225), (578, 225), (618, 225), (678, 225), (718, 225), (768, 225),
-                                   (97, 267), (197, 267), (297, 267), (397, 267), (497, 267), (597, 267), (697, 267), (797, 267),
-                                   (69, 309), (129, 309), (169, 309), (229, 309), (269, 309), (329, 309), (369, 309), (420, 309), (480, 309), (520, 309), (580, 309), (620, 309), (680, 309), (720, 309), (780, 309), (820, 309),
-                                   (46, 353), (146, 353), (246, 353), (346, 353), (446, 353), (546, 353), (646, 353), (746, 353), (846, 353),
-                                   (69, 395), (129, 395), (169, 395), (229, 395), (269, 395), (329, 395), (369, 395), (420, 395), (480, 395), (520, 395), (580, 395), (620, 395), (680, 395), (720, 395), (780, 395), (820, 395),
-                                   (97, 439), (197, 439), (297, 439), (397, 439), (497, 439), (597, 439), (697, 439), (797, 439),
-                                   (118, 481), (178, 481), (218, 481), (278, 481), (318, 481), (378, 481), (418, 481), (478, 481), (518, 481), (578, 481), (618, 481), (678, 481), (718, 481), (768, 481),
-                                   (148, 525), (250, 525), (350, 525), (450, 525), (550, 525), (650, 525), (750, 525),
-                                   (170, 567), (220, 567), (280, 567), (320, 567), (380, 567), (420, 567), (480, 567), (520, 567), (580, 567), (620, 567), (680, 567), (720, 567),
-                                   (199, 611), (301, 611), (401, 611), (501, 611), (601, 611), (701, 611),
-                                   (220, 653), (280, 653), (320, 653), (380, 653), (420, 653), (480, 653), (520, 653), (580, 653), (620, 653), (680, 653)],
-                                   [(250, 37), (350, 37), (450, 37), (550, 37), (650, 37),
-                                    (200, 66), (300, 66), (400, 66), (500, 66), (600, 66), (700, 66),
-                                    (200, 124), (300, 124), (400, 124), (500, 124), (600, 124), (700, 124),
-                                    (150, 153), (250, 153), (350, 153), (450, 153), (550, 153), (650, 153), (750, 153),
-                                    (150, 210), (250, 210), (350, 210), (450, 210), (550, 210), (650, 210), (750, 210),
-                                    (100, 239), (200, 239), (300, 239), (398, 239), (498, 239), (598, 239), (698, 239), (800, 239),
-                                    (100, 297), (200, 297), (300, 297), (398, 297), (498, 297), (598, 297), (698, 297), (800, 297),
-                                    (46, 324), (146, 324), (246, 324), (346, 324), (446, 324), (546, 324), (646, 324), (746, 324), (850, 324),
-                                    (46, 382), (146, 382), (246, 382), (346, 382), (446, 382), (546, 382), (646, 382), (746, 382), (846, 382),
-                                    (94, 411), (194, 411), (294, 411), (394, 411), (494, 411), (594, 411), (696, 411), (794, 411),
-                                    (94, 469), (194, 469), (294, 469), (394, 469), (494, 469), (594, 469), (696, 469), (794, 469),
-                                    (144, 496), (244, 496), (344, 496), (444, 496), (544, 496), (644, 496), (744, 496),
-                                    (144, 554), (244, 554), (344, 554), (444, 554), (544, 554), (644, 554), (744, 554),
-                                    (194, 583), (294, 583), (394, 583), (494, 583), (594, 583), (694, 583),
-                                    (194, 639), (294, 641), (394, 641), (494, 641), (594, 641), (694, 641),
-                                    (243, 667), (343, 667), (443, 667), (543, 667), (643, 667)]]
-port_game_degrees30 = [0, 2, 4, 6, 8, 16, 18, 20, 22, 24, 26, 35, 37, 39, 41, 43, 45, 47, 57, 59, 61, 63, 65, 67, 69, 71,
+placements_parts_builds_in_game = [
+    [(220, 53), (280, 53), (320, 53), (380, 53), (420, 53), (480, 53), (520, 53), (580, 53), (620, 53), (680, 53),
+     (199, 95), (301, 95), (401, 95), (501, 95), (601, 95), (701, 95),
+     (170, 137), (220, 137), (280, 137), (320, 137), (380, 137), (420, 137), (480, 137), (520, 137), (580, 137),
+     (620, 137), (680, 137), (720, 137),
+     (148, 181), (250, 181), (350, 181), (450, 181), (550, 181), (650, 181), (750, 181),
+     (118, 225), (178, 225), (218, 225), (278, 225), (318, 225), (378, 225), (418, 225), (478, 225), (518, 225),
+     (578, 225), (618, 225), (678, 225), (718, 225), (768, 225),
+     (97, 267), (197, 267), (297, 267), (397, 267), (497, 267), (597, 267), (697, 267), (797, 267),
+     (69, 309), (129, 309), (169, 309), (229, 309), (269, 309), (329, 309), (369, 309), (420, 309), (480, 309),
+     (520, 309), (580, 309), (620, 309), (680, 309), (720, 309), (780, 309), (820, 309),
+     (46, 353), (146, 353), (246, 353), (346, 353), (446, 353), (546, 353), (646, 353), (746, 353), (846, 353),
+     (69, 395), (129, 395), (169, 395), (229, 395), (269, 395), (329, 395), (369, 395), (420, 395), (480, 395),
+     (520, 395), (580, 395), (620, 395), (680, 395), (720, 395), (780, 395), (820, 395),
+     (97, 439), (197, 439), (297, 439), (397, 439), (497, 439), (597, 439), (697, 439), (797, 439),
+     (118, 481), (178, 481), (218, 481), (278, 481), (318, 481), (378, 481), (418, 481), (478, 481), (518, 481),
+     (578, 481), (618, 481), (678, 481), (718, 481), (768, 481),
+     (148, 525), (250, 525), (350, 525), (450, 525), (550, 525), (650, 525), (750, 525),
+     (170, 567), (220, 567), (280, 567), (320, 567), (380, 567), (420, 567), (480, 567), (520, 567), (580, 567),
+     (620, 567), (680, 567), (720, 567),
+     (199, 611), (301, 611), (401, 611), (501, 611), (601, 611), (701, 611),
+     (220, 653), (280, 653), (320, 653), (380, 653), (420, 653), (480, 653), (520, 653), (580, 653), (620, 653),
+     (680, 653)],
+    [(250, 37), (350, 37), (450, 37), (550, 37), (650, 37),
+     (200, 66), (300, 66), (400, 66), (500, 66), (600, 66), (700, 66),
+     (200, 124), (300, 124), (400, 124), (500, 124), (600, 124), (700, 124),
+     (150, 153), (250, 153), (350, 153), (450, 153), (550, 153), (650, 153), (750, 153),
+     (150, 210), (250, 210), (350, 210), (450, 210), (550, 210), (650, 210), (750, 210),
+     (100, 239), (200, 239), (300, 239), (398, 239), (498, 239), (598, 239), (698, 239), (800, 239),
+     (100, 297), (200, 297), (300, 297), (398, 297), (498, 297), (598, 297), (698, 297), (800, 297),
+     (46, 324), (146, 324), (246, 324), (346, 324), (446, 324), (546, 324), (646, 324), (746, 324), (850, 324),
+     (46, 382), (146, 382), (246, 382), (346, 382), (446, 382), (546, 382), (646, 382), (746, 382), (846, 382),
+     (94, 411), (194, 411), (294, 411), (394, 411), (494, 411), (594, 411), (696, 411), (794, 411),
+     (94, 469), (194, 469), (294, 469), (394, 469), (494, 469), (594, 469), (696, 469), (794, 469),
+     (144, 496), (244, 496), (344, 496), (444, 496), (544, 496), (644, 496), (744, 496),
+     (144, 554), (244, 554), (344, 554), (444, 554), (544, 554), (644, 554), (744, 554),
+     (194, 583), (294, 583), (394, 583), (494, 583), (594, 583), (694, 583),
+     (194, 639), (294, 641), (394, 641), (494, 641), (594, 641), (694, 641),
+     (243, 667), (343, 667), (443, 667), (543, 667), (643, 667)]]
+port_game_degrees30 = [0, 2, 4, 6, 8, 16, 18, 20, 22, 24, 26, 35, 37, 39, 41, 43, 45, 47, 57, 59, 61, 63, 65, 67, 69,
+                       71,
                        ]
 ports_games_kinds = ["3:1" for _ in range(5)] + ["bricks", "iron", "wood", "wool", "wheat"]
 ports_games_degrees = [30, -30, 90, -90, 150, -150]
@@ -178,21 +194,77 @@ class Map(object):
         self.canvas = tk.Canvas(self.root, bg="#2596be", width=900, highlightbackground="black", highlightthickness=3)
         self.tiles = []
         self.ports = []
+        self.Circle_choosing_image_path = r"assets\Circle_choosing1.png"
+        self.Circle_choosing_photo_image = Image.open(self.Circle_choosing_image_path).convert("RGBA")
+        self.Circle_choosing_photo_image = ImageTk.PhotoImage(self.Circle_choosing_photo_image)
+        self.none_any_circle = ImageTk.PhotoImage(Image.open(r"assets\None_of_circles.png").convert("RGBA"))
+        self.ids_placements = []
+        self.current_button = None
+        self.button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                         activebackground="SkyBlue2",
+                                         command=lambda: self.change_current_button("road"))
+        self.button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                         activebackground="SkyBlue2",
+                                         command=lambda: self.change_current_button("boat"))
+        self.button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15",
+                                               bg="SkyBlue3",
+                                               activebackground="SkyBlue2",
+                                               command=lambda: self.change_current_button("settlement"))
+        self.button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                         activebackground="SkyBlue2",
+                                         command=lambda: self.change_current_button("city"))
+        self.button_buy_development_card = tk.Button(root, text="Buy Development Card", relief="solid", font="Arial 15",
+                                                     bg="SkyBlue3", activebackground="SkyBlue2",
+                                                     command=lambda: self.change_current_button("development_card"))
+        self.button_declare_victory = tk.Button(root, text="Declare Victory", relief="solid", font="Arial 15",
+                                                bg="SkyBlue3",
+                                                activebackground="SkyBlue2",
+                                                command=lambda: self.change_current_button("declare_victory"))
+        self.button_next_turn = tk.Button(root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                          activebackground="SkyBlue2",
+                                          command=lambda: self.change_current_button("next_turn"))
+        self.where_place = tk.Label(self.root, text="Where to place?", bg="#2596be", font="Arial 15")
+        self.place_entry = tk.Entry(self.root, bg="SkyBlue3", font="Arial 15")
+        self.button_buy = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Buy", relief="solid")
+        self.image1 = Image.open(r"assets\Settlement_red.png").convert("RGBA")
+        self.image1 = ImageTk.PhotoImage(self.image1)
+        self.image2 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_blue.png").convert("RGBA"))
+        self.image3 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_green.png").convert("RGBA"))
+        self.image4 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_yellow.png").convert("RGBA"))
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
         self.canvas["height"] = self.root.winfo_screenheight()
         self.generate_map()
         self.draw_map()
+        for index, placement1 in enumerate(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1]):
+            id_placement = self.canvas.create_image(placement1[0], placement1[1], image=self.none_any_circle,
+                                                    activeimage=self.Circle_choosing_photo_image, tags="circle_tag")
+            print(id_placement)
+            self.ids_placements.append(id_placement)
+            i = self.canvas.create_text(placement1[0], placement1[1], text=str(index), state=tk.DISABLED, tags="indexes_texts_rectangles")
+            r = self.canvas.create_rectangle(self.canvas.bbox(i), fill="#2596be", tags="indexes_texts_rectangles")
+            self.canvas.itemconfigure(i, state=tk.HIDDEN)
+            self.canvas.itemconfigure(r, state=tk.HIDDEN)
+            self.canvas.tag_lower(r, i)
+            # self.canvas.tag_bind(id_placement, "<Button-1>", lambda x: self.canvas.itemconfigure(self.canvas.find_withtag(), image=self.Circle_choosing_photo_image))
+        self.button_buy_road.place(x=root.winfo_screenwidth() - 125, y=root.winfo_screenheight() - 420)
+        self.button_buy_boat.place(x=root.winfo_screenwidth() - 250, y=root.winfo_screenheight() - 420)
+        self.button_buy_settlement.place(x=root.winfo_screenwidth() - 430, y=root.winfo_screenheight() - 420)
+        self.button_buy_city.place(x=root.winfo_screenwidth() - 112, y=root.winfo_screenheight() - 360)
+        self.button_buy_development_card.place(x=root.winfo_screenwidth() - 352, y=root.winfo_screenheight() - 360)
+        self.button_declare_victory.place(x=root.winfo_screenwidth() - 174, y=root.winfo_screenheight() - 300)
+        self.button_next_turn.place(x=root.winfo_screenwidth() - 367, y=root.winfo_screenheight() - 300)
+        self.button_buy["command"] = lambda: self.close_placements()
 
     def draw_map(self):
         for index, tile in enumerate(self.tiles):
             tile.draw_tile(self.canvas)
         # for index in range(len(self.tiles)):
-            # for index1, middle in enumerate(placements_middle_hexes_vertex_hexes[index][0]):
-            #     self.canvas.create_text(middle[0], middle[1], text=str(index1))
-            # for index1, vertex in enumerate(placements_middle_hexes_vertex_hexes[index][1]):
-            #     self.canvas.create_text(vertex[0], vertex[1], text=str(index1))
+        # for index1, middle in enumerate(placements_middle_hexes_vertex_hexes[index][0]):
+        #     self.canvas.create_text(middle[0], middle[1], text=str(index1))
+        # for index1, vertex in enumerate(placements_middle_hexes_vertex_hexes[index][1]):
+        #     self.canvas.create_text(vertex[0], vertex[1], text=str(index1))
         # for index1, placement1 in enumerate(placements_parts_builds_in_game[0]):
         #     self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
         # for index1, placement1 in enumerate(placements_parts_builds_in_game[0]):
@@ -222,7 +294,8 @@ class Map(object):
                 if tile.terrain_kind != "sea":
                     list1 = []
                     for index1, placement in enumerate(forbidden_placements[index]):
-                        if placement is not None and self.tiles[placement].terrain_kind == "sea" and not self.tiles[placement].has_is_port and not tile.has_is_port:
+                        if placement is not None and self.tiles[placement].terrain_kind == "sea" and not self.tiles[
+                            placement].has_is_port and not tile.has_is_port:
                             list1.append(index1)
                     if list1 is not None and list1 != []:
                         tiles_count_copy.append((tile, list1))  # [(tile, list1)]
@@ -238,7 +311,8 @@ class Map(object):
             placement1 = placements_middle_hexes_vertex_hexes[tile_temp[0].index][0][placement_for_the_port]
             kind_of_the_port = random.choice(ports_games_kinds_copy)
             ports_games_kinds_copy.remove(kind_of_the_port)
-            port1 = PortGame(placement_for_the_port, kind_of_the_port, placement1, ports_games_degrees[placement_for_the_port], tile_temp)
+            port1 = PortGame(placement_for_the_port, kind_of_the_port, placement1,
+                             ports_games_degrees[placement_for_the_port], tile_temp)
             self.ports.append(port1)
 
     def check_tile_validation(self):
@@ -282,7 +356,43 @@ class Map(object):
                                                                                    self.tiles[gold_mine_tiles[0].index]
 
     def __repr__(self):
-        return [tile.__repr__() for tile in self.tiles]
+        return [tile.__repr__() for tile in self.tiles], [port.__repr__ for port in self.ports]
+
+    def change_current_button(self, new_current):
+        self.current_button = new_current
+        self.place_entry.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 200)
+        self.button_buy.place(x=self.root.winfo_screenwidth() - 125, y=self.root.winfo_screenheight() - 150)
+        for item in self.canvas.find_withtag("indexes_texts_rectangles"):
+            print(item)  # not to delete
+            self.canvas.itemconfigure(item, state=tk.DISABLED)
+
+    def handle_buttons(self):
+        position1 = self.place_entry.get()
+        if position1 != "":
+            for element in position1:
+                if element not in "1234567890":
+                    return "an index is in numbers"
+            position1 = int(position1)
+            if 0 <= position1 <= 154:
+                if self.current_button == "road":
+                    pass
+                elif self.current_button == "boat":
+                    pass
+            elif 267 > position1 > 154:
+                if self.current_button == "city":
+                    pass
+                elif self.current_button == "settlement":
+                    settlement1 = Settlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image1)
+                    print(settlement1)
+                    settlement1.draw_settlement(self.canvas)
+
+    def close_placements(self):
+        self.place_entry.place_forget()
+        self.button_buy.place_forget()
+        for item in self.canvas.find_withtag("indexes_texts_rectangles"):
+            print(item, end=", ")  # not to delete
+            self.canvas.itemconfigure(item, state=tk.HIDDEN)
+        self.handle_buttons()
 
 
 class StatsScreen(object):
@@ -353,6 +463,24 @@ class PortGame(object):
     def draw_port(self, canvas):
         canvas.create_image(self.placement[0], self.placement[1], image=self.image_port_game_path_image)
 
+    def __repr__(self):
+        return f"PortGame:({self.index}, {self.port_kind}, {self.placement}, {self.on_tile})"
+
+
+class Settlement(object):
+    def __init__(self, color, index, position, img):
+        self.color = color
+        self.index = index
+        self.position = position
+        self.img = img
+
+    def draw_settlement(self, canvas):
+        canvas.create_image(self.position[0], self.position[1], image=self.img, tags="red_settlement")
+
+    def __repr__(self):
+        return f"Settlement:({self.color}, {self.index}, {self.position})"
+
+
 if __name__ == "__main__":
     # tile1 = TerrainTile1(0, (0, 0), "field")
     # print(tiles_count)
@@ -385,25 +513,4 @@ if __name__ == "__main__":
     #     lbl1.pack(side=tk.RIGHT)
     # stats_screen1.add_note("meow")
     # stats_screen1.add_note("meow") not to delete
-    button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="SkyBlue3",
-                                activebackground="SkyBlue2")
-    button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="SkyBlue3",
-                                activebackground="SkyBlue2")
-    button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15", bg="SkyBlue3",
-                                      activebackground="SkyBlue2")
-    button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3",
-                                activebackground="SkyBlue2")
-    button_buy_development_card = tk.Button(root, text="Buy Development Card", relief="solid", font="Arial 15",
-                                            bg="SkyBlue3", activebackground="SkyBlue2")
-    button_declare_victory = tk.Button(root, text="Declare Victory", relief="solid", font="Arial 15", bg="SkyBlue3",
-                                       activebackground="SkyBlue2")
-    button_next_turn = tk.Button(root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3",
-                                 activebackground="SkyBlue2")
-    button_buy_road.place(x=root.winfo_screenwidth() - 125, y=root.winfo_screenheight() - 400)
-    button_buy_boat.place(x=root.winfo_screenwidth() - 250, y=root.winfo_screenheight() - 400)
-    button_buy_settlement.place(x=root.winfo_screenwidth() - 430, y=root.winfo_screenheight() - 400)
-    button_buy_city.place(x=root.winfo_screenwidth() - 112, y=root.winfo_screenheight() - 300)
-    button_buy_development_card.place(x=root.winfo_screenwidth() - 352, y=root.winfo_screenheight() - 300)
-    button_declare_victory.place(x=root.winfo_screenwidth() - 174, y=root.winfo_screenheight() - 200)
-    button_next_turn.place(x=root.winfo_screenwidth() - 367, y=root.winfo_screenheight() - 200)
     root.mainloop()

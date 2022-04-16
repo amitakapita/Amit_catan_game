@@ -135,6 +135,149 @@ port_game_degrees30 = [0, 2, 4, 6, 8, 16, 18, 20, 22, 24, 26, 35, 37, 39, 41, 43
                        ]
 ports_games_kinds = ["3:1" for _ in range(5)] + ["bricks", "iron", "wood", "wool", "wheat"]
 ports_games_degrees = [30, -30, 90, -90, 150, -150]
+forbidden_placements_parts_in_the_game = [(5, 1), (0, 2), (1, 3), (2, 4), (3, 5), (4, 0)]
+what_part_is_on_what_tile_hex = [[0, 0, 1, 1, 2, 2, 3, 3, 4, 4,
+                                 0, (0, 1), (1, 2), (2, 3), (3, 4), 4,
+                                 5, (0, 5), (0, 6), (1, 6), (1, 7), (2, 7), (2, 8), (3, 8), (3, 9), (4, 9), (4, 10), 10,
+                                  5, (5, 6), (6, 7), (7, 8), (8, 9), (9, 10), 10,
+                                  11, (5, 11), (5, 12), (6, 12), (6, 13), (7, 13), (7, 14), (8, 14), (8, 15), (9, 15), (9, 16), (10, 16), (10, 17), 17,
+                                  11, (11, 12), (12, 13), (13, 14), (14, 15), (15, 16), (16, 17), 17,
+                                  18, (11, 18), (11, 19), (12, 19), (12, 20), (13, 20), (13, 21), (14, 21), (14, 22), (15, 22), (15, 23), (16, 23), (16, 24), (17, 24), (17, 25), 25,
+                                  18, (18, 19), (19, 20), (20, 21), (21, 22), (22, 23), (23, 24), (24, 25), 25,
+                                  18, (18, 26), (19, 26), (19, 27), (20, 27), (20, 28), (21, 28), (21, 29), (22, 29), (22, 30), (23, 30), (23, 31), (23, 32), 32,
+                                  26, (26, 27), (27, 28), (28, 29), (29, 30), (30, 31), (31, 32), 32,
+                                  26, (26, 33), (27, 33), (27, 34), (28, 34), (28, 35), (29, 35), (29, 36), (30, 36), (30, 37), (31, 37), (31, 38), (32, 38), 32,
+                                  33, (33, 34), (34, 35), (35, 36), (36, 37), (37, 38), 38,
+                                  33, (33, 39), (34, 39), (34, 40), (35, 40), (35, 41), (36, 41), (36, 42), (37, 42), (37, 43), (38, 43), 38,
+                                  39, (39, 40), (40, 41), (41, 42), (42, 43), 43,
+                                  39, 39, 40, 40, 41, 41, 42, 42, 43, 43],
+                                 [(None, None, 0), (None, None, 1), (None, None, 2), (None, None, 3), (None, None, 4),
+                                  (None, None, 0), (None, 0, 1), (None, 1, 2), (None, 2, 3), (None, 3, 4), (None, 4, None),
+                                  (None, 0, 5), (0, 1, 6), (1, 2, 7), (2, 3, 8), (3, 4, 9), (4, None, 10),
+                                  (None, None, 5), (0, 5, 6), (1, 6, 7), (2, 7, 8), (3, 8, 9), (4, 9, 10), (None, 10, None),
+                                  (None, 5, 11), (5, 6, 12), (6, 7, 13), (7, 8, 14), (8, 9, 15), (9, 10, 16), (10, None, 17),
+                                  (None, None, 11), (5, 11, 12), (6, 12, 13), (7, 13, 14), (8, 14, 15), (9, 15, 16), (10, 16, 17), (None, 17, None),
+                                  (None, 11, 18), (11, 12, 19), (12, 13, 20), (13, 14, 21), (14, 15, 22), (15, 16, 23), (16, 17, 24), (17, None, 25),
+                                  (None, None, 18), (11, 18, 19), (12, 18, 20), (13, 20, 21), (14, 21, 22), (15, 22, 23), (16, 23, 24), (17, 24, 25), (None, 25, None),
+                                  (None, 18, None), (18, 19, 26), (19, 20, 27), (20, 21, 28), (21, 22, 29), (22, 23, 30), (23, 24, 31), (24, 25, 32), (25, None, None),
+                                  (18, None, 26), (19, 26, 27), (20, 27, 28), (21, 28, 29), (22, 29, 30), (23, 30, 31), (24, 31, 32), (25, 32, None),
+                                  (None, 26, None), (26, 27, 33), (27, 28, 34), (28, 29, 35), (29, 30, 36), (30, 31, 37), (31, 32, 38), (32, None, None),
+                                  (26, None, 33), (27, 33, 34), (28, 34, 35), (29, 35, 36), (30, 36, 37), (31, 37, 38), (32, 38, None),
+                                  (None, 33, None), (33, 34, 39), (34, 35, 40), (35, 36, 41), (36, 37, 42), (37, 38, 43), (38, None, None),
+                                  (33, None, 39), (34, 39, 40), (35, 40, 41), (36, 41, 42), (37, 42, 43), (38, 43, None),
+                                  (None, 39, None), (39, 40, None), (40, 41, None), (41, 42, None), (42, 43, None), (43, None, None),
+                                  (39, None, None), (40, None, None), (41, None, None), (42, None, None), (43, None, None)]]
+places_in_each_placements_for_the_hexes = [[], [(None, None, 0),
+                                                (None, None, 0),
+                                                (None, None, 0),
+                                                (None, None, 0),
+                                                (None, None, 0),
+                                                (None, None, 5),
+                                                (None, 1, 5),
+                                                (None, 1, 5),
+                                                (None, 1, 5),
+                                                (None, 1, 5),
+                                                (None, 1, None),
+                                                (None, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, None, 0),
+                                                (None, None, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (None, 1, None),
+                                                (None, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, None, 0),
+                                                (None, None, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (None, 1, None),
+                                                (None, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, None, 0),
+                                                (None, None, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (None, 1, None),
+                                                (None, 4, None),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, None, None),
+                                                (3, None, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, None),
+                                                (None, 4, None),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, None, None),
+                                                (3, None, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (2, None, None),
+                                                (None, 4, None),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, 4, 0),
+                                                (2, None, None),
+                                                (3, None, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, 5),
+                                                (3, 1, None),
+                                                (None, 4, None),
+                                                (2, 4, None),
+                                                (2, 4, None),
+                                                (2, 4, None),
+                                                (2, 4, None),
+                                                (2, None, None),
+                                                (3, None, None),
+                                                (3, None, None),
+                                                (3, None, None),
+                                                (3, None, None),
+                                                (3, None, None), ]]
 
 
 class HexTile1(object):
@@ -167,24 +310,43 @@ class TerrainTile1(HexTile1):
             self.number_photo = self.number_photo.resize((30, 30), PIL.Image.Resampling.LANCZOS)
             self.number_photo = ImageTk.PhotoImage(self.number_photo)
         self.has_is_port = False
+        self.parts_in_game = []
+        self.forbidden_placements_in_tile = []
 
     def get_number(self):
         return self.number
 
     def __repr__(self):
-        return f"TerrainTile1:({self.terrain_kind}, {self.placement}, {self.number}, {self.index})"
+        return f"TerrainTile1:({self.terrain_kind}, {self.placement}, {self.number}, {self.index}, {self.parts_in_game})"
 
     def draw_tile(self, canvas):
         canvas.create_image(self.placement[0], self.placement[1], image=self.image_photo)
         if self.terrain_kind != "sea":
             canvas.create_image(self.placement[0], self.placement[1], image=self.place_numbers_image)
             canvas.create_image(self.placement[0], self.placement[1], image=self.number_photo)
-        # canvas.create_text(self.placement[0], self.placement[1], text=self.index)
+        canvas.create_text(self.placement[0], self.placement[1], text=self.index)
 
     def change_photo_number(self):
         self.number_photo = numbers1_image.crop((0 + 40 * (self.number - 1) - 2, 0, 0 + 40 * self.number, 40))
         self.number_photo = self.number_photo.resize((30, 30), PIL.Image.Resampling.LANCZOS)
         self.number_photo = ImageTk.PhotoImage(self.number_photo)
+
+    def add_building(self, building, index1, is_settlement_or_city=True):
+        if is_settlement_or_city:
+            if index1 is not None:
+                self.parts_in_game.append((index1, building))  # index - the index 0-5 (including) in the tile hex, building - the object of the building
+                self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
+        else:
+            pass
+
+    def check_validation_parts_in_the_game(self, wanted_settlement_or_city_index):
+        return self.check_validation_placements_buildings(wanted_settlement_or_city_index)
+
+    def check_validation_placements_buildings(self, index):
+        for placement in self.forbidden_placements_in_tile:
+            if index in placement:
+                return False
+        return True
 
 
 class Map(object):
@@ -382,9 +544,30 @@ class Map(object):
                 if self.current_button == "city":
                     pass
                 elif self.current_button == "settlement":
+                    counter_sea_tiles_and_Nones = 0
+                    for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]):
+                        print(enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]))
+                        if tile is None or self.tiles[tile].terrain_kind == "sea":
+                            counter_sea_tiles_and_Nones += 1
+                            print(counter_sea_tiles_and_Nones, tile)
+                            continue
+                        tile = self.tiles[tile]
+                        print(f"\n{tile}\n{places_in_each_placements_for_the_hexes[1][position1 - 155][index3]}\n{tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position1 - 155][index3])}\n{counter_sea_tiles_and_Nones}")
+                        if not tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position1 - 155][index3]):
+                            return False
+                    if counter_sea_tiles_and_Nones >= 3:
+                        return False
                     settlement1 = Settlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image1)
                     print(settlement1)
                     settlement1.draw_settlement(self.canvas)
+                    index2 = 0
+                    for tile, index1 in [(self.tiles[index], index) for index in what_part_is_on_what_tile_hex[1][position1 - 155] if index is not None]:
+                        if index1 is not None:
+                            tile.add_building(settlement1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
+                            print(tile, index1)
+                        index2 += 1
+                    return True
+
 
     def close_placements(self):
         self.place_entry.place_forget()

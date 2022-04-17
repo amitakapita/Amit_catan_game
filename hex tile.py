@@ -561,10 +561,11 @@ class Map(object):
                     print(settlement1)
                     settlement1.draw_settlement(self.canvas)
                     index2 = 0
-                    for tile, index1 in [(self.tiles[index], index) for index in what_part_is_on_what_tile_hex[1][position1 - 155] if index is not None]:
+                    for index1 in [index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]:
                         if index1 is not None:
-                            tile.add_building(settlement1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
+                            tile = self.tiles[index1]
                             print(tile, index1)
+                            tile.add_building(settlement1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
                         index2 += 1
                     return True
 

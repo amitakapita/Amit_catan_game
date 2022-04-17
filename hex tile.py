@@ -393,6 +393,12 @@ class Map(object):
         self.image2 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_blue.png").convert("RGBA"))
         self.image3 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_green.png").convert("RGBA"))
         self.image4 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_yellow.png").convert("RGBA"))
+        self.settlements = []  # (index, settlement)
+        self.cities = []  # (index, city)
+        self.image_city_red = ImageTk.PhotoImage(Image.open(r"assets/City_red.png").convert("RGBA"))
+        self.image_city_blue = ImageTk.PhotoImage(Image.open(r"assets/City_blue.png").convert("RGBA"))
+        self.image_city_green = ImageTk.PhotoImage(Image.open(r"assets/City_green.png").convert("RGBA"))
+        self.image_city_yellow = ImageTk.PhotoImage(Image.open(r"assets/City_yellow.png").convert("RGBA"))
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -542,7 +548,14 @@ class Map(object):
                     pass
             elif 267 > position1 > 154:
                 if self.current_button == "city":
-                    pass
+                    for index, settlement in self.settlements:
+                        if index == position1 and settlement.color == "red":
+                            self.canvas.delete(settlement.id)
+                            city1 = City(color="red", index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image_city_red)
+                            print(city1)  # not to delete
+                            city1.draw_city(self.canvas)
+                            print(city1)  # not to delete
+                            self.cities.append((position1, city1))
                 elif self.current_button == "settlement":
                     counter_sea_tiles_and_Nones = 0
                     for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]):
@@ -567,6 +580,7 @@ class Map(object):
                             print(tile, index1)
                             tile.add_building(settlement1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
                         index2 += 1
+                    self.settlements.append((position1, settlement1))
                     return True
 
 
@@ -657,12 +671,30 @@ class Settlement(object):
         self.index = index
         self.position = position
         self.img = img
+        self.id = None
 
     def draw_settlement(self, canvas):
-        canvas.create_image(self.position[0], self.position[1], image=self.img, tags="red_settlement")
+        self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags="red_settlement")
+        return self.id
 
     def __repr__(self):
-        return f"Settlement:({self.color}, {self.index}, {self.position})"
+        return f"Settlement:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
+
+
+class City(object):
+    def __init__(self, color, index, position, img):
+        self.color = color
+        self.index = index
+        self.position = position
+        self.img = img
+        self.id = None
+
+    def draw_city(self, canvas):
+        self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags=f"{self.color}_city")
+        return self.id
+
+    def __repr__(self):
+        return f"City:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
 
 
 if __name__ == "__main__":

@@ -136,21 +136,21 @@ port_game_degrees30 = [0, 2, 4, 6, 8, 16, 18, 20, 22, 24, 26, 35, 37, 39, 41, 43
 ports_games_kinds = ["3:1" for _ in range(5)] + ["bricks", "iron", "wood", "wool", "wheat"]
 ports_games_degrees = [30, -30, 90, -90, 150, -150]
 forbidden_placements_parts_in_the_game = [(5, 1), (0, 2), (1, 3), (2, 4), (3, 5), (4, 0)]
-what_part_is_on_what_tile_hex = [[0, 0, 1, 1, 2, 2, 3, 3, 4, 4,
-                                 0, (0, 1), (1, 2), (2, 3), (3, 4), 4,
-                                 5, (0, 5), (0, 6), (1, 6), (1, 7), (2, 7), (2, 8), (3, 8), (3, 9), (4, 9), (4, 10), 10,
-                                  5, (5, 6), (6, 7), (7, 8), (8, 9), (9, 10), 10,
-                                  11, (5, 11), (5, 12), (6, 12), (6, 13), (7, 13), (7, 14), (8, 14), (8, 15), (9, 15), (9, 16), (10, 16), (10, 17), 17,
-                                  11, (11, 12), (12, 13), (13, 14), (14, 15), (15, 16), (16, 17), 17,
-                                  18, (11, 18), (11, 19), (12, 19), (12, 20), (13, 20), (13, 21), (14, 21), (14, 22), (15, 22), (15, 23), (16, 23), (16, 24), (17, 24), (17, 25), 25,
-                                  18, (18, 19), (19, 20), (20, 21), (21, 22), (22, 23), (23, 24), (24, 25), 25,
-                                  18, (18, 26), (19, 26), (19, 27), (20, 27), (20, 28), (21, 28), (21, 29), (22, 29), (22, 30), (23, 30), (23, 31), (23, 32), 32,
-                                  26, (26, 27), (27, 28), (28, 29), (29, 30), (30, 31), (31, 32), 32,
-                                  26, (26, 33), (27, 33), (27, 34), (28, 34), (28, 35), (29, 35), (29, 36), (30, 36), (30, 37), (31, 37), (31, 38), (32, 38), 32,
-                                  33, (33, 34), (34, 35), (35, 36), (36, 37), (37, 38), 38,
-                                  33, (33, 39), (34, 39), (34, 40), (35, 40), (35, 41), (36, 41), (36, 42), (37, 42), (37, 43), (38, 43), 38,
-                                  39, (39, 40), (40, 41), (41, 42), (42, 43), 43,
-                                  39, 39, 40, 40, 41, 41, 42, 42, 43, 43],
+what_part_is_on_what_tile_hex = [[(None, 0), (None, 0), (None, 1), (None, 1), (None, 2), (None, 2), (None, 3), (None, 3), (None, 4), (None, 4),
+                                  (None, 0), (0, 1), (1, 2), (2, 3), (3, 4), (4, None),
+                                  (None, 5), (0, 5), (0, 6), (1, 6), (1, 7), (2, 7), (2, 8), (3, 8), (3, 9), (4, 9), (4, 10), (10, None),
+                                  (None, 5), (5, 6), (6, 7), (7, 8), (8, 9), (9, 10), (10, None),
+                                  (None, 11), (5, 11), (5, 12), (6, 12), (6, 13), (7, 13), (7, 14), (8, 14), (8, 15), (9, 15), (9, 16), (10, 16), (10, 17), (17, None),
+                                  (None, 11), (11, 12), (12, 13), (13, 14), (14, 15), (15, 16), (16, 17), (17, None),
+                                  (None, 18), (11, 18), (11, 19), (12, 19), (12, 20), (13, 20), (13, 21), (14, 21), (14, 22), (15, 22), (15, 23), (16, 23), (16, 24), (17, 24), (17, 25), (25, None),
+                                  (None, 18), (18, 19), (19, 20), (20, 21), (21, 22), (22, 23), (23, 24), (24, 25), (25, None),
+                                  (None, 18), (18, 26), (19, 26), (19, 27), (20, 27), (20, 28), (21, 28), (21, 29), (22, 29), (22, 30), (23, 30), (23, 31), (24, 31), (24, 32), (25, 32), (32, None),
+                                  (None, 26), (26, 27), (27, 28), (28, 29), (29, 30), (30, 31), (31, 32), (32, None),
+                                  (None, 26), (26, 33), (27, 33), (27, 34), (28, 34), (28, 35), (29, 35), (29, 36), (30, 36), (30, 37), (31, 37), (31, 38), (32, 38), (32, None),
+                                  (None, 33), (33, 34), (34, 35), (35, 36), (36, 37), (37, 38), (38, None),
+                                  (None, 33), (33, 39), (34, 39), (34, 40), (35, 40), (35, 41), (36, 41), (36, 42), (37, 42), (37, 43), (38, 43), (38, None),
+                                  (None, 39), (39, 40), (40, 41), (41, 42), (42, 43), (43, None),
+                                  (39, None), (39, None), (40, None), (40, None), (41, None), (41, None), (42, None), (42, None), (43, None), (43, None)],
                                  [(None, None, 0), (None, None, 1), (None, None, 2), (None, None, 3), (None, None, 4),
                                   (None, None, 0), (None, 0, 1), (None, 1, 2), (None, 2, 3), (None, 3, 4), (None, 4, None),
                                   (None, 0, 5), (0, 1, 6), (1, 2, 7), (2, 3, 8), (3, 4, 9), (4, None, 10),
@@ -167,7 +167,151 @@ what_part_is_on_what_tile_hex = [[0, 0, 1, 1, 2, 2, 3, 3, 4, 4,
                                   (33, None, 39), (34, 39, 40), (35, 40, 41), (36, 41, 42), (37, 42, 43), (38, 43, None),
                                   (None, 39, None), (39, 40, None), (40, 41, None), (41, 42, None), (42, 43, None), (43, None, None),
                                   (39, None, None), (40, None, None), (41, None, None), (42, None, None), (43, None, None)]]
-places_in_each_placements_for_the_hexes = [[], [(None, None, 0),
+places_in_each_placements_for_the_hexes = [[(None, 5),
+                                            (None, 0),
+                                            (None, 5),
+                                            (None, 0),
+                                            (None, 5),
+                                            (None, 0),
+                                            (None, 5),
+                                            (None, 0),
+                                            (None, 5),
+                                            (None, 0),
+                                            (None, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, None),
+                                            (None, 5),
+                                            (3, 0),
+                                            (2, 5), (3, 0),
+                                            (2, 5), (3, 0),
+                                            (2, 5), (3, 0),
+                                            (2, 5), (3, 0),
+                                            (2, 5), (None, 0),
+                                            (None, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, None),
+                                            (None, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (None, 0),
+                                            (None, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, None),
+                                            (None, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (None, 0),
+                                            (None, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, None),
+                                            (3, None),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, None),
+                                            (None, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, None),
+                                            (3, None),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, None),
+                                            (None, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, None),
+                                            (3, None),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, 5),
+                                            (3, 0),
+                                            (2, None),
+                                            (None, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, 4),
+                                            (1, None),
+                                            (3, None), (2, None),
+                                            (3, None), (2, None),
+                                            (3, None), (2, None),
+                                            (3, None), (2, None),
+                                            (3, None), (2, None)], [(None, None, 0),
                                                 (None, None, 0),
                                                 (None, None, 0),
                                                 (None, None, 0),
@@ -277,7 +421,37 @@ places_in_each_placements_for_the_hexes = [[], [(None, None, 0),
                                                 (3, None, None),
                                                 (3, None, None),
                                                 (3, None, None),
-                                                (3, None, None), ]]
+                                                (3, None, None)]]
+indexes_roads_xyx1y1_positions = [(155, 160), (155, 161), (156, 161), (156, 162), (157, 162), (157, 163), (158, 163), (158, 164), (159, 164), (159, 165),
+                                  (160, 166), (161, 167), (162, 168), (163, 169), (164, 170), (165, 171),
+                                  (166, 172), (166, 172), (166, 173), (167, 173), (167, 174), (168, 174), (168, 175), (169, 175), (169, 176), (170, 176), (170, 177), (171, 177), (171, 178),
+                                  (172, 179), (173, 180), (174, 181), (175, 182), (176, 183), (177, 184), (178, 185),
+                                  (179, 186), (179, 187), (180, 187), (180, 188), (181, 188), (181, 189), (182, 189), (182, 190), (183, 190), (183, 191), (184, 191), (184, 192), (185, 192), (185, 193),
+                                  (186, 194), (187, 195), (188, 196), (189, 197), (190, 198), (191, 199), (192, 200), (193, 201),
+                                  (202, 194), (194, 203), (195, 203), (195, 204), (196, 204), (196, 205), (197, 205), (197, 206), (198, 206), (198, 207), (199, 207), (199, 208), (200, 208), (200, 209), (201, 209), (201, 210),
+                                  (202, 211), (203, 212), (204, 213), (205, 214), (206, 215), (207, 216), (208, 217), (209, 218), (210, 219),
+                                  (211, 220), (212, 220), (212, 221), (213, 221), (213, 222), (214, 222), (214, 223), (215, 223), (215, 224), (216, 224), (216, 225), (217, 225), (217, 226), (218, 226), (218, 227), (219, 227),
+                                  (220, 228), (221, 229), (222, 230), (223, 231), (224, 232), (225, 233), (226, 234), (227, 235),
+                                  (228, 236), (229, 236), (229, 237), (230, 237), (230, 238), (231, 238), (231, 239), (232, 239), (232, 240), (233, 240), (233, 241), (234, 241), (234, 242), (235, 242),
+                                  (236, 243), (237, 244), (238, 245), (239, 246), (240, 247), (241, 248), (242, 249),
+                                  (243, 250), (244, 250), (244, 251), (245, 251), (245, 252), (246, 252), (246, 253), (247, 253), (247, 254), (248, 254), (248, 255), (249, 255),
+                                  (250, 256), (251, 257), (252, 258), (253, 259), (254, 260), (255, 261),
+                                  (256, 262), (257, 262), (257, 263), (258, 263), (258, 264), (259, 264), (259, 265), (260, 265), (260, 266), (261, 266)]
+near_road_boat_numbers_indexes = [(1, 10), (0, 2, 11), (1, 3, 11), (2, 4, 12), (3, 5, 12), (4, 6, 13), (5, 7, 13), (6, 8, 14), (7, 9, 14), (8, 15),
+                                  (10, 16, 17), (1, 2, 18, 19), (3, 4, 20, 21), (5, 6, 22, 23), (7, 8, 24, 25), (9, 26, 27),
+                                  (10, 17, 28), (10, 16, 18, 29), (11, 17, 19, 29), (11, 18, 20, 30), (12, 19, 21, 30), (12, 20, 22, 31), (13, 21, 23, 31), (13, 22, 24, 32), (14, 23, 25, 32), (14, 24, 26, 33), (15, 25, 27, 33), (15, 26, 34),
+                                  (16, 35, 36), (17, 18, 37, 38), (19, 20, 39, 40), (21, 22, 41, 42), (23, 24, 43, 44), (25, 26, 45, 46), (27, 47, 48),
+                                  (28, 36, 49), (28, 35, 37, 50), (29, 36, 38, 50), (29, 37, 39, 51), (30, 38, 40, 51), (30, 39, 41, 52), (31, 40, 42, 52), (31, 41, 43, 53), (32, 42, 44, 53), (32, 43, 45, 54), (33, 44, 46, 54), (33, 45, 47, 55), (34, 46, 48, 55), (34, 47, 56),
+                                  (35, 57, 58), (36, 37, 59, 60), (38, 39, 61, 62), (40, 41, 63, 64), (42, 43, 65, 66), (44, 45, 67, 68), (46, 47, 69, 70), (48, 71, 72),
+                                  (39, 58, 73), (49, 57, 59, 74), (50, 58, 60, 74), (50, 59, 61, 75), (51, 60, 62, 75), (51, 61, 63, 76), (52, 62, 64, 76), (52, 63, 65, 77), (53, 64, 66, 77), (53, 65, 67, 78), (54, 66, 68, 78), (54, 67, 69, 79), (55, 68, 70, 79), (55, 69, 71, 80), (56, 70, 72, 80), (56, 71, 81),
+                                  (57, 82), (58, 59, 83, 84), (60, 61, 85, 86), (62, 63, 87, 88), (64, 65, 89, 90), (66, 67, 91, 92), (68, 69, 93, 94), (70, 71, 95, 96), (72, 97),
+                                  (73, 83, 98), (74, 82, 84, 98), (74, 83, 85, 99), (75, 84, 86, 99), (75, 85, 87, 100), (76, 86, 88, 100), (76, 87, 89, 101), (77, 88, 90, 101), (77, 89, 91, 102), (78, 90, 92, 102), (78, 91, 93, 103), (79, 92, 94, 103), (79, 93, 95, 104), (80, 94, 96, 104), (80, 95, 97, 105), (81, 96, 105),
+                                  (82, 83, 106), (84, 85, 107, 108), (86, 87, 109, 110), (88, 89, 111, 112), (90, 91, 113, 114), (92, 93, 115, 116), (94, 95, 117, 118), (96, 97, 119),
+                                  (98, 107, 120), (99, 106, 108, 120), (99, 107, 109, 121), (100, 108, 110, 121), (100, 109, 111, 122), (101, 110, 112, 122), (101, 111, 113, 123), (102, 112, 114, 123), (102, 1113, 115, 124), (103, 114, 116, 124), (103, 115, 117, 125), (104, 116, 118, 125), (104, 117, 119, 126), (105, 118, 126),
+                                  (106, 107, 127), (108, 109, 128, 129), (110, 111, 130, 131), (112, 113, 132, 133), (114, 115, 134, 135), (116, 117, 136, 137), (118, 119, 138),
+                                  (120, 128, 139), (121, 127, 129, 139), (121, 128, 130, 140), (122, 129, 131, 140), (122, 130, 132, 141), (123, 131, 133, 141), (123, 132, 134, 142), (124, 133, 135, 142), (124, 134, 136, 143), (125, 135, 137, 143), (125, 136, 138, 144), (126, 137, 144),
+                                  (127, 128, 145), (129, 130, 146, 147), (131, 132, 148, 149), (133, 134, 150, 151), (135, 136, 152, 153), (137, 138, 154),
+                                  (139, 146), (140, 145, 147), (140, 146, 148), (141, 147, 149), (141, 148, 150), (142, 149, 151), (142, 150, 152), (143, 151, 153), (143, 152, 154), (144, 153)]
 
 
 class HexTile1(object):
@@ -333,11 +507,12 @@ class TerrainTile1(HexTile1):
         self.number_photo = ImageTk.PhotoImage(self.number_photo)
 
     def add_building(self, building, index1, is_settlement_or_city=True):
-        if is_settlement_or_city:
+        type_building = type(building)
+        if is_settlement_or_city and type_building == type(Settlement):
             if index1 is not None:
                 self.parts_in_game.append((index1, building))  # index - the index 0-5 (including) in the tile hex, building - the object of the building
                 self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
-        elif type(building) == type(City):
+        elif type_building == type(City):
             self.parts_in_game.append((index1, building))
             self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
         else:
@@ -411,6 +586,7 @@ class Map(object):
         self.image_city_blue = ImageTk.PhotoImage(Image.open(r"assets/City_blue.png").convert("RGBA"))
         self.image_city_green = ImageTk.PhotoImage(Image.open(r"assets/City_green.png").convert("RGBA"))
         self.image_city_yellow = ImageTk.PhotoImage(Image.open(r"assets/City_yellow.png").convert("RGBA"))
+        self.roads = []
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -420,7 +596,7 @@ class Map(object):
         for index, placement1 in enumerate(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1]):
             id_placement = self.canvas.create_image(placement1[0], placement1[1], image=self.none_any_circle,
                                                     activeimage=self.Circle_choosing_photo_image, tags="circle_tag")
-            print(id_placement)
+            print(id_placement, end=", ")
             self.ids_placements.append(id_placement)
             i = self.canvas.create_text(placement1[0], placement1[1], text=str(index), state=tk.DISABLED, tags="indexes_texts_rectangles")
             r = self.canvas.create_rectangle(self.canvas.bbox(i), fill="#2596be", tags="indexes_texts_rectangles")
@@ -436,6 +612,9 @@ class Map(object):
         self.button_declare_victory.place(x=root.winfo_screenwidth() - 174, y=root.winfo_screenheight() - 300)
         self.button_next_turn.place(x=root.winfo_screenwidth() - 367, y=root.winfo_screenheight() - 300)
         self.button_buy["command"] = lambda: self.close_placements()
+        # self.canvas.tag_lower("road", "settlement")
+        # self.canvas.tag_lower("road", "city")
+
 
     def draw_map(self):
         for index, tile in enumerate(self.tiles):
@@ -543,7 +722,7 @@ class Map(object):
         self.place_entry.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 200)
         self.button_buy.place(x=self.root.winfo_screenwidth() - 125, y=self.root.winfo_screenheight() - 150)
         for item in self.canvas.find_withtag("indexes_texts_rectangles"):
-            print(item)  # not to delete
+            print(item, end=", ")  # not to delete
             self.canvas.itemconfigure(item, state=tk.DISABLED)
 
     def handle_buttons(self):
@@ -555,7 +734,16 @@ class Map(object):
             position1 = int(position1)
             if 0 <= position1 <= 154:
                 if self.current_button == "road":
-                    pass
+                    # if there is not there any road, and there is a the player's settlement or city near, or there is a road of the player near
+                    for place in indexes_roads_xyx1y1_positions[position1]:
+                        if place in self.roads:
+                            return False
+                    # if
+                        for index_settlement in self.settlements:
+                            if place == index_settlement[0]:
+                                road = Road(index=position1, color="red", position=indexes_roads_xyx1y1_positions[position1])
+                        # elif place in sorted(self.cities, key=lambda x:x[0]):
+
                 elif self.current_button == "boat":
                     pass
             elif 267 > position1 > 154:
@@ -573,8 +761,12 @@ class Map(object):
                                 if tile_index is not None:
                                     tile_index1 = self.tiles[tile_index]
                                     tile_index1.delete_building(places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
-                                    tile_index1.add_building(city1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
+                                    tile_index1.add_building(city1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2], is_settlement_or_city=False)
                                     print(index2, tile_index1, tile_index)
+                            print(self.settlements)
+                            print(self.cities)
+                            return True
+                    return False
                 elif self.current_button == "settlement":
                     counter_sea_tiles_and_Nones = 0
                     for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]):
@@ -693,7 +885,7 @@ class Settlement(object):
         self.id = None
 
     def draw_settlement(self, canvas):
-        self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags="red_settlement")
+        self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags=("red_settlement", "settlement"))
         return self.id
 
     def __repr__(self):
@@ -709,11 +901,26 @@ class City(object):
         self.id = None
 
     def draw_city(self, canvas):
-        self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags=f"{self.color}_city")
+        self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags=(f"{self.color}_city", "city"))
         return self.id
 
     def __repr__(self):
         return f"City:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
+
+
+class Road(object):
+    def __init__(self, color, index, position):
+        self.color = color
+        self.index = index
+        self.position = position
+        self.id = None
+
+    def draw_road(self, canvas, place):
+        canvas.create_line(placements_parts_builds_in_game[1][place[0] - 155][0],
+                               placements_parts_builds_in_game[1][place[0] - 155][1],
+                               placements_parts_builds_in_game[1][place[1] - 155][0],
+                               placements_parts_builds_in_game[1][place[1] - 155][1], fill=colors[0], width=5,
+                               activewidth=8, tags=("road", f"{self.color}_road"))
 
 
 if __name__ == "__main__":

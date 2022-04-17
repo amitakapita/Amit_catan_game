@@ -312,6 +312,7 @@ class TerrainTile1(HexTile1):
         self.has_is_port = False
         self.parts_in_game = []
         self.forbidden_placements_in_tile = []
+        self.roads_and_boats = []
 
     def get_number(self):
         return self.number
@@ -336,8 +337,12 @@ class TerrainTile1(HexTile1):
             if index1 is not None:
                 self.parts_in_game.append((index1, building))  # index - the index 0-5 (including) in the tile hex, building - the object of the building
                 self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
+        elif type(building) == type(City):
+            self.parts_in_game.append((index1, building))
+            self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
         else:
             pass
+            # self.roads_and_boats.append((index1, building))
 
     def check_validation_parts_in_the_game(self, wanted_settlement_or_city_index):
         return self.check_validation_placements_buildings(wanted_settlement_or_city_index)
@@ -347,6 +352,13 @@ class TerrainTile1(HexTile1):
             if index in placement:
                 return False
         return True
+
+    def delete_building(self, index1):
+        for index2 in self.parts_in_game:
+            if index2[0] == index1:
+                self.parts_in_game.remove(index2)
+                self.forbidden_placements_in_tile.remove(forbidden_placements_parts_in_the_game[index1])  # can build there
+                break
 
 
 class Map(object):
@@ -551,11 +563,18 @@ class Map(object):
                     for index, settlement in self.settlements:
                         if index == position1 and settlement.color == "red":
                             self.canvas.delete(settlement.id)
+                            self.settlements.remove((index, settlement))
                             city1 = City(color="red", index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image_city_red)
                             print(city1)  # not to delete
                             city1.draw_city(self.canvas)
                             print(city1)  # not to delete
                             self.cities.append((position1, city1))
+                            for index2, tile_index in enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]):
+                                if tile_index is not None:
+                                    tile_index1 = self.tiles[tile_index]
+                                    tile_index1.delete_building(places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
+                                    tile_index1.add_building(city1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
+                                    print(index2, tile_index1, tile_index)
                 elif self.current_button == "settlement":
                     counter_sea_tiles_and_Nones = 0
                     for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]):

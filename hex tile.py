@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 import PIL
 import random
 from tkinter import ttk
+from typing import Type
 
 x_start, y_start = 250, 95
 placements = [(x_start, y_start),
@@ -424,7 +425,7 @@ places_in_each_placements_for_the_hexes = [[(None, 5),
                                                 (3, None, None)]]
 indexes_roads_xyx1y1_positions = [(155, 160), (155, 161), (156, 161), (156, 162), (157, 162), (157, 163), (158, 163), (158, 164), (159, 164), (159, 165),
                                   (160, 166), (161, 167), (162, 168), (163, 169), (164, 170), (165, 171),
-                                  (166, 172), (166, 172), (166, 173), (167, 173), (167, 174), (168, 174), (168, 175), (169, 175), (169, 176), (170, 176), (170, 177), (171, 177), (171, 178),
+                                  (166, 172), (166, 173), (167, 173), (167, 174), (168, 174), (168, 175), (169, 175), (169, 176), (170, 176), (170, 177), (171, 177), (171, 178),
                                   (172, 179), (173, 180), (174, 181), (175, 182), (176, 183), (177, 184), (178, 185),
                                   (179, 186), (179, 187), (180, 187), (180, 188), (181, 188), (181, 189), (182, 189), (182, 190), (183, 190), (183, 191), (184, 191), (184, 192), (185, 192), (185, 193),
                                   (186, 194), (187, 195), (188, 196), (189, 197), (190, 198), (191, 199), (192, 200), (193, 201),
@@ -492,7 +493,7 @@ class TerrainTile1(HexTile1):
         return self.number
 
     def __repr__(self):
-        return f"TerrainTile1:({self.terrain_kind}, {self.placement}, {self.number}, {self.index}, {self.parts_in_game})"
+        return f"TerrainTile1:(terrain_kind:{self.terrain_kind}, placement:{self.placement}, number:{self.number}, index:{self.index}, parts_in_game:{self.parts_in_game}, forbidden_placements_in_tile:{self.forbidden_placements_in_tile}, roads_and_boats:{self.roads_and_boats})"
 
     def draw_tile(self, canvas):
         canvas.create_image(self.placement[0], self.placement[1], image=self.image_photo)
@@ -507,17 +508,19 @@ class TerrainTile1(HexTile1):
         self.number_photo = ImageTk.PhotoImage(self.number_photo)
 
     def add_building(self, building, index1, is_settlement_or_city=True):
-        type_building = type(building)
-        if is_settlement_or_city and type_building == type(Settlement):
+        type_building = Type[type(building)]
+        print(type_building, Type[Settlement], type_building == Type[Settlement])
+        if is_settlement_or_city and type_building == Type[Settlement]:
             if index1 is not None:
                 self.parts_in_game.append((index1, building))  # index - the index 0-5 (including) in the tile hex, building - the object of the building
                 self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
-        elif type_building == type(City):
+        elif type_building == Type[City]:
             self.parts_in_game.append((index1, building))
             self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
-        else:
-            pass
-            # self.roads_and_boats.append((index1, building))
+        elif type_building == Type[Road]:
+            if index1 is not None:
+                self.roads_and_boats.append((index1, building))
+                # self.parts_in_game.append((index1, building))
 
     def check_validation_parts_in_the_game(self, wanted_settlement_or_city_index):
         return self.check_validation_placements_buildings(wanted_settlement_or_city_index)
@@ -533,6 +536,12 @@ class TerrainTile1(HexTile1):
             if index2[0] == index1:
                 self.parts_in_game.remove(index2)
                 self.forbidden_placements_in_tile.remove(forbidden_placements_parts_in_the_game[index1])  # can build there
+                break
+
+    def delete_road_or_boat(self, index1):
+        for index2 in self.roads_and_boats:
+            if index2[0] == index1:
+                self.roads_and_boats.remove(index2)
                 break
 
 
@@ -587,6 +596,7 @@ class Map(object):
         self.image_city_green = ImageTk.PhotoImage(Image.open(r"assets/City_green.png").convert("RGBA"))
         self.image_city_yellow = ImageTk.PhotoImage(Image.open(r"assets/City_yellow.png").convert("RGBA"))
         self.roads = []
+        self.cancel_buying_button = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Cancel", relief="solid", command=self.close_placements)
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -721,6 +731,9 @@ class Map(object):
         self.current_button = new_current
         self.place_entry.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 200)
         self.button_buy.place(x=self.root.winfo_screenwidth() - 125, y=self.root.winfo_screenheight() - 150)
+        self.where_place["text"] = f"Where to place your {self.current_button}?"
+        self.where_place.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 230)
+        self.cancel_buying_button.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 150)
         for item in self.canvas.find_withtag("indexes_texts_rectangles"):
             print(item, end=", ")  # not to delete
             self.canvas.itemconfigure(item, state=tk.DISABLED)
@@ -735,15 +748,15 @@ class Map(object):
             if 0 <= position1 <= 154:
                 if self.current_button == "road":
                     # if there is not there any road, and there is a the player's settlement or city near, or there is a road of the player near
-                    for place in indexes_roads_xyx1y1_positions[position1]:
-                        if place in self.roads:
-                            return False
-                    # if
-                        for index_settlement in self.settlements:
-                            if place == index_settlement[0]:
-                                road = Road(index=position1, color="red", position=indexes_roads_xyx1y1_positions[position1])
-                        # elif place in sorted(self.cities, key=lambda x:x[0]):
-
+                    if self.checking_city_or_settlement_is_near_the_road(position1, "red") or self.checking_roads_is_near_the_road(position1, "red"):
+                        road = Road(index=position1, color="red", position=indexes_roads_xyx1y1_positions[position1])
+                        road.draw_road(self.canvas)
+                        self.roads.append((position1, road))
+                        for tile in what_part_is_on_what_tile_hex[0][position1]:
+                            if tile is not None:
+                                tile = self.tiles[tile]
+                                tile.add_building(road, places_in_each_placements_for_the_hexes[0][position1], is_settlement_or_city=False)
+                                print(tile)
                 elif self.current_button == "boat":
                     pass
             elif 267 > position1 > 154:
@@ -768,40 +781,87 @@ class Map(object):
                             return True
                     return False
                 elif self.current_button == "settlement":
-                    counter_sea_tiles_and_Nones = 0
-                    for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]):
-                        print(enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]))
-                        if tile is None or self.tiles[tile].terrain_kind == "sea":
-                            counter_sea_tiles_and_Nones += 1
-                            print(counter_sea_tiles_and_Nones, tile)
-                            continue
-                        tile = self.tiles[tile]
-                        print(f"\n{tile}\n{places_in_each_placements_for_the_hexes[1][position1 - 155][index3]}\n{tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position1 - 155][index3])}\n{counter_sea_tiles_and_Nones}")
-                        if not tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position1 - 155][index3]):
-                            return False
-                    if counter_sea_tiles_and_Nones >= 3:
-                        return False
-                    settlement1 = Settlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image1)
-                    print(settlement1)
-                    settlement1.draw_settlement(self.canvas)
-                    index2 = 0
-                    for index1 in [index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]:
-                        if index1 is not None:
-                            tile = self.tiles[index1]
-                            print(tile, index1)
-                            tile.add_building(settlement1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
-                        index2 += 1
-                    self.settlements.append((position1, settlement1))
-                    return True
+                    if self.checking_settlement(position1, "red"):
+                        settlement1 = Settlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image1)
+                        print(settlement1)
+                        settlement1.draw_settlement(self.canvas)
+                        index2 = 0
+                        for index1 in [index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]:
+                            if index1 is not None:
+                                tile = self.tiles[index1]
+                                print(tile, index1)
+                                tile.add_building(building=settlement1, index1=places_in_each_placements_for_the_hexes[1][position1 - 155][index2], is_settlement_or_city=True)
+                            index2 += 1
+                        self.settlements.append((position1, settlement1))
+                        return True
 
 
     def close_placements(self):
         self.place_entry.place_forget()
         self.button_buy.place_forget()
+        self.cancel_buying_button.place_forget()
+        self.where_place.place_forget()
         for item in self.canvas.find_withtag("indexes_texts_rectangles"):
             print(item, end=", ")  # not to delete
             self.canvas.itemconfigure(item, state=tk.HIDDEN)
         self.handle_buttons()
+
+    def checking_city_or_settlement_is_near_the_road(self, index_road, color):
+        for index_road1 in self.roads:  # there is already a road there
+            if index_road1[0] == index_road:
+                return False
+        counter_none_and_sea_tiles = 0
+        print(what_part_is_on_what_tile_hex[0][index_road])
+        for tile in what_part_is_on_what_tile_hex[0][index_road]:
+            if tile is None or self.tiles[tile].terrain_kind == "sea":
+                counter_none_and_sea_tiles += 1
+        if counter_none_and_sea_tiles >= 2:
+            return False
+        for placement in indexes_roads_xyx1y1_positions[index_road]:
+            for index_settlement in self.settlements:  # a settlement is near the road
+                if index_settlement[0] == placement and index_settlement[1].color == color:
+                    return True
+            for index_city in self.cities:  # a city is near the road
+                if index_city[0] == placement and index_city[1].color == color:
+                    return True
+        return False  # none of them
+
+    def checking_roads_is_near_the_road(self, index_road, color):
+        for index_road1 in self.roads:  # there is already a road there
+            if index_road1[0] == index_road:
+                return False
+        counter_none_and_sea_tiles = 0
+        for tile in what_part_is_on_what_tile_hex[0][index_road]:
+            if tile is None or self.tiles[tile].terrain_kind == "sea":
+                counter_none_and_sea_tiles += 1
+        if counter_none_and_sea_tiles >= 2:
+            return False
+        for placement in near_road_boat_numbers_indexes[index_road]:  # a road is near the placement that is of the player
+            for index_road1 in self.roads:
+                if index_road1[0] == placement and index_road1[1].color == color:
+                    return True
+        return False
+
+    def checking_settlement(self, position, color):
+        for index_settlement in self.settlements:  # if there is already a settlement or a city in this index
+            if index_settlement[0] == position:
+                return False
+        for index_city in self.cities:  # about the city if there is already a settlement or a city in this index
+            if index_city[0] == position:
+                return False
+        counter_sea_tiles_and_Nones = 0
+        for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][position - 155]]):  # if there is not only seas or Nones
+            if tile is None or self.tiles[tile].terrain_kind == "sea":
+                counter_sea_tiles_and_Nones += 1
+                print(counter_sea_tiles_and_Nones, tile)
+                continue
+            tile = self.tiles[tile]
+            print(f"\n{tile}\n{places_in_each_placements_for_the_hexes[1][position - 155][index3]}\n{tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][index3])}\n{counter_sea_tiles_and_Nones}")
+            if not tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][index3]):  # fi it's valid from the fact that it can be only after 2 roads and that
+                return False
+        if counter_sea_tiles_and_Nones >= 3:
+            return False
+        return True
 
 
 class StatsScreen(object):
@@ -915,12 +975,16 @@ class Road(object):
         self.position = position
         self.id = None
 
-    def draw_road(self, canvas, place):
-        canvas.create_line(placements_parts_builds_in_game[1][place[0] - 155][0],
-                               placements_parts_builds_in_game[1][place[0] - 155][1],
-                               placements_parts_builds_in_game[1][place[1] - 155][0],
-                               placements_parts_builds_in_game[1][place[1] - 155][1], fill=colors[0], width=5,
+    def draw_road(self, canvas):
+        self.id = canvas.create_line(placements_parts_builds_in_game[1][self.position[0] - 155][0],
+                               placements_parts_builds_in_game[1][self.position[0] - 155][1],
+                               placements_parts_builds_in_game[1][self.position[1] - 155][0],
+                               placements_parts_builds_in_game[1][self.position[1] - 155][1], fill=colors[0], width=5,
                                activewidth=8, tags=("road", f"{self.color}_road"))
+        return self.id
+
+    def __repr__(self):
+        return f"Road:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
 
 
 if __name__ == "__main__":

@@ -987,6 +987,28 @@ class Road(object):
         return f"Road:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
 
 
+class Boat(Road):
+    def __int__(self, color, index, position, j):
+        super().__init__(color=color, index=index, position=position)
+        self.image_path = fr"assets\Boat_{self.color}.png"
+        self.image = Image.open(self.image_path).convert("RGBA")
+        self.j = j
+        self.image = self.image.rotate(j)
+        self.image = ImageTk.PhotoImage(self.image)
+
+    def draw_boat(self, canvas):
+        self.id = canvas.create_line(placements_parts_builds_in_game[1][self.position[0] - 155][0],
+                                     placements_parts_builds_in_game[1][self.position[0] - 155][1],
+                                     placements_parts_builds_in_game[1][self.position[1] - 155][0],
+                                     placements_parts_builds_in_game[1][self.position[1] - 155][1], fill=colors[0], width=5,
+                                     activewidth=8, tags=("road", f"{self.color}_road"))
+        self.id = (self.id, canvas.create_image(self.position[0], self.position[1], tags=("boat", f"{self.color}_boat"), image=self.image))
+        return self.id
+
+    def __repr__(self):
+        return f"Boat:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id}, j:{self.j}, image_path:{self.image_path}, image:{self.image})"
+
+
 if __name__ == "__main__":
     # tile1 = TerrainTile1(0, (0, 0), "field")
     # print(tiles_count)

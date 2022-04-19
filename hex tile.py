@@ -563,27 +563,27 @@ class Map(object):
         self.current_button = None
         self.button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="SkyBlue3",
                                          activebackground="SkyBlue2",
-                                         command=lambda: self.change_current_button("road"))
+                                         command=lambda: self.change_current_button("road"), state=tk.DISABLED)
         self.button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="SkyBlue3",
                                          activebackground="SkyBlue2",
-                                         command=lambda: self.change_current_button("boat"))
+                                         command=lambda: self.change_current_button("boat"), state=tk.DISABLED)
         self.button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15",
                                                bg="SkyBlue3",
                                                activebackground="SkyBlue2",
-                                               command=lambda: self.change_current_button("settlement"))
+                                               command=lambda: self.change_current_button("settlement"), state=tk.DISABLED)
         self.button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3",
                                          activebackground="SkyBlue2",
-                                         command=lambda: self.change_current_button("city"))
+                                         command=lambda: self.change_current_button("city"), state=tk.DISABLED)
         self.button_buy_development_card = tk.Button(root, text="Buy Development Card", relief="solid", font="Arial 15",
                                                      bg="SkyBlue3", activebackground="SkyBlue2",
-                                                     command=lambda: self.change_current_button("development_card"))
+                                                     command=lambda: self.change_current_button("development_card"), state=tk.DISABLED)
         self.button_declare_victory = tk.Button(root, text="Declare Victory", relief="solid", font="Arial 15",
                                                 bg="SkyBlue3",
                                                 activebackground="SkyBlue2",
-                                                command=lambda: self.change_current_button("declare_victory"))
+                                                command=lambda: self.change_current_button("declare_victory"), state=tk.DISABLED)
         self.button_next_turn = tk.Button(root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3",
                                           activebackground="SkyBlue2",
-                                          command=lambda: self.change_current_button("next_turn"))
+                                          command=lambda: self.change_current_button("next_turn"), state=tk.DISABLED)
         self.where_place = tk.Label(self.root, text="Where to place?", bg="#2596be", font="Arial 15")
         self.place_entry = tk.Entry(self.root, bg="SkyBlue3", font="Arial 15")
         self.button_buy = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Buy", relief="solid")
@@ -606,6 +606,13 @@ class Map(object):
         self.image_boat_2 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_blue.png").convert("RGBA"))
         self.image_boat_3 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_green.png").convert("RGBA"))
         self.image_boat_4 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_yellow.png").convert("RGBA"))
+        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes", command=self.pull_cubes)
+        self.results_cubes = None
+        self.lbl_cube1 = tk.Label(self.root, bg="#2596be")
+        self.lbl_cube2 = tk.Label(self.root, bg="#2596be")
+        self.cubes_images = [ImageTk.PhotoImage(Image.open(fr"assets\cube_1.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_2.png").convert("RGBA")),
+                      ImageTk.PhotoImage(Image.open(fr"assets\cube_3.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_4.png").convert("RGBA")),
+                      ImageTk.PhotoImage(Image.open(fr"assets\cube_5.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_6.png").convert("RGBA"))]
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -633,6 +640,7 @@ class Map(object):
         self.button_buy["command"] = lambda: self.close_placements()
         # self.canvas.tag_lower("road", "settlement")
         # self.canvas.tag_lower("road", "city")
+        self.button_pull_cubes.place(x=root.winfo_screenwidth() - 450, y=root.winfo_screenheight() - 150)
 
 
     def draw_map(self):
@@ -939,6 +947,21 @@ class Map(object):
                     return True
         return False  # none of them
 
+    def pull_cubes(self):
+        cube1, cube2 = random.randint(1, 7), random.randint(1, 7)
+        sum_cubes = cube1 + cube2
+        self.results_cubes = (cube1, cube2, sum_cubes)
+        self.button_buy_city["state"] = tk.NORMAL
+        self.button_buy_boat["state"] = tk.NORMAL
+        self.button_buy_road["state"] = tk.NORMAL
+        self.button_next_turn["state"] = tk.NORMAL
+        self.button_buy_settlement["state"] = tk.NORMAL
+        self.button_buy_development_card["state"] = tk.NORMAL
+        self.button_declare_victory["state"] = tk.NORMAL
+        self.lbl_cube1["image"] = self.cubes_images[cube1 - 1]
+        self.lbl_cube2["image"] = self.cubes_images[cube2 - 1]
+        self.lbl_cube1.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 210)
+        self.lbl_cube2.place(x=self.root.winfo_screenwidth() - 390, y=self.root.winfo_screenheight() - 210)
 
 
 class StatsScreen(object):

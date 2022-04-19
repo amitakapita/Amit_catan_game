@@ -521,6 +521,9 @@ class TerrainTile1(HexTile1):
             if index1 is not None:
                 self.roads_and_boats.append((index1, building))
                 # self.parts_in_game.append((index1, building))
+        elif type_building == Type[Boat]:
+            if index1 is not None:
+                self.roads_and_boats.append((index1, building))
 
     def check_validation_parts_in_the_game(self, wanted_settlement_or_city_index):
         return self.check_validation_placements_buildings(wanted_settlement_or_city_index)
@@ -597,6 +600,12 @@ class Map(object):
         self.image_city_yellow = ImageTk.PhotoImage(Image.open(r"assets/City_yellow.png").convert("RGBA"))
         self.roads = []
         self.cancel_buying_button = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Cancel", relief="solid", command=self.close_placements)
+        self.boats = []
+        self.image_path_boat1 = fr"assets\Boat_red.png"
+        self.image_boat_1 = ImageTk.PhotoImage(Image.open(self.image_path_boat1).convert("RGBA"))
+        self.image_boat_2 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_blue.png").convert("RGBA"))
+        self.image_boat_3 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_green.png").convert("RGBA"))
+        self.image_boat_4 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_yellow.png").convert("RGBA"))
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -748,7 +757,7 @@ class Map(object):
             if 0 <= position1 <= 154:
                 if self.current_button == "road":
                     # if there is not there any road, and there is a the player's settlement or city near, or there is a road of the player near
-                    if self.checking_city_or_settlement_is_near_the_road(position1, "red") or self.checking_roads_is_near_the_road(position1, "red"):
+                    if self.checking_city_or_settlement_is_near_the_road(position1, "red") or self.checking_roads_or_boats_is_near_the_road(position1, "red"):
                         road = Road(index=position1, color="red", position=indexes_roads_xyx1y1_positions[position1])
                         road.draw_road(self.canvas)
                         self.roads.append((position1, road))
@@ -757,8 +766,20 @@ class Map(object):
                                 tile = self.tiles[tile]
                                 tile.add_building(road, places_in_each_placements_for_the_hexes[0][position1], is_settlement_or_city=False)
                                 print(tile)
+                        self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                 elif self.current_button == "boat":
-                    pass
+                    if self.checking_boats_is_near_a_settlement_or_city(position1, "red") or self.checking_boats_is_near_the_road_or_a_boat(position1, "red"):
+                        boat = Boat(index=position1, color="red", position=(indexes_roads_xyx1y1_positions[position1]), image1=self.image_boat_1)
+                        boat.draw_boat(self.canvas)
+                        self.boats.append((position1, boat))
+                        for tile in what_part_is_on_what_tile_hex[0][position1]:
+                            if tile is not None:
+                                tile = self.tiles[tile]
+                                tile.add_building(boat, places_in_each_placements_for_the_hexes[0][position1], is_settlement_or_city=False)
+                                print(tile)
+                        self.canvas.tag_lower("boat", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+                        # and in order to see the boat's image
+                        self.canvas.tag_lower("road", "boat")
             elif 267 > position1 > 154:
                 if self.current_button == "city":
                     for index, settlement in self.settlements:
@@ -810,6 +831,9 @@ class Map(object):
         for index_road1 in self.roads:  # there is already a road there
             if index_road1[0] == index_road:
                 return False
+        for index_boat1 in self.boats:  # there is already a boat
+            if index_boat1[0] == index_road:
+                return False
         counter_none_and_sea_tiles = 0
         print(what_part_is_on_what_tile_hex[0][index_road])
         for tile in what_part_is_on_what_tile_hex[0][index_road]:
@@ -826,9 +850,12 @@ class Map(object):
                     return True
         return False  # none of them
 
-    def checking_roads_is_near_the_road(self, index_road, color):
+    def checking_roads_or_boats_is_near_the_road(self, index_road, color):
         for index_road1 in self.roads:  # there is already a road there
             if index_road1[0] == index_road:
+                return False
+        for index_boat1 in self.boats:  # there is already a boat
+            if index_boat1[0] == index_road:
                 return False
         counter_none_and_sea_tiles = 0
         for tile in what_part_is_on_what_tile_hex[0][index_road]:
@@ -836,9 +863,12 @@ class Map(object):
                 counter_none_and_sea_tiles += 1
         if counter_none_and_sea_tiles >= 2:
             return False
-        for placement in near_road_boat_numbers_indexes[index_road]:  # a road is near the placement that is of the player
+        for placement in near_road_boat_numbers_indexes[index_road]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
             for index_road1 in self.roads:
                 if index_road1[0] == placement and index_road1[1].color == color:
+                    return True
+            for index_boat1 in self.boats:
+                if index_boat1[0] == placement and index_boat1[1].color == color:
                     return True
         return False
 
@@ -862,6 +892,53 @@ class Map(object):
         if counter_sea_tiles_and_Nones >= 3:
             return False
         return True
+
+    def checking_boats_is_near_the_road_or_a_boat(self, index_boat, color):
+        for index_boat1 in self.boats:  # there is there a road
+            if index_boat1[0] == index_boat:
+                return False
+        for index_road1 in self.roads:  # there is there a boat
+            if index_road1[0] == index_boat:
+                return False
+        counter_none_and_sea_tiles = 0
+        print(what_part_is_on_what_tile_hex[0][index_boat])
+        for tile in what_part_is_on_what_tile_hex[0][index_boat]:
+            if tile is None or self.tiles[tile].terrain_kind == "sea":
+                counter_none_and_sea_tiles += 1
+        if counter_none_and_sea_tiles == 0:  # only land
+            return False
+        for placement in near_road_boat_numbers_indexes[index_boat]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
+            for index_road1 in self.roads:
+                if index_road1[0] == placement and index_road1[1].color == color:
+                    return True
+            for index_boat1 in self.boats:
+                if index_boat1[0] == placement and index_boat1[1].color == color:
+                    return True
+        return False
+
+    def checking_boats_is_near_a_settlement_or_city(self, index_boat, color):
+        for index_road1 in self.roads:  # there is already a road there
+            if index_road1[0] == index_boat:
+                return False
+        for index_boat1 in self.boats:  # there is already a boat
+            if index_boat1[0] == index_boat:
+                return False
+        counter_none_and_sea_tiles = 0
+        print(what_part_is_on_what_tile_hex[0][index_boat])
+        for tile in what_part_is_on_what_tile_hex[0][index_boat]:
+            if tile is None or self.tiles[tile].terrain_kind == "sea":
+                counter_none_and_sea_tiles += 1
+        if counter_none_and_sea_tiles == 0:
+            return False
+        for placement in indexes_roads_xyx1y1_positions[index_boat]:
+            for index_settlement in self.settlements:  # a settlement is near the road
+                if index_settlement[0] == placement and index_settlement[1].color == color:
+                    return True
+            for index_city in self.cities:  # a city is near the road
+                if index_city[0] == placement and index_city[1].color == color:
+                    return True
+        return False  # none of them
+
 
 
 class StatsScreen(object):
@@ -988,13 +1065,11 @@ class Road(object):
 
 
 class Boat(Road):
-    def __int__(self, color, index, position, j):
+    def __init__(self, color, index, position, image1):
         super().__init__(color=color, index=index, position=position)
-        self.image_path = fr"assets\Boat_{self.color}.png"
-        self.image = Image.open(self.image_path).convert("RGBA")
-        self.j = j
-        self.image = self.image.rotate(j)
-        self.image = ImageTk.PhotoImage(self.image)
+        print(image1)
+        self.image = image1
+        # self.image = self.image NOT TO DELETE
 
     def draw_boat(self, canvas):
         self.id = canvas.create_line(placements_parts_builds_in_game[1][self.position[0] - 155][0],
@@ -1002,11 +1077,11 @@ class Boat(Road):
                                      placements_parts_builds_in_game[1][self.position[1] - 155][0],
                                      placements_parts_builds_in_game[1][self.position[1] - 155][1], fill=colors[0], width=5,
                                      activewidth=8, tags=("road", f"{self.color}_road"))
-        self.id = (self.id, canvas.create_image(self.position[0], self.position[1], tags=("boat", f"{self.color}_boat"), image=self.image))
+        self.id = (self.id, canvas.create_image(placements_parts_builds_in_game[0][self.index][0], placements_parts_builds_in_game[0][self.index][1], tags=("boat", f"{self.color}_boat"), image=self.image))
         return self.id
 
     def __repr__(self):
-        return f"Boat:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id}, j:{self.j}, image_path:{self.image_path}, image:{self.image})"
+        return f"Boat:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id}, image:{self.image})"
 
 
 if __name__ == "__main__":

@@ -613,6 +613,7 @@ class Map(object):
         self.cubes_images = [ImageTk.PhotoImage(Image.open(fr"assets\cube_1.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_2.png").convert("RGBA")),
                       ImageTk.PhotoImage(Image.open(fr"assets\cube_3.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_4.png").convert("RGBA")),
                       ImageTk.PhotoImage(Image.open(fr"assets\cube_5.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_6.png").convert("RGBA"))]
+        self.sum_cubes_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -963,6 +964,8 @@ class Map(object):
         self.lbl_cube2["image"] = self.cubes_images[cube2 - 1]
         self.lbl_cube1.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 210)
         self.lbl_cube2.place(x=self.root.winfo_screenwidth() - 390, y=self.root.winfo_screenheight() - 210)
+        self.sum_cubes_lbl["text"] = str(self.results_cubes[2])
+        self.sum_cubes_lbl.place(x=self.root.winfo_screenwidth() - 340, y=self.root.winfo_screenheight() - 135)
 
 
 class StatsScreen(object):

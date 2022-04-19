@@ -11,6 +11,7 @@ import time
 import subprocess
 import signal
 import os
+import traceback
 
 colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
 subprocess1 = ""
@@ -93,8 +94,8 @@ class GameRoom (object):
             print(f"There was an error with the client {conn.getpeername()}, so the server closed the socket with him")
             self.player_exits_the_room(conn)
             self.send_information_of_players()
-        except BaseException:
-            print("meow hav meow meow hav hav meow hav")
+        except BaseException as e:
+            print("meow hav meow meow hav hav meow hav", e, traceback.format_exc())
             sys.exit(0)
             conn.close()
         except ConnectionRefusedError or ConnectionResetError or ConnectionAbortedError:
@@ -146,6 +147,10 @@ class GameRoom (object):
                 print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
                 conn.sendall(message.encode())
             return
+        elif cmd == client_commands["start_game_cmd"]:
+            print("meow meow")
+            self.start_game()
+            return
         message = protocol_library.build_message(cmd_send, msg_send)
         print(f"[Server] -> [Client {conn.getpeername()}] {message}")
         conn.sendall(message.encode())
@@ -168,8 +173,10 @@ class GameRoom (object):
     def start_game(self):
         self.current = "playing"  # starting the game from the waiting room
         for value in self.players:
-            conn = value[3]  # conn
-            conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"]))
+            conn = value.conn  # conn
+            conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"]).encode())
+            message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"])
+            print(f"[Server] -> [Client {conn.getpeername()}] {message}")
 
     def send_information_of_players(self):
         cmd_send = server_game_rooms_commands["join_player_ok_cmd"]

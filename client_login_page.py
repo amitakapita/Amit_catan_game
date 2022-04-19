@@ -248,7 +248,7 @@ class Client(object):
                 conn.close()
                 ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
                 conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
-                self.waiting_room_lobby_menu([(self.username, colors[0])], session_id)
+                self.waiting_room_lobby_menu([(self.username, colors[0])], session_id, conn=conn)
                 self.send_messages(conn, client_commands["join_my_player_cmd"], self.username)
                 self.main_server = False
             elif cmd == server_commands["join_player_game_room_server_ok_cmd"]:
@@ -546,9 +546,11 @@ class Client(object):
 
     def waiting_room_lobby_menu(self, list_of_names: list, session_id="", from_creating=True, conn = None):
         self.current_lobby = "waiting_game_room_lobby"
-        if from_creating:
+        if from_creating and conn is not None:
             self.not_in_create_lobby_game_room()
             self.back_btn["text"] = "Close lobby"
+            self.start_game_menu_button.place(x=1070, y=500)
+            self.start_game_menu_button["command"] = lambda: self.send_messages(conn, client_commands["start_game_cmd"])
         else:
             self.not_in_Game_rooms_lobby_menu()
             self.back_btn["text"] = "Leave Room"
@@ -556,7 +558,6 @@ class Client(object):
             self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
             print("button is set")
             self.name_leader.pack(padx=450, pady=20, side=tk.TOP)
-        self.start_game_menu_button.place(x=1070, y=500)
         self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
         self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
         self.session_id_lbl["text"] = "Game room id: " + session_id

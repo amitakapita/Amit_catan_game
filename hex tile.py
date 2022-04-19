@@ -948,7 +948,7 @@ class Map(object):
         return False  # none of them
 
     def pull_cubes(self):
-        cube1, cube2 = random.randint(1, 7), random.randint(1, 7)
+        cube1, cube2 = random.randint(1, 6), random.randint(1, 6)
         sum_cubes = cube1 + cube2
         self.results_cubes = (cube1, cube2, sum_cubes)
         self.button_buy_city["state"] = tk.NORMAL
@@ -958,6 +958,7 @@ class Map(object):
         self.button_buy_settlement["state"] = tk.NORMAL
         self.button_buy_development_card["state"] = tk.NORMAL
         self.button_declare_victory["state"] = tk.NORMAL
+        print(self.results_cubes)
         self.lbl_cube1["image"] = self.cubes_images[cube1 - 1]
         self.lbl_cube2["image"] = self.cubes_images[cube2 - 1]
         self.lbl_cube1.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 210)

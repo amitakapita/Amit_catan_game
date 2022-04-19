@@ -101,11 +101,11 @@ class Server(object):
             to_send, msg_to_send = self.lobby_rooms()
         elif cmd == client_commands["create_game_room_lobby_cmd"]:
             session_id = str(random.randint(10000, 100000))
-            port_server = str(random.randint(10000, 65536))  # ports available - 10000 - 65535
+            port_server = str(random.randint(10000, 65535))  # ports available - 10000 - 65535
             while conn.connect_ex(("0.0.0.0", int(port_server))) == 0 and (session_id in game_room_server_lobbies_session_ids_and_ports or port_server == self.port):
                 # conn.connect_ex() tries to connect but if there is an error it returns an executing code instead of raising an exception
                 session_id = str(random.randint(10000, 100000))
-                port_server = str(random.randint(10000, 65536))  # ports available - 10000 - 65535
+                port_server = str(random.randint(10000, 65535))  # ports available - 10000 - 65535
             game_room_server_lobbies_session_ids_and_ports[session_id] = [login_dict[conn][1], msg, False, 1, port_server]
             print(f"[Server] Server [{session_id}, {port_server}] is opening")
             # self.create_lobby_rooms_games(conn, msg, session_id, port_server)

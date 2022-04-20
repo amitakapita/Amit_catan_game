@@ -11,7 +11,8 @@ client_commands = {
     "create_game_room_lobby_cmd": "CREATE_ROOM",
     "close_lobby_cmd": "CLOSE_LOBBY",
     "leave_my_player_cmd": "LEAVE_PLAYER",
-    "join_game_room_cmd": "JGR"
+    "join_game_room_cmd": "JGR",
+    "buy_building_cmd": "BUY_BUILDING"
 }
 
 server_commands = {
@@ -32,7 +33,9 @@ server_game_rooms_commands = {
     "get_players_information_ok": "GET_PL_IN_OK",
     "start_game_ok": "START_GAME_OK",
     "close_lobby_ok_cmd": "CLOSE_LOBBY_OK",
-    "leave_player_ok_cmd": "LEAVE_PLAYER_OK"
+    "leave_player_ok_cmd": "LEAVE_PLAYER_OK",
+    "buy_building_ok_cmd": "BUY_BUILDING_OK",
+    "buy_building_failed_cmd": "BUY_BLFA"
 }
 
 def build_message(cmd, msg=""):

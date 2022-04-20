@@ -5,10 +5,15 @@ import threading
 import time
 from protocol_library import client_commands, server_commands, server_game_rooms_commands
 import json
+from PIL import ImageTk, Image
+import PIL
+from some_from_hex_tile import *
+import typing
+from typing import Type
 
 # Constants:
 count1 = 1
-colors = ["firebrick4", "SteelBlue4", "chartreuse4", "yellow4"]
+colors = ["firebrick4", "SteelBlue4", "chartreuse4", "#DBB600"]
 
 
 class Client(object):
@@ -123,6 +128,71 @@ class Client(object):
         self.session_id_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 15")
         self.participants_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 17")
         self.name_leader = tk.Label(self.root, bg="#2596be", font="Arial 30")
+
+        # playing room
+        self.canvas_game = tk.Canvas(self.root, bg="#2596be", width=900, highlightbackground="black", highlightthickness=3)
+        self.tiles = []
+        self.ports = []
+
+        self.Circle_choosing_image_path = r"assets\Circle_choosing1.png"
+        self.Circle_choosing_photo_image = Image.open(self.Circle_choosing_image_path).convert("RGBA")
+        self.Circle_choosing_photo_image = ImageTk.PhotoImage(self.Circle_choosing_photo_image)
+        self.none_any_circle = ImageTk.PhotoImage(Image.open(r"assets\None_of_circles.png").convert("RGBA"))
+        self.ids_placements = []
+        self.current_button = None
+        self.button_buy_road = tk.Button(self.root, text="Buy Road", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                         activebackground="SkyBlue2",
+                                         command=lambda: self.change_current_button("road"), state=tk.DISABLED)
+        self.button_buy_boat = tk.Button(self.root, text="Buy Boat", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                         activebackground="SkyBlue2",
+                                         command=lambda: self.change_current_button("boat"), state=tk.DISABLED)
+        self.button_buy_settlement = tk.Button(self.root, text="Buy Settlement", relief="solid", font="Arial 15",
+                                               bg="SkyBlue3",
+                                               activebackground="SkyBlue2",
+                                               command=lambda: self.change_current_button("settlement"), state=tk.DISABLED)
+        self.button_buy_city = tk.Button(self.root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                         activebackground="SkyBlue2",
+                                         command=lambda: self.change_current_button("city"), state=tk.DISABLED)
+        self.button_buy_development_card = tk.Button(self.root, text="Buy Development Card", relief="solid", font="Arial 15",
+                                                     bg="SkyBlue3", activebackground="SkyBlue2",
+                                                     command=lambda: self.change_current_button("development_card"), state=tk.DISABLED)
+        self.button_declare_victory = tk.Button(self.root, text="Declare Victory", relief="solid", font="Arial 15",
+                                                bg="SkyBlue3",
+                                                activebackground="SkyBlue2",
+                                                command=lambda: self.change_current_button("declare_victory"), state=tk.DISABLED)
+        self.button_next_turn = tk.Button(self.root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                          activebackground="SkyBlue2",
+                                          command=lambda: self.change_current_button("next_turn"), state=tk.DISABLED)
+        self.where_place = tk.Label(self.root, text="Where to place?", bg="#2596be", font="Arial 15")
+        self.place_entry = tk.Entry(self.root, bg="SkyBlue3", font="Arial 15")
+        self.button_buy = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Buy", relief="solid")
+        self.image1 = Image.open(r"assets\Settlement_red.png").convert("RGBA")
+        self.image1 = ImageTk.PhotoImage(self.image1)
+        self.image2 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_blue.png").convert("RGBA"))
+        self.image3 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_green.png").convert("RGBA"))
+        self.image4 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_yellow.png").convert("RGBA"))
+        self.settlements = []  # (index, settlement)
+        self.cities = []  # (index, city)
+        self.image_city_red = ImageTk.PhotoImage(Image.open(r"assets/City_red.png").convert("RGBA"))
+        self.image_city_blue = ImageTk.PhotoImage(Image.open(r"assets/City_blue.png").convert("RGBA"))
+        self.image_city_green = ImageTk.PhotoImage(Image.open(r"assets/City_green.png").convert("RGBA"))
+        self.image_city_yellow = ImageTk.PhotoImage(Image.open(r"assets/City_yellow.png").convert("RGBA"))
+        self.roads = []
+        self.cancel_buying_button = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Cancel", relief="solid", command=self.close_placements)
+        self.boats = []
+        self.image_path_boat1 = fr"assets\Boat_red.png"
+        self.image_boat_1 = ImageTk.PhotoImage(Image.open(self.image_path_boat1).convert("RGBA"))
+        self.image_boat_2 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_blue.png").convert("RGBA"))
+        self.image_boat_3 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_green.png").convert("RGBA"))
+        self.image_boat_4 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_yellow.png").convert("RGBA"))
+        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes", command=self.pull_cubes)
+        self.results_cubes = None
+        self.lbl_cube1 = tk.Label(self.root, bg="#2596be")
+        self.lbl_cube2 = tk.Label(self.root, bg="#2596be")
+        self.cubes_images = [ImageTk.PhotoImage(Image.open(fr"assets\cube_1.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_2.png").convert("RGBA")),
+                      ImageTk.PhotoImage(Image.open(fr"assets\cube_3.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_4.png").convert("RGBA")),
+                      ImageTk.PhotoImage(Image.open(fr"assets\cube_5.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_6.png").convert("RGBA"))]
+        self.sum_cubes_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
 
 
 
@@ -271,6 +341,8 @@ class Client(object):
                 self.update_list_of_players(msg)
             elif cmd == server_game_rooms_commands["leave_player_ok_cmd"]:
                 self.update_list_of_players(json.loads(msg))
+            elif cmd == server_game_rooms_commands["buy_building_ok_cmd"]:
+                self.handle_buttons(msg)
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -629,6 +701,138 @@ class Client(object):
         conn.close()
         self.back_to_the_menu()
 
+    def start_game(self, conn):
+        self.not_in_waiting_room_lobby_menu()
+        self.canvas.pack(side=tk.LEFT)
+        self.canvas["height"] = self.root.winfo_screenheight()
+        self.draw_map()
+        for index, placement1 in enumerate(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1]):
+            id_placement = self.canvas.create_image(placement1[0], placement1[1], image=self.none_any_circle,
+                                                    activeimage=self.Circle_choosing_photo_image, tags="circle_tag")
+            print(id_placement, end=", ")
+            self.ids_placements.append(id_placement)
+            i = self.canvas.create_text(placement1[0], placement1[1], text=str(index), state=tk.DISABLED,
+                                        tags="indexes_texts_rectangles")
+            r = self.canvas.create_rectangle(self.canvas.bbox(i), fill="#2596be", tags="indexes_texts_rectangles")
+            self.canvas.itemconfigure(i, state=tk.HIDDEN)
+            self.canvas.itemconfigure(r, state=tk.HIDDEN)
+            self.canvas.tag_lower(r, i)
+            # self.canvas.tag_bind(id_placement, "<Button-1>", lambda x: self.canvas.itemconfigure(self.canvas.find_withtag(), image=self.Circle_choosing_photo_image))
+        self.button_buy_road.place(x=self.root.winfo_screenwidth() - 125, y=self.root.winfo_screenheight() - 420)
+        self.button_buy_boat.place(x=self.root.winfo_screenwidth() - 250, y=self.root.winfo_screenheight() - 420)
+        self.button_buy_settlement.place(x=self.root.winfo_screenwidth() - 430, y=self.root.winfo_screenheight() - 420)
+        self.button_buy_city.place(x=self.root.winfo_screenwidth() - 112, y=self.root.winfo_screenheight() - 360)
+        self.button_buy_development_card.place(x=self.root.winfo_screenwidth() - 352,
+                                               y=self.root.winfo_screenheight() - 360)
+        self.button_declare_victory.place(x=self.root.winfo_screenwidth() - 174, y=self.root.winfo_screenheight() - 300)
+        self.button_next_turn.place(x=self.root.winfo_screenwidth() - 367, y=self.root.winfo_screenheight() - 300)
+        self.button_buy["command"] = lambda: self.close_placements(conn)
+        # self.canvas.tag_lower("road", "settlement")
+        # self.canvas.tag_lower("road", "city")
+        self.button_pull_cubes.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 150)
+
+    def draw_map(self):
+        for index, tile in enumerate(self.tiles):
+            tile.draw_tile(self.canvas)
+        # for index in range(len(self.tiles)):
+        # for index1, middle in enumerate(placements_middle_hexes_vertex_hexes[index][0]):
+        #     self.canvas.create_text(middle[0], middle[1], text=str(index1))
+        # for index1, vertex in enumerate(placements_middle_hexes_vertex_hexes[index][1]):
+        #     self.canvas.create_text(vertex[0], vertex[1], text=str(index1))
+        # for index1, placement1 in enumerate(placements_parts_builds_in_game[0]):
+        #     self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
+        # for index1, placement1 in enumerate(placements_parts_builds_in_game[0]):
+        #     self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
+        for index1, port in enumerate(self.ports):
+            port.draw_port(self.canvas)
+
+    def close_placements(self, conn):
+        self.place_entry.place_forget()
+        self.button_buy.place_forget()
+        self.cancel_buying_button.place_forget()
+        self.where_place.place_forget()
+        for item in self.canvas.find_withtag("indexes_texts_rectangles"):
+            print(item, end=", ")  # not to delete
+            self.canvas.itemconfigure(item, state=tk.HIDDEN)
+        position1 = self.place_entry.get()
+        if position1 != "":
+            for element in position1:
+                if element not in "1234567890":
+                    return "an index is in numbers"
+        position1 = int(position1)
+        if (0 <= position1 <= 154 and (self.current_button == "road" or self.current_button == "boat")) or (267 > position1 > 154 and (self.current_button == "city" or self.current_button == "settlement")):
+            self.send_messages(conn, client_commands["buy_building_cmd"], f"{position1}#{self.current_button}")
+        else:
+            return "there was an error, check again your input"
+
+    def handle_buttons(self, msg):
+        building = msg.loads()
+        if Type[building] == Type[Road]:
+            self.roads.append((building.index, building))
+            building.draw_road(self.canvas_game)
+            self.canvas_game.tag_lower("road",
+                                  "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+            for tile in what_part_is_on_what_tile_hex[0][building.index]:
+                if tile is not None:
+                    tile = self.tiles[tile]
+                    tile.add_building(building, places_in_each_placements_for_the_hexes[0][building.index],
+                                      is_settlement_or_city=False)
+                    print(tile)
+        elif Type[building] == Type[Boat]:
+            self.boats.append((building.index, building))
+            for tile in what_part_is_on_what_tile_hex[0][building.index]:
+                if tile is not None:
+                    tile = self.tiles[tile]
+                    tile.add_building(building, places_in_each_placements_for_the_hexes[0][building.index],
+                                      is_settlement_or_city=False)
+                    print(tile)
+            building.draw_boat(self.canvas_game)
+            self.canvas_game.tag_lower("boat",
+                                  "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+            # and in order to see the boat's image
+            self.canvas_game.tag_lower("road", "boat")
+        elif Type[building] == Type[City]:
+            for index, settlement in self.settlements:
+                if index == building.index and settlement.color == "red":
+                    self.canvas_game.delete(settlement.id)
+                    self.settlements.remove((index, settlement))
+                    building.draw_city(self.canvas_game)
+                    self.cities.append((building.index, building))
+                    for index2, tile_index in enumerate(
+                            [index for index in what_part_is_on_what_tile_hex[1][building.index - 155]]):
+                        if tile_index is not None:
+                            tile_index1 = self.tiles[tile_index]
+                            tile_index1.delete_building(
+                                places_in_each_placements_for_the_hexes[1][building.index - 155][index2])
+                            tile_index1.add_building(building, places_in_each_placements_for_the_hexes[1][building.index - 155][
+                                index2], is_settlement_or_city=False)
+                            print(index2, tile_index1, tile_index)
+                    print(self.settlements)
+                    print(self.cities)
+                    break
+        elif Type[building] == Type[Settlement]:
+            building.draw_settlement(self.canvas)
+            index2 = 0
+            for index1 in [index for index in what_part_is_on_what_tile_hex[1][building.index - 155]]:
+                if index1 is not None:
+                    tile = self.tiles[index1]
+                    print(tile, index1)
+                    tile.add_building(building=building,
+                                      index1=places_in_each_placements_for_the_hexes[1][building.idnex - 155][index2],
+                                      is_settlement_or_city=True)
+                index2 += 1
+            self.settlements.append((building.index, building))
+    def change_current_button(self, new_current):
+        self.current_button = new_current
+        self.place_entry.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 200)
+        self.button_buy.place(x=self.root.winfo_screenwidth() - 125, y=self.root.winfo_screenheight() - 150)
+        self.where_place["text"] = f"Where to place your {self.current_button}?"
+        self.where_place.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 230)
+        self.cancel_buying_button.place(x=self.root.winfo_screenwidth() - 300,
+                                        y=self.root.winfo_screenheight() - 150)
+        for item in self.canvas.find_withtag("indexes_texts_rectangles"):
+            print(item, end=", ")  # not to delete
+            self.canvas.itemconfigure(item, state=tk.DISABLED)
 
 if __name__ == "__main__":
     ip = "127.0.0.1"

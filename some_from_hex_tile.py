@@ -1042,7 +1042,7 @@ class StatsScreen(object):
         lbl3.pack(padx=10, pady=5, anchor=tk.NW)
         lbl4.pack(padx=10, pady=5, anchor=tk.NW)
         lbl5.pack(padx=10, pady=5, anchor=tk.NW)
-        self.note_book_players.add(frame, text=name)
+        self.note_book_players.add(frame, text=name[0])
 
     def number_of_notes(self):
         return self.note_book_players.index("end") + 1  # the number of the last index + 1 I think

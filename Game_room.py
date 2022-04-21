@@ -39,6 +39,7 @@ class GameRoom (object):
         self.cities = []  # (index, city)
         self.roads = []
         self.boats = []
+        self.results_cubes = None
 
     def join_a_player(self, player_name, conn):
         if self.count_players <= self.maximum_players:
@@ -164,6 +165,9 @@ class GameRoom (object):
                 cmd_send = server_game_rooms_commands["buy_building_failed_cmd"]
             else:
                 cmd_send = server_game_rooms_commands["buy_building_ok_cmd"]
+        elif cmd == client_commands["pull_cubes_cmd"]:
+            self.pull_cubes()
+            return
         message = protocol_library.build_message(cmd_send, msg_send)
         print(f"[Server] -> [Client {conn.getpeername()}] {message}")
         conn.sendall(message.encode())
@@ -476,6 +480,16 @@ class GameRoom (object):
             return True, msg
         else:
             return False, "the system could not place your building, check if your request is valid."
+
+    def pull_cubes(self):
+        cube1, cube2 = random.randint(1, 6), random.randint(1, 6)
+        sum_cubes = cube1 + cube2
+        self.results_cubes = (cube1, cube2, sum_cubes)
+        for player in self.players:
+            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"], msg=json.dumps(self.results_cubes))
+            player.conn.sendall(msg_to_send.encode())
+            print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_to_send}")
+
 
 if __name__ == "__main__":
     try:

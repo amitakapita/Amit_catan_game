@@ -188,8 +188,7 @@ class Client(object):
         self.image_boat_2 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_blue.png").convert("RGBA"))
         self.image_boat_3 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_green.png").convert("RGBA"))
         self.image_boat_4 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_yellow.png").convert("RGBA"))
-        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes", command=self.pull_cubes)
-        self.results_cubes = None
+        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes")
         self.lbl_cube1 = tk.Label(self.root, bg="#2596be")
         self.lbl_cube2 = tk.Label(self.root, bg="#2596be")
         self.cubes_images = [ImageTk.PhotoImage(Image.open(fr"assets\cube_1.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_2.png").convert("RGBA")),
@@ -379,6 +378,9 @@ class Client(object):
                     self.start_game(conn)
                 else:
                     self.bytes_times_counter += 1
+            elif cmd == server_game_rooms_commands["pulled_cubes_cmd"]:
+                results = json.loads(msg)
+                self.pull_cubes(results)
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -768,6 +770,8 @@ class Client(object):
         self.button_buy["command"] = lambda: self.close_placements(conn)
         # self.canvas.tag_lower("road", "settlement")
         # self.canvas.tag_lower("road", "city")
+        self.button_pull_cubes["command"] = lambda: self.send_messages(conn=conn,
+                                                                       data=client_commands["pull_cubes_cmd"], msg="")
         self.button_pull_cubes.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 150)
 
     def draw_map(self):
@@ -880,10 +884,7 @@ class Client(object):
             print(item, end=", ")  # not to delete
             self.canvas.itemconfigure(item, state=tk.DISABLED)
 
-    def pull_cubes(self):
-        cube1, cube2 = random.randint(1, 6), random.randint(1, 6)
-        sum_cubes = cube1 + cube2
-        self.results_cubes = (cube1, cube2, sum_cubes)
+    def pull_cubes(self, results):
         self.button_buy_city["state"] = tk.NORMAL
         self.button_buy_boat["state"] = tk.NORMAL
         self.button_buy_road["state"] = tk.NORMAL
@@ -891,12 +892,11 @@ class Client(object):
         self.button_buy_settlement["state"] = tk.NORMAL
         self.button_buy_development_card["state"] = tk.NORMAL
         self.button_declare_victory["state"] = tk.NORMAL
-        print(self.results_cubes)
-        self.lbl_cube1["image"] = self.cubes_images[cube1 - 1]
-        self.lbl_cube2["image"] = self.cubes_images[cube2 - 1]
+        self.lbl_cube1["image"] = self.cubes_images[results[0] - 1]
+        self.lbl_cube2["image"] = self.cubes_images[results[1] - 1]
         self.lbl_cube1.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 210)
         self.lbl_cube2.place(x=self.root.winfo_screenwidth() - 390, y=self.root.winfo_screenheight() - 210)
-        self.sum_cubes_lbl["text"] = str(self.results_cubes[2])
+        self.sum_cubes_lbl["text"] = str(results[2])
         self.sum_cubes_lbl.place(x=self.root.winfo_screenwidth() - 340, y=self.root.winfo_screenheight() - 135)
 
     def configure_tiles(self):

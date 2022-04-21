@@ -219,6 +219,23 @@ class Client(object):
         })
         self.style1.configure("Catan_game_style.TNotebook", highlightbackground="black", highlightthickness=3)
         self.style1.theme_use("notebook_style_catan")
+        self.resources_label = tk.Label(self.root, text="resources: ", bg="#2596be", font="Arial 15")
+        self.images_recourses = [ImageTk.PhotoImage(Image.open(fr"assets\bricks.png").convert("RGBA")),
+                                 ImageTk.PhotoImage(Image.open(fr"assets\iron.png").convert("RGBA")),
+                                 ImageTk.PhotoImage(Image.open(fr"assets\wheat.png").convert("RGBA")),
+                                 ImageTk.PhotoImage(Image.open(fr"assets\wood.png").convert("RGBA")),
+                                 ImageTk.PhotoImage(Image.open(fr"assets\wool.png").convert("RGBA"))]
+        self.count_recourses = [0, 0, 0, 0, 0]
+        self.lbl_recourse1 = tk.Label(self.root, image=self.images_recourses[0], bg="#2596be")
+        self.lbl_recourse2 = tk.Label(self.root, image=self.images_recourses[1], bg="#2596be")
+        self.lbl_recourse3 = tk.Label(self.root, image=self.images_recourses[2], bg="#2596be")
+        self.lbl_recourse4 = tk.Label(self.root, image=self.images_recourses[3], bg="#2596be")
+        self.lbl_recourse5 = tk.Label(self.root, image=self.images_recourses[4], bg="#2596be")
+        self.list_of_labels = [self.lbl_recourse1, self.lbl_recourse2, self.lbl_recourse3, self.lbl_recourse4,
+                               self.lbl_recourse5]
+        self.count_labels_recourses = tk.Label(self.root,
+                                               text=f"{self.count_recourses[0]}        {self.count_recourses[1]}        {self.count_recourses[2]}        {self.count_recourses[3]}        {self.count_recourses[4]}",
+                                               font="Arial 15", bg="#2596be")
 
 
 
@@ -773,6 +790,12 @@ class Client(object):
         self.button_pull_cubes["command"] = lambda: self.send_messages(conn=conn,
                                                                        data=client_commands["pull_cubes_cmd"], msg="")
         self.button_pull_cubes.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 150)
+        self.button_pull_cubes.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 150)
+        self.resources_label.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 100)
+        for i in range(5):
+            self.list_of_labels[i].place(x=self.root.winfo_screenwidth() - 60 * i - 50, y=self.root.winfo_screenheight() - 100)
+            self.count_labels_recourses.place(x=self.root.winfo_screenwidth() - 57 * i - 50,
+                                              y=self.root.winfo_screenheight() - 150)
 
     def draw_map(self):
         for index, tile_image in enumerate(self.tiles_images):

@@ -614,6 +614,18 @@ class Map(object):
                       ImageTk.PhotoImage(Image.open(fr"assets\cube_3.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_4.png").convert("RGBA")),
                       ImageTk.PhotoImage(Image.open(fr"assets\cube_5.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_6.png").convert("RGBA"))]
         self.sum_cubes_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
+        self.resources_label = tk.Label(self.root, text="resources: ", bg="#2596be", font="Arial 15")
+        self.images_recources = [ImageTk.PhotoImage(Image.open(fr"assets\bricks.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\iron.png").convert("RGBA")),
+                                 ImageTk.PhotoImage(Image.open(fr"assets\wheat.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\wood.png").convert("RGBA")),
+                                 ImageTk.PhotoImage(Image.open(fr"assets\wool.png").convert("RGBA"))]
+        self.count_recources = [0, 0, 0, 0, 0]
+        self.lbl_recource1 = tk.Label(self.root, image=self.images_recources[0], bg="#2596be")
+        self.lbl_recource2 = tk.Label(self.root, image=self.images_recources[1], bg="#2596be")
+        self.lbl_recource3 = tk.Label(self.root, image=self.images_recources[2], bg="#2596be")
+        self.lbl_recource4 = tk.Label(self.root, image=self.images_recources[3], bg="#2596be")
+        self.lbl_recource5 = tk.Label(self.root, image=self.images_recources[4], bg="#2596be")
+        self.list_of_labels = [self.lbl_recource1, self.lbl_recource2, self.lbl_recource3, self.lbl_recource4, self.lbl_recource5]
+        self.count_labels_recources = tk.Label(self.root, text=f"{self.count_recources[0]}        {self.count_recources[1]}        {self.count_recources[2]}        {self.count_recources[3]}        {self.count_recources[4]}", font="Arial 15", bg="#2596be")
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -642,6 +654,10 @@ class Map(object):
         # self.canvas.tag_lower("road", "settlement")
         # self.canvas.tag_lower("road", "city")
         self.button_pull_cubes.place(x=root.winfo_screenwidth() - 450, y=root.winfo_screenheight() - 150)
+        self.resources_label.place(x=root.winfo_screenwidth() - 450, y=root.winfo_screenheight() - 100)
+        for i in range(5):
+            self.list_of_labels[i].place(x=root.winfo_screenwidth() - 60 * i - 50, y=root.winfo_screenheight() - 100)
+            self.count_labels_recources.place(x=self.root.winfo_screenwidth() - 57 * i - 50, y=self.root.winfo_screenheight() - 50)
 
 
     def draw_map(self):

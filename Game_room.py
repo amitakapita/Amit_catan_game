@@ -13,6 +13,7 @@ import signal
 import os
 import traceback
 from some_from_hex_tile import *
+import time
 
 colors = ["firebrick4", "SteelBlue4", "chartreuse4", "#DBB600"]
 subprocess1 = ""
@@ -130,9 +131,6 @@ class GameRoom (object):
                 cmd_send = server_game_rooms_commands["join_player_failed_cmd"]
         elif cmd == client_commands["get_players_information_cmd"]:
             cmd_send, msg_send = self.players_information()
-        elif cmd == client_commands["start_game_cmd"]:
-            self.start_game()
-            return
         elif cmd == client_commands["close_lobby_cmd"]:
             print(self.players)
             if self.players[0].conn == conn:
@@ -142,11 +140,10 @@ class GameRoom (object):
                     conn.sendall(message.encode())
                     self.player_exits_the_room(player.conn)
                     player.conn.close()
-                for thread in threads1:
-                    thread.join()
+
                 print("CLOSING SERVER")
                 self.server_open = False
-                sys.exit(1)
+                # sys.exit(1)
                 return "CLOSING SERVER"
         elif cmd == client_commands["leave_my_player_cmd"]:
             self.player_exits_the_room(conn)
@@ -157,7 +154,8 @@ class GameRoom (object):
             return
         elif cmd == client_commands["start_game_cmd"]:
             print("meow meow")
-            self.start_game()
+            self.generate_map()
+            self.start_game(self.tiles, self.ports)
             return
         elif cmd == client_commands["buy_building_cmd"]:
             msg = msg.split("#")
@@ -185,13 +183,16 @@ class GameRoom (object):
         except Exception as e:
             print(e)
 
-    def start_game(self):
+    def start_game(self, tiles, ports):
         self.current = "playing"  # starting the game from the waiting room
         for value in self.players:
             conn = value.conn  # conn
-            conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"]).encode())
-            message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"])
-            print(f"[Server] -> [Client {conn.getpeername()}] {message}")
+            for i in range(0, 41, 5):  # 9 times in average the last one is 38 + 5 = 43 the last index in the tiles
+                time.sleep(0.1)
+                print(i, i + 5)
+                conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}").encode())  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
+                message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}")  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
+                print(f"[Server] -> [Client {conn.getpeername()}] {message}")
 
     def send_information_of_players(self):
         cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
@@ -214,7 +215,8 @@ class GameRoom (object):
             else:
                 temp_number = random.choice(numbers_copy)
                 numbers_copy.remove(temp_number)
-            temp_tile1 = TerrainTile1(temp_number, place, temp_tile, index)
+            temp_tile1 = HexTile1(temp_number, place, temp_tile, index)
+            # temp_tile1 = [temp_number, place, temp_tile, index, False]
             self.tiles.append(temp_tile1)
         self.check_tile_validation()
         ports_games_kinds_copy = ports_games_kinds[:]
@@ -241,8 +243,10 @@ class GameRoom (object):
             placement1 = placements_middle_hexes_vertex_hexes[tile_temp[0].index][0][placement_for_the_port]
             kind_of_the_port = random.choice(ports_games_kinds_copy)
             ports_games_kinds_copy.remove(kind_of_the_port)
-            port1 = PortGame(placement_for_the_port, kind_of_the_port, placement1,
-                             ports_games_degrees[placement_for_the_port], tile_temp)
+            # port1 = PortGame(placement_for_the_port, kind_of_the_port, placement1,
+            #                  ports_games_degrees[placement_for_the_port], tile_temp)
+            port1 = [placement_for_the_port, kind_of_the_port, placement1, ports_games_degrees[placement_for_the_port], tile_temp]
+            # port1 = BitPortGame(placement_for_the_port, kind_of_the_port, placement1, ports_games_degrees[placement_for_the_port], tile_temp)
             self.ports.append(port1)
 
     def check_tile_validation(self):
@@ -261,8 +265,8 @@ class GameRoom (object):
                 print(gold_mine_tile, temp_tile)
                 self.tiles[gold_mine_tile.index].number, self.tiles[
                     temp_tile.index].number = temp_tile.number, gold_mine_tile.number
-                self.tiles[gold_mine_tile.index].change_photo_number()
-                self.tiles[temp_tile.index].change_photo_number()
+                # self.tiles[gold_mine_tile.index].change_photo_number()
+                # self.tiles[temp_tile.index].change_photo_number()
                 print(gold_mine_tile, temp_tile)
         if gold_mine_tiles[0].index in forbidden_placements[gold_mine_tiles[1].index]:
             tile_xchange = random.choice(

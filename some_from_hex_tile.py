@@ -1,3 +1,4 @@
+import json
 import tkinter as tk
 from PIL import Image, ImageTk
 import PIL
@@ -456,14 +457,52 @@ near_road_boat_numbers_indexes = [(1, 10), (0, 2, 11), (1, 3, 11), (2, 4, 12), (
 
 
 class HexTile1(object):
-    """A tile that not drawable"""
-    height = 0
-    width = 0
+    def __init__(self, number, placement, terrain_kind, index):
+        self.number = number
+        self.placement = placement
+        self.terrain_kind = terrain_kind
+        self.index = index
+        self.has_is_port = False
+        self.parts_in_game = []
+        self.forbidden_placements_in_tile = []
+        self.roads_and_boats = []
 
-    numbered = False
+    def __repr__(self):
+        return f"TerrainTile1:(terrain_kind:{self.terrain_kind}, placement:{self.placement}, number:{self.number}, index:{self.index}, parts_in_game:{self.parts_in_game}, forbidden_placements_in_tile:{self.forbidden_placements_in_tile}, roads_and_boats:{self.roads_and_boats})"
+
+    def add_building(self, building, index1, is_settlement_or_city=True):
+        type_building = Type[type(building)]
+        print(type_building, Type[Settlement], type_building == Type[Settlement])
+        if is_settlement_or_city and type_building == Type[Settlement]:
+            if index1 is not None:
+                self.parts_in_game.append((index1, building))  # index - the index 0-5 (including) in the tile hex, building - the object of the building
+                self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
+        elif type_building == Type[City]:
+            self.parts_in_game.append((index1, building))
+            self.forbidden_placements_in_tile.append(forbidden_placements_parts_in_the_game[index1])
+        elif type_building == Type[Road]:
+            if index1 is not None:
+                self.roads_and_boats.append((index1, building))
+                # self.parts_in_game.append((index1, building))
+        elif type_building == Type[Boat]:
+            if index1 is not None:
+                self.roads_and_boats.append((index1, building))
+
+    def delete_building(self, index1):
+        for index2 in self.parts_in_game:
+            if index2[0] == index1:
+                self.parts_in_game.remove(index2)
+                self.forbidden_placements_in_tile.remove(forbidden_placements_parts_in_the_game[index1])  # can build there
+                break
+
+    def delete_road_or_boat(self, index1):
+        for index2 in self.roads_and_boats:
+            if index2[0] == index1:
+                self.roads_and_boats.remove(index2)
+                break
 
 
-class TerrainTile1(HexTile1):
+class TerrainTile1(object):
     """A tile that actually has a kind of terrain and drawable"""
     numbered = True
     height = 7
@@ -476,13 +515,13 @@ class TerrainTile1(HexTile1):
         self.image_hex_path = "assets\{}_hex_rotated1.png".format(self.terrain_kind[0:])
         self.image_photo = Image.open(self.image_hex_path)
         self.image_photo = ImageTk.PhotoImage(self.image_photo.resize((150, int(150 * (258 / 269))),
-                                                                      PIL.Image.Resampling.LANCZOS))  # resampling is the change from the PIL module update
+                                                                      PIL.Image.LANCZOS))  # resampling is the change from the PIL module update
         self.index = index
         if self.terrain_kind != "sea":
             self.place_numbers_image = ImageTk.PhotoImage(
-                place_numbers_image.resize((100, 100), PIL.Image.Resampling.LANCZOS))
+                place_numbers_image.resize((100, 100), PIL.Image.LANCZOS))
             self.number_photo = numbers1_image.crop((0 + 40 * (self.number - 1) - 2, 0, 0 + 40 * self.number, 40))
-            self.number_photo = self.number_photo.resize((30, 30), PIL.Image.Resampling.LANCZOS)
+            self.number_photo = self.number_photo.resize((30, 30), PIL.Image.LANCZOS)
             self.number_photo = ImageTk.PhotoImage(self.number_photo)
         self.has_is_port = False
         self.parts_in_game = []
@@ -504,7 +543,7 @@ class TerrainTile1(HexTile1):
 
     def change_photo_number(self):
         self.number_photo = numbers1_image.crop((0 + 40 * (self.number - 1) - 2, 0, 0 + 40 * self.number, 40))
-        self.number_photo = self.number_photo.resize((30, 30), PIL.Image.Resampling.LANCZOS)
+        self.number_photo = self.number_photo.resize((30, 30), PIL.Image.LANCZOS)
         self.number_photo = ImageTk.PhotoImage(self.number_photo)
 
     def add_building(self, building, index1, is_settlement_or_city=True):
@@ -976,7 +1015,7 @@ class StatsScreen(object):
         self.list_of_contents = []
 
     def start(self, list1):
-        self.note_book_players.pack(anchor=tk.NE, expand=True, pady=20, padx=20)
+        self.note_book_players.pack(anchor=tk.NE, expand=True, pady=60, padx=20)
         self.note_book_players.enable_traversal()  # can navigate with Ctrl + Shift + Tab, Ctrl + Tab
         for i, name in enumerate(list1):
             self.add_note(name, i)
@@ -1028,7 +1067,7 @@ class PortGame(object):
         else:
             self.image_port_game_path = fr"assets\catan_port_31__6.png"
         self.image_port_game_path_image = Image.open(self.image_port_game_path).convert("RGBA")
-        self.image_port_game_path_image = self.image_port_game_path_image.resize((84, 84), PIL.Image.Resampling.LANCZOS)
+        self.image_port_game_path_image = self.image_port_game_path_image.resize((84, 84), PIL.Image.LANCZOS)
         self.image_port_game_path_image = self.image_port_game_path_image.rotate(self.degree_rotate_to)
         self.image_port_game_path_image = ImageTk.PhotoImage(self.image_port_game_path_image)
         self.on_tile = on_tile
@@ -1110,7 +1149,25 @@ class Boat(Road):
     def __repr__(self):
         return f"Boat:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id}, image:{self.image})"
 
-style1 = ttk.Style()
+
+class BitPortGame(object):
+    def __init__(self, index, port_kind, placement, degree_rotate_to, on_tile):
+        self.index = index
+        self.port_kind = port_kind
+        self.placement = placement
+        self.image_port_game_path = None
+        self.degree_rotate_to = degree_rotate_to
+        self.on_tile = on_tile
+
+    def __repr__(self):
+        return f"PortGame:({self.index}, {self.port_kind}, {self.placement}, {self.on_tile})"
+
+
+class BitPortGameEncoder(json.JSONEncoder):
+    def default(self, o):
+        return o.__dict__
+
+"""style1 = ttk.Style()
 style1.theme_create("notebook_style_catan", settings={
     "TNotebook":
         {"configure":
@@ -1124,4 +1181,4 @@ style1.theme_create("notebook_style_catan", settings={
               "expand": [("selected", [0, 5, 0, 0])]}}  # when selected the expanding of the tab
 })
 style1.configure("Catan_game_style.TNotebook", highlightbackground="black", highlightthickness=3)
-style1.theme_use("notebook_style_catan")
+style1.theme_use("notebook_style_catan")"""

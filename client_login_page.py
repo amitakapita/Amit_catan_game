@@ -10,6 +10,8 @@ import PIL
 from some_from_hex_tile import *
 import typing
 from typing import Type
+import traceback
+from types import SimpleNamespace
 
 # Constants:
 count1 = 1
@@ -128,6 +130,7 @@ class Client(object):
         self.session_id_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 15")
         self.participants_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 17")
         self.name_leader = tk.Label(self.root, bg="#2596be", font="Arial 30")
+        self.list_of_players = []
 
         # playing room
         self.canvas_game = tk.Canvas(self.root, bg="#2596be", width=900, highlightbackground="black", highlightthickness=3)
@@ -193,6 +196,30 @@ class Client(object):
                       ImageTk.PhotoImage(Image.open(fr"assets\cube_3.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_4.png").convert("RGBA")),
                       ImageTk.PhotoImage(Image.open(fr"assets\cube_5.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_6.png").convert("RGBA"))]
         self.sum_cubes_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
+        self.bytes_times_counter = 0
+        self.map_storage = None
+        self.tiles_images = []
+        self.place_numbers_path = r"assets\place_numbers.png"
+        self.place_numbers_image = Image.open(place_numbers_path).convert("RGBA")
+        self.numbers_path = r"assets\numbers2.png"
+        self.numbers1_image = Image.open(numbers_path).convert("RGBA")
+        self.place_numbers_image = ImageTk.PhotoImage(self.place_numbers_image.resize((100, 100), PIL.Image.Resampling.LANCZOS))
+        self.Stats_screen = StatsScreen(self.root)
+        self.style1 = ttk.Style()
+        self.style1.theme_create("notebook_style_catan", settings={
+            "TNotebook":
+                {"configure":
+                     {"background": "DeepSkyBlue4"}},
+            "TNotebook.Tab":
+                {"configure":
+                     {"background": "SkyBlue2",
+                      "font": "Arial 15"},
+                 "map":
+                     {"background": [("selected", "SkyBlue3")],  # when selected
+                      "expand": [("selected", [0, 5, 0, 0])]}}  # when selected the expanding of the tab
+        })
+        self.style1.configure("Catan_game_style.TNotebook", highlightbackground="black", highlightthickness=3)
+        self.style1.theme_use("notebook_style_catan")
 
 
 
@@ -262,6 +289,7 @@ class Client(object):
                 data = conn.recv(1024).decode()
                 self.handle_received_connection(conn, data)
         except BaseException:
+            print(traceback.format_exc())
             return
 
     def send_messages(self, conn, data, msg=""):
@@ -337,12 +365,20 @@ class Client(object):
                 print(msg)
                 conn.close()
                 self.back_to_the_menu()
-            elif cmd == protocol_library["get_players_information_ok"]:
+            elif cmd == server_game_rooms_commands["get_players_information_ok"]:
                 self.update_list_of_players(msg)
             elif cmd == server_game_rooms_commands["leave_player_ok_cmd"]:
                 self.update_list_of_players(json.loads(msg))
             elif cmd == server_game_rooms_commands["buy_building_ok_cmd"]:
                 self.handle_buttons(msg)
+            elif cmd == server_game_rooms_commands["start_game_ok"]:
+                self.tiles = self.tiles + json.loads(msg, object_hook=lambda d: SimpleNamespace(**d))  # , self.ports , self.ports + json.loads(temp1)
+                print(len(self.tiles))
+                if self.bytes_times_counter == 8:
+                    self.bytes_times_counter = 0
+                    self.start_game(conn)
+                else:
+                    self.bytes_times_counter += 1
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -687,6 +723,7 @@ class Client(object):
                 self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color,
                                                                 font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
                 space += 30
+            self.list_of_players = new_list_of_players
 
     def join_room_game_lobby(self, ip1, port1, session_id, leader_name):
         conn1 = self.connect_to_game_room_server(ip1, port1)
@@ -703,20 +740,22 @@ class Client(object):
 
     def start_game(self, conn):
         self.not_in_waiting_room_lobby_menu()
-        self.canvas.pack(side=tk.LEFT)
-        self.canvas["height"] = self.root.winfo_screenheight()
+        self.configure_tiles()
+        self.canvas_game.pack(side=tk.LEFT)
+        self.canvas_game["height"] = self.root.winfo_screenheight()
         self.draw_map()
+        self.Stats_screen.start(sorted(self.list_of_players, key=lambda x: x[0]))  # only the players from (players, colors) and start a Stats_screen
         for index, placement1 in enumerate(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1]):
-            id_placement = self.canvas.create_image(placement1[0], placement1[1], image=self.none_any_circle,
+            id_placement = self.canvas_game.create_image(placement1[0], placement1[1], image=self.none_any_circle,
                                                     activeimage=self.Circle_choosing_photo_image, tags="circle_tag")
             print(id_placement, end=", ")
             self.ids_placements.append(id_placement)
-            i = self.canvas.create_text(placement1[0], placement1[1], text=str(index), state=tk.DISABLED,
+            i = self.canvas_game.create_text(placement1[0], placement1[1], text=str(index), state=tk.DISABLED,
                                         tags="indexes_texts_rectangles")
-            r = self.canvas.create_rectangle(self.canvas.bbox(i), fill="#2596be", tags="indexes_texts_rectangles")
-            self.canvas.itemconfigure(i, state=tk.HIDDEN)
-            self.canvas.itemconfigure(r, state=tk.HIDDEN)
-            self.canvas.tag_lower(r, i)
+            r = self.canvas_game.create_rectangle(self.canvas_game.bbox(i), fill="#2596be", tags="indexes_texts_rectangles")
+            self.canvas_game.itemconfigure(i, state=tk.HIDDEN)
+            self.canvas_game.itemconfigure(r, state=tk.HIDDEN)
+            self.canvas_game.tag_lower(r, i)
             # self.canvas.tag_bind(id_placement, "<Button-1>", lambda x: self.canvas.itemconfigure(self.canvas.find_withtag(), image=self.Circle_choosing_photo_image))
         self.button_buy_road.place(x=self.root.winfo_screenwidth() - 125, y=self.root.winfo_screenheight() - 420)
         self.button_buy_boat.place(x=self.root.winfo_screenwidth() - 250, y=self.root.winfo_screenheight() - 420)
@@ -732,8 +771,14 @@ class Client(object):
         self.button_pull_cubes.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 150)
 
     def draw_map(self):
-        for index, tile in enumerate(self.tiles):
-            tile.draw_tile(self.canvas)
+        for index, tile_image in enumerate(self.tiles_images):
+            if self.tiles[index].terrain_kind != "sea":
+                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1], image=tile_image[0])
+                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1], image=self.place_numbers_image)
+                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1], image=tile_image[1])
+            else:
+                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1], image=tile_image)
+            # self.canvas_game.create_text(self.tiles[index].placement[0], self.tiles[index].placement[1], text=self.index)
         # for index in range(len(self.tiles)):
         # for index1, middle in enumerate(placements_middle_hexes_vertex_hexes[index][0]):
         #     self.canvas.create_text(middle[0], middle[1], text=str(index1))
@@ -743,8 +788,8 @@ class Client(object):
         #     self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
         # for index1, placement1 in enumerate(placements_parts_builds_in_game[0]):
         #     self.canvas.create_text(placement1[0], placement1[1], text=str(index1))
-        for index1, port in enumerate(self.ports):
-            port.draw_port(self.canvas)
+        # for index1, port in enumerate(self.ports):
+        #     port.draw_port(self.canvas)
 
     def close_placements(self, conn):
         self.place_entry.place_forget()
@@ -822,6 +867,7 @@ class Client(object):
                                       is_settlement_or_city=True)
                 index2 += 1
             self.settlements.append((building.index, building))
+
     def change_current_button(self, new_current):
         self.current_button = new_current
         self.place_entry.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 200)
@@ -833,6 +879,36 @@ class Client(object):
         for item in self.canvas.find_withtag("indexes_texts_rectangles"):
             print(item, end=", ")  # not to delete
             self.canvas.itemconfigure(item, state=tk.DISABLED)
+
+    def pull_cubes(self):
+        cube1, cube2 = random.randint(1, 6), random.randint(1, 6)
+        sum_cubes = cube1 + cube2
+        self.results_cubes = (cube1, cube2, sum_cubes)
+        self.button_buy_city["state"] = tk.NORMAL
+        self.button_buy_boat["state"] = tk.NORMAL
+        self.button_buy_road["state"] = tk.NORMAL
+        self.button_next_turn["state"] = tk.NORMAL
+        self.button_buy_settlement["state"] = tk.NORMAL
+        self.button_buy_development_card["state"] = tk.NORMAL
+        self.button_declare_victory["state"] = tk.NORMAL
+        print(self.results_cubes)
+        self.lbl_cube1["image"] = self.cubes_images[cube1 - 1]
+        self.lbl_cube2["image"] = self.cubes_images[cube2 - 1]
+        self.lbl_cube1.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 210)
+        self.lbl_cube2.place(x=self.root.winfo_screenwidth() - 390, y=self.root.winfo_screenheight() - 210)
+        self.sum_cubes_lbl["text"] = str(self.results_cubes[2])
+        self.sum_cubes_lbl.place(x=self.root.winfo_screenwidth() - 340, y=self.root.winfo_screenheight() - 135)
+
+    def configure_tiles(self):
+        for tile in self.tiles:
+            image1 = ImageTk.PhotoImage(Image.open(fr"assets\{tile.terrain_kind}_hex_rotated1.png").convert("RGBA").resize((150, int(150 * (258 / 269))),
+                                                                      PIL.Image.Resampling.LANCZOS))  # resampling is the change from the PIL module update
+            if tile.terrain_kind != "sea":
+                image_number = self.numbers1_image.crop((0 + 40 * (tile.number - 1) - 2, 0, 0 + 40 * tile.number, 40))
+                image_number = ImageTk.PhotoImage(image_number.resize((30, 30), PIL.Image.Resampling.LANCZOS))
+                self.tiles_images.append((image1, image_number))
+            else:
+                self.tiles_images.append(image1)
 
 if __name__ == "__main__":
     ip = "127.0.0.1"

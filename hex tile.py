@@ -626,6 +626,9 @@ class Map(object):
         self.lbl_recource5 = tk.Label(self.root, image=self.images_recources[4], bg="#2596be")
         self.list_of_labels = [self.lbl_recource1, self.lbl_recource2, self.lbl_recource3, self.lbl_recource4, self.lbl_recource5]
         self.count_labels_recources = tk.Label(self.root, text=f"{self.count_recources[0]}        {self.count_recources[1]}        {self.count_recources[2]}        {self.count_recources[3]}        {self.count_recources[4]}", font="Arial 15", bg="#2596be")
+        self.players_recourses = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
+        self.dict_colors_indexes = {"bricks": 4, "iron": 3, "wheat": 2, "lumber": 1, "field": 0}
+        self.dict_colors_players_indexes = {"red": 0, "blue": 1, "green": 2, "yellow": 3}
 
     def start(self):
         self.canvas.pack(side=tk.LEFT)
@@ -982,6 +985,34 @@ class Map(object):
         self.lbl_cube2.place(x=self.root.winfo_screenwidth() - 390, y=self.root.winfo_screenheight() - 210)
         self.sum_cubes_lbl["text"] = str(self.results_cubes[2])
         self.sum_cubes_lbl.place(x=self.root.winfo_screenwidth() - 340, y=self.root.winfo_screenheight() - 135)
+        self.what_tile_is_on()
+
+    def what_tile_is_on(self):
+        if self.results_cubes[2] == 7:
+            for player_recourses_list in self.players_recourses:
+                sum1 = sum(player_recourses_list)
+                if sum1 > 7:
+                    sum1 = sum1 // 2
+                    for _ in range(sum1):
+                        recourse_index = random.choice([index for index, free_index in enumerate(player_recourses_list) if free_index != 0])
+                        player_recourses_list[recourse_index] -= 1
+        for tile in self.tiles:
+            if tile.number == self.results_cubes[2]:
+                for part_in_game in tile.parts_in_game:
+                    print(part_in_game[1])
+                    if tile.terrain_kind == "gold_mine":
+                        if Type[type(part_in_game[1])] == Type[Settlement]:
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 1
+                        elif Type[type(part_in_game[1])] == Type[City]:
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 2
+                        print(self.count_labels_recources)
+                    else:
+                        if Type[type(part_in_game[1])] == Type[Settlement]:
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 1
+                        elif Type[type(part_in_game[1])] == Type[City]:
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 2
+        print(self.count_labels_recources)
+        self.count_labels_recources["text"] = f"{self.players_recourses[0][0]}        {self.players_recourses[0][1]}        {self.players_recourses[0][2]}        {self.players_recourses[0][3]}        {self.players_recourses[0][4]}"
 
 
 class StatsScreen(object):

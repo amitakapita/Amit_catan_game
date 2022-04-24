@@ -40,6 +40,10 @@ class GameRoom (object):
         self.roads = []
         self.boats = []
         self.results_cubes = None
+        self.players_recourses = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
+        self.dict_colors_indexes = {"bricks": 4, "iron": 3, "wheat": 2, "lumber": 1, "field": 0}
+        self.dict_colors_players_indexes = {"firebrick4": 0, "SteelBlue4": 1, "chartreuse4": 2, "#DBB600": 3}
+        self.is_first_round = True
 
     def join_a_player(self, player_name, conn):
         if self.count_players <= self.maximum_players:
@@ -160,7 +164,7 @@ class GameRoom (object):
             return
         elif cmd == client_commands["buy_building_cmd"]:
             msg = msg.split("#")
-            message = self.handle_buttons(msg[0], msg[1])
+            message = self.handle_buttons(msg[0], msg[1], self.is_first_round)  # index 0 - 266 (including them both), current button
             if not message[0]:
                 cmd_send = server_game_rooms_commands["buy_building_failed_cmd"]
             else:
@@ -405,7 +409,7 @@ class GameRoom (object):
                     return True
         return False  # none of them
 
-    def handle_buttons(self, position, current_button):
+    def handle_buttons(self, position, current_button, first_round):
         position1 = position
         msg = None
         if position1 != "":
@@ -416,7 +420,7 @@ class GameRoom (object):
             if 0 <= position1 <= 154:
                 if current_button == "road":
                     # if there is not there any road, and there is a the player's settlement or city near, or there is a road of the player near
-                    if self.checking_city_or_settlement_is_near_the_road(position1, "red") or self.checking_roads_or_boats_is_near_the_road(position1, "red"):
+                    if (self.checking_city_or_settlement_is_near_the_road(position1, "red") or self.checking_roads_or_boats_is_near_the_road(position1, "red")) and self.check_parts_in_game_recources("road", first_round, "red"):
                         road = Road(index=position1, color="red", position=indexes_roads_xyx1y1_positions[position1])
                         # road.draw_road(self.canvas)
                         self.roads.append((position1, road))
@@ -428,7 +432,7 @@ class GameRoom (object):
                         msg = json.dumps(road)
                         # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                 elif current_button == "boat":
-                    if self.checking_boats_is_near_a_settlement_or_city(position1, "red") or self.checking_boats_is_near_the_road_or_a_boat(position1, "red"):
+                    if self.checking_boats_is_near_a_settlement_or_city(position1, "red") or self.checking_boats_is_near_the_road_or_a_boat(position1, "red") and self.check_parts_in_game_recources("boat", first_round, "red"):
                         boat = Boat(index=position1, color="red", position=(indexes_roads_xyx1y1_positions[position1]), image1=self.image_boat_1)
                         # boat.draw_boat(self.canvas)
                         self.boats.append((position1, boat))
@@ -444,7 +448,7 @@ class GameRoom (object):
             elif 267 > position1 > 154:
                 if current_button == "city":
                     for index, settlement in self.settlements:
-                        if index == position1 and settlement.color == "red":
+                        if index == position1 and settlement.color == "red" and self.check_parts_in_game_recources("city", first_round, "red"):
                             # self.canvas.delete(settlement.id)
                             self.settlements.remove((index, settlement))
                             city1 = City(color="red", index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image_city_red)
@@ -463,7 +467,7 @@ class GameRoom (object):
                             msg = json.dumps(city1)
                             break
                 elif current_button == "settlement":
-                    if self.checking_settlement(position1, "red"):
+                    if self.checking_settlement(position1, "red") and self.check_parts_in_game_recources("settlement", first_round, "red"):
                         settlement1 = Settlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image1)
                         print(settlement1)
                         # settlement1.draw_settlement(self.canvas)
@@ -485,10 +489,71 @@ class GameRoom (object):
         cube1, cube2 = random.randint(1, 6), random.randint(1, 6)
         sum_cubes = cube1 + cube2
         self.results_cubes = (cube1, cube2, sum_cubes)
+        self.what_tile_is_on()
         for player in self.players:
-            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"], msg=json.dumps(self.results_cubes))
+            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"], msg=f"{json.dumps(self.results_cubes)}#{json.dumps(self.players_recourses[self.dict_colors_players_indexes[player.color]])}")
             player.conn.sendall(msg_to_send.encode())
             print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_to_send}")
+
+    def what_tile_is_on(self):
+        if self.results_cubes[2] == 7:
+            for player_recourses_list in self.players_recourses:
+                sum1 = sum(player_recourses_list)
+                if sum1 > 7:
+                    sum1 = sum1 // 2
+                    for _ in range(sum1):
+                        recourse_index = random.choice([index for index, free_index in enumerate(player_recourses_list) if free_index != 0])
+                        player_recourses_list[recourse_index] -= 1
+        for tile in self.tiles:
+            if tile.number == self.results_cubes[2]:
+                for part_in_game in tile.parts_in_game:
+                    print(part_in_game[1])
+                    if tile.terrain_kind == "gold_mine":
+                        if Type[type(part_in_game[1])] == Type[Settlement]:
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 1
+                        elif Type[type(part_in_game[1])] == Type[City]:
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 2
+                    else:
+                        if Type[type(part_in_game[1])] == Type[Settlement]:
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 1
+                        elif Type[type(part_in_game[1])] == Type[City]:
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 2
+
+    def check_parts_in_game_recources(self, building_part, first_round, color):
+        if first_round and (building_part == "settlement" or building_part == "road" or building_part == "boat"):
+            return True
+        elif first_round:
+            return False
+        if building_part == "settlement":
+            if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] > 0:
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] -= 1
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] -= 1
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] -= 1
+                return True
+        elif building_part == "road":
+            if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] > 0:
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] -= 1
+                return True
+        elif building_part == "boat":
+            if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] > 0 and \
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] > 0:
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] -= 1
+                return True
+        elif building_part == "city":
+            if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["iron"]] >= 3 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] >= 2:
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["iron"]] -= 3
+                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] -= 2
+                return True
+        return False
+
 
 
 if __name__ == "__main__":

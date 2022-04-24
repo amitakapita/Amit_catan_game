@@ -396,7 +396,10 @@ class Client(object):
                 else:
                     self.bytes_times_counter += 1
             elif cmd == server_game_rooms_commands["pulled_cubes_cmd"]:
-                results = json.loads(msg)
+                msg = msg.split("#")
+                results = json.loads(msg[0])
+                recourses = json.loads(msg[1])
+                self.count_recourses = recourses
                 self.pull_cubes(results)
 
     def check_in(self, conn):
@@ -795,7 +798,7 @@ class Client(object):
         for i in range(5):
             self.list_of_labels[i].place(x=self.root.winfo_screenwidth() - 60 * i - 50, y=self.root.winfo_screenheight() - 100)
             self.count_labels_recourses.place(x=self.root.winfo_screenwidth() - 57 * i - 50,
-                                              y=self.root.winfo_screenheight() - 150)
+                                              y=self.root.winfo_screenheight() - 50)
 
     def draw_map(self):
         for index, tile_image in enumerate(self.tiles_images):
@@ -921,6 +924,8 @@ class Client(object):
         self.lbl_cube2.place(x=self.root.winfo_screenwidth() - 390, y=self.root.winfo_screenheight() - 210)
         self.sum_cubes_lbl["text"] = str(results[2])
         self.sum_cubes_lbl.place(x=self.root.winfo_screenwidth() - 340, y=self.root.winfo_screenheight() - 135)
+        print(self.count_labels_recourses)
+        self.count_labels_recourses["text"] = f"{self.count_recourses[0]}        {self.count_recourses[1]}        {self.count_recourses[2]}        {self.count_recourses[3]}        {self.count_recourses[4]}"
 
     def configure_tiles(self):
         for tile in self.tiles:

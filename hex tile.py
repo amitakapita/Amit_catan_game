@@ -563,14 +563,14 @@ class Map(object):
         self.current_button = None
         self.button_buy_road = tk.Button(root, text="Buy Road", relief="solid", font="Arial 15", bg="SkyBlue3",
                                          activebackground="SkyBlue2",
-                                         command=lambda: self.change_current_button("road"), state=tk.DISABLED)
+                                         command=lambda: self.change_current_button("road"), state=tk.NORMAL)
         self.button_buy_boat = tk.Button(root, text="Buy Boat", relief="solid", font="Arial 15", bg="SkyBlue3",
                                          activebackground="SkyBlue2",
-                                         command=lambda: self.change_current_button("boat"), state=tk.DISABLED)
+                                         command=lambda: self.change_current_button("boat"), state=tk.NORMAL)
         self.button_buy_settlement = tk.Button(root, text="Buy Settlement", relief="solid", font="Arial 15",
                                                bg="SkyBlue3",
                                                activebackground="SkyBlue2",
-                                               command=lambda: self.change_current_button("settlement"), state=tk.DISABLED)
+                                               command=lambda: self.change_current_button("settlement"), state=tk.NORMAL)
         self.button_buy_city = tk.Button(root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3",
                                          activebackground="SkyBlue2",
                                          command=lambda: self.change_current_button("city"), state=tk.DISABLED)
@@ -583,7 +583,7 @@ class Map(object):
                                                 command=lambda: self.change_current_button("declare_victory"), state=tk.DISABLED)
         self.button_next_turn = tk.Button(root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3",
                                           activebackground="SkyBlue2",
-                                          command=lambda: self.change_current_button("next_turn"), state=tk.DISABLED)
+                                          command=lambda: self.close_placements(finished_turn=True), state=tk.DISABLED)
         self.where_place = tk.Label(self.root, text="Where to place?", bg="#2596be", font="Arial 15")
         self.place_entry = tk.Entry(self.root, bg="SkyBlue3", font="Arial 15")
         self.button_buy = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Buy", relief="solid")
@@ -606,7 +606,7 @@ class Map(object):
         self.image_boat_2 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_blue.png").convert("RGBA"))
         self.image_boat_3 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_green.png").convert("RGBA"))
         self.image_boat_4 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_yellow.png").convert("RGBA"))
-        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes", command=self.pull_cubes)
+        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes", command=self.pull_cubes, state=tk.DISABLED)
         self.results_cubes = None
         self.lbl_cube1 = tk.Label(self.root, bg="#2596be")
         self.lbl_cube2 = tk.Label(self.root, bg="#2596be")
@@ -653,7 +653,7 @@ class Map(object):
         self.button_buy_development_card.place(x=root.winfo_screenwidth() - 352, y=root.winfo_screenheight() - 360)
         self.button_declare_victory.place(x=root.winfo_screenwidth() - 174, y=root.winfo_screenheight() - 300)
         self.button_next_turn.place(x=root.winfo_screenwidth() - 367, y=root.winfo_screenheight() - 300)
-        self.button_buy["command"] = lambda: self.close_placements()
+        self.button_buy["command"] = lambda: self.close_placements(first_round=True)
         # self.canvas.tag_lower("road", "settlement")
         # self.canvas.tag_lower("road", "city")
         self.button_pull_cubes.place(x=root.winfo_screenwidth() - 450, y=root.winfo_screenheight() - 150)
@@ -775,7 +775,7 @@ class Map(object):
             print(item, end=", ")  # not to delete
             self.canvas.itemconfigure(item, state=tk.DISABLED)
 
-    def handle_buttons(self):
+    def handle_buttons(self, first_round):
         position1 = self.place_entry.get()
         if position1 != "":
             for element in position1:
@@ -785,7 +785,7 @@ class Map(object):
             if 0 <= position1 <= 154:
                 if self.current_button == "road":
                     # if there is not there any road, and there is a the player's settlement or city near, or there is a road of the player near
-                    if self.checking_city_or_settlement_is_near_the_road(position1, "red") or self.checking_roads_or_boats_is_near_the_road(position1, "red"):
+                    if (self.checking_city_or_settlement_is_near_the_road(position1, "red") or self.checking_roads_or_boats_is_near_the_road(position1, "red")) and self.check_parts_in_game_recources("road", first_round):
                         road = Road(index=position1, color="red", position=indexes_roads_xyx1y1_positions[position1])
                         road.draw_road(self.canvas)
                         self.roads.append((position1, road))
@@ -794,9 +794,17 @@ class Map(object):
                                 tile = self.tiles[tile]
                                 tile.add_building(road, places_in_each_placements_for_the_hexes[0][position1], is_settlement_or_city=False)
                                 print(tile)
-                        self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+                        # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+                        if first_round:
+                            self.button_buy_road["state"] = tk.DISABLED
+                            self.button_buy["command"] = lambda: self.close_placements(first_round=False)
+                            self.button_buy_boat["state"] = tk.DISABLED
+                            self.button_next_turn["state"] = tk.NORMAL
+                        else:
+                            self.count_labels_recources[
+                                "text"] = f"{self.players_recourses[0][0]}        {self.players_recourses[0][1]}        {self.players_recourses[0][2]}        {self.players_recourses[0][3]}        {self.players_recourses[0][4]}"
                 elif self.current_button == "boat":
-                    if self.checking_boats_is_near_a_settlement_or_city(position1, "red") or self.checking_boats_is_near_the_road_or_a_boat(position1, "red"):
+                    if (self.checking_boats_is_near_a_settlement_or_city(position1, "red") or self.checking_boats_is_near_the_road_or_a_boat(position1, "red")) and self.check_parts_in_game_recources("boat", first_round):
                         boat = Boat(index=position1, color="red", position=(indexes_roads_xyx1y1_positions[position1]), image1=self.image_boat_1)
                         boat.draw_boat(self.canvas)
                         self.boats.append((position1, boat))
@@ -805,13 +813,21 @@ class Map(object):
                                 tile = self.tiles[tile]
                                 tile.add_building(boat, places_in_each_placements_for_the_hexes[0][position1], is_settlement_or_city=False)
                                 print(tile)
-                        self.canvas.tag_lower("boat", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+                        # self.canvas.tag_lower("boat", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                         # and in order to see the boat's image
-                        self.canvas.tag_lower("road", "boat")
+                        # self.canvas.tag_lower("road", "boat")
+                        if first_round:
+                            self.button_buy_boat["state"] = tk.DISABLED
+                            self.button_buy["command"] = lambda: self.close_placements(first_round=False)
+                            self.button_buy_road["state"] = tk.DISABLED
+                            self.button_next_turn["state"] = tk.NORMAL
+                        else:
+                            self.count_labels_recources[
+                                "text"] = f"{self.players_recourses[0][0]}        {self.players_recourses[0][1]}        {self.players_recourses[0][2]}        {self.players_recourses[0][3]}        {self.players_recourses[0][4]}"
             elif 267 > position1 > 154:
                 if self.current_button == "city":
                     for index, settlement in self.settlements:
-                        if index == position1 and settlement.color == "red":
+                        if index == position1 and settlement.color == "red" and self.check_parts_in_game_recources("city", first_round):
                             self.canvas.delete(settlement.id)
                             self.settlements.remove((index, settlement))
                             city1 = City(color="red", index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image_city_red)
@@ -827,10 +843,12 @@ class Map(object):
                                     print(index2, tile_index1, tile_index)
                             print(self.settlements)
                             print(self.cities)
+                            self.count_labels_recources[
+                                "text"] = f"{self.players_recourses[0][0]}        {self.players_recourses[0][1]}        {self.players_recourses[0][2]}        {self.players_recourses[0][3]}        {self.players_recourses[0][4]}"
                             return True
                     return False
                 elif self.current_button == "settlement":
-                    if self.checking_settlement(position1, "red"):
+                    if self.checking_settlement(position1, "red") and self.check_parts_in_game_recources("settlement", first_round):
                         settlement1 = Settlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image1)
                         print(settlement1)
                         settlement1.draw_settlement(self.canvas)
@@ -842,10 +860,16 @@ class Map(object):
                                 tile.add_building(building=settlement1, index1=places_in_each_placements_for_the_hexes[1][position1 - 155][index2], is_settlement_or_city=True)
                             index2 += 1
                         self.settlements.append((position1, settlement1))
+                        if first_round:
+                            self.button_buy_settlement["state"] = tk.DISABLED
+                        else:
+                            self.count_labels_recources[
+                                "text"] = f"{self.players_recourses[0][0]}        {self.players_recourses[0][1]}        {self.players_recourses[0][2]}        {self.players_recourses[0][3]}        {self.players_recourses[0][4]}"
                         return True
 
 
-    def close_placements(self):
+
+    def close_placements(self, first_round=False, finished_turn=False):
         self.place_entry.place_forget()
         self.button_buy.place_forget()
         self.cancel_buying_button.place_forget()
@@ -853,7 +877,11 @@ class Map(object):
         for item in self.canvas.find_withtag("indexes_texts_rectangles"):
             print(item, end=", ")  # not to delete
             self.canvas.itemconfigure(item, state=tk.HIDDEN)
-        self.handle_buttons()
+        if not finished_turn:
+            self.handle_buttons(first_round)
+        elif finished_turn:
+            self.button_next_turn["state"] = tk.DISABLED
+            self.button_pull_cubes["state"] = tk.NORMAL
 
     def checking_city_or_settlement_is_near_the_road(self, index_road, color):
         for index_road1 in self.roads:  # there is already a road there
@@ -971,11 +999,11 @@ class Map(object):
         cube1, cube2 = random.randint(1, 6), random.randint(1, 6)
         sum_cubes = cube1 + cube2
         self.results_cubes = (cube1, cube2, sum_cubes)
+        self.button_buy_settlement["state"] = tk.NORMAL
         self.button_buy_city["state"] = tk.NORMAL
         self.button_buy_boat["state"] = tk.NORMAL
         self.button_buy_road["state"] = tk.NORMAL
         self.button_next_turn["state"] = tk.NORMAL
-        self.button_buy_settlement["state"] = tk.NORMAL
         self.button_buy_development_card["state"] = tk.NORMAL
         self.button_declare_victory["state"] = tk.NORMAL
         print(self.results_cubes)
@@ -1013,6 +1041,41 @@ class Map(object):
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 2
         print(self.count_labels_recources)
         self.count_labels_recources["text"] = f"{self.players_recourses[0][0]}        {self.players_recourses[0][1]}        {self.players_recourses[0][2]}        {self.players_recourses[0][3]}        {self.players_recourses[0][4]}"
+
+    def check_parts_in_game_recources(self, building_part, first_round):
+        if first_round and (building_part == "settlement" or building_part == "road" or building_part == "boat"):
+            return True
+        elif first_round:
+            return False
+        if building_part == "settlement":
+            if self.players_recourses[0][self.dict_colors_indexes["wheat"]] > 0 and \
+                    self.players_recourses[0][self.dict_colors_indexes["lumber"]] > 0 and \
+                    self.players_recourses[0][self.dict_colors_indexes["bricks"]] > 0 and \
+                    self.players_recourses[0][self.dict_colors_indexes["field"]] > 0:
+                self.players_recourses[0][self.dict_colors_indexes["wheat"]] -= 1
+                self.players_recourses[0][self.dict_colors_indexes["lumber"]] -= 1
+                self.players_recourses[0][self.dict_colors_indexes["bricks"]] -= 1
+                self.players_recourses[0][self.dict_colors_indexes["field"]] -= 1
+                return True
+        elif building_part == "road":
+            if self.players_recourses[0][self.dict_colors_indexes["lumber"]] > 0 and \
+                    self.players_recourses[0][self.dict_colors_indexes["bricks"]] > 0:
+                self.players_recourses[0][self.dict_colors_indexes["lumber"]] -= 1
+                self.players_recourses[0][self.dict_colors_indexes["bricks"]] -= 1
+                return True
+        elif building_part == "boat":
+            if self.players_recourses[0][self.dict_colors_indexes["lumber"]] > 0 and \
+                self.players_recourses[0][self.dict_colors_indexes["field"]] > 0:
+                self.players_recourses[0][self.dict_colors_indexes["lumber"]] -= 1
+                self.players_recourses[0][self.dict_colors_indexes["field"]] -= 1
+                return True
+        elif building_part == "city":
+            if self.players_recourses[0][self.dict_colors_indexes["iron"]] >= 3 and \
+                    self.players_recourses[0][self.dict_colors_indexes["wheat"]] >= 2:
+                self.players_recourses[0][self.dict_colors_indexes["iron"]] -= 3
+                self.players_recourses[0][self.dict_colors_indexes["wheat"]] -= 2
+                return True
+        return False
 
 
 class StatsScreen(object):

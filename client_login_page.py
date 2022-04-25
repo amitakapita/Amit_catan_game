@@ -850,7 +850,7 @@ class Client(object):
             return "there was an error, check again your input"
 
     def handle_buttons(self, msg):
-        building = msg.loads()
+        building = json.loads(msg)
         if Type[building] == Type[Road]:
             self.roads.append((building.index, building))
             building.draw_road(self.canvas_game)
@@ -862,7 +862,7 @@ class Client(object):
                     tile.add_building(building, places_in_each_placements_for_the_hexes[0][building.index],
                                       is_settlement_or_city=False)
                     print(tile)
-        elif Type[building] == Type[Boat]:
+        elif Type[building] == Type[BitBoat]:
             self.boats.append((building.index, building))
             for tile in what_part_is_on_what_tile_hex[0][building.index]:
                 if tile is not None:
@@ -875,7 +875,7 @@ class Client(object):
                                   "settlement")  # that for the assuming that roads are built after placing settlements and over and more
             # and in order to see the boat's image
             self.canvas_game.tag_lower("road", "boat")
-        elif Type[building] == Type[City]:
+        elif Type[building] == Type[BitCity]:
             for index, settlement in self.settlements:
                 if index == building.index and settlement.color == "red":
                     self.canvas_game.delete(settlement.id)
@@ -894,7 +894,7 @@ class Client(object):
                     print(self.settlements)
                     print(self.cities)
                     break
-        elif Type[building] == Type[Settlement]:
+        elif Type[building] == Type[BitSettlement]:
             building.draw_settlement(self.canvas)
             index2 = 0
             for index1 in [index for index in what_part_is_on_what_tile_hex[1][building.index - 155]]:

@@ -501,6 +501,15 @@ class HexTile1(object):
                 self.roads_and_boats.remove(index2)
                 break
 
+    def check_validation_parts_in_the_game(self, wanted_settlement_or_city_index):
+        return self.check_validation_placements_buildings(wanted_settlement_or_city_index)
+
+    def check_validation_placements_buildings(self, index):
+        for placement in self.forbidden_placements_in_tile:
+            if index in placement:
+                return False
+        return True
+
 
 class TerrainTile1(object):
     """A tile that actually has a kind of terrain and drawable"""
@@ -1079,6 +1088,16 @@ class PortGame(object):
         return f"PortGame:({self.index}, {self.port_kind}, {self.placement}, {self.on_tile})"
 
 
+class BitSettlement(object):
+    def __init__(self, color, index, position):
+        self.color = color
+        self.index = index
+        self.position = position
+
+    def __repr__(self):
+        return f"Settlement:(color:{self.color}, index:{self.index}, position:{self.position})"
+
+
 class Settlement(object):
     def __init__(self, color, index, position, img):
         self.color = color
@@ -1093,6 +1112,16 @@ class Settlement(object):
 
     def __repr__(self):
         return f"Settlement:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
+
+
+class BitCity(object):
+    def __init__(self, color, index, position):
+        self.color = color
+        self.index = index
+        self.position = position
+
+    def __repr__(self):
+        return f"City:(color:{self.color}, index:{self.index}, position:{self.position})"
 
 
 class City(object):
@@ -1128,6 +1157,14 @@ class Road(object):
 
     def __repr__(self):
         return f"Road:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
+
+
+class BitBoat(Road):
+    def __init__(self, color, index, position):
+        super().__init__(color=color, index=index, position=position)
+
+    def __repr__(self):
+        return f"Boat:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
 
 
 class Boat(Road):

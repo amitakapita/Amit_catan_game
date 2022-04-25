@@ -201,6 +201,8 @@ class GameRoom (object):
                 conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}").encode())  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
                 message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}")  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
                 print(f"[Server] -> [Client {conn.getpeername()}] {message}")
+            message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"firebrick4#{self.players[0].player_name}")  # at the beggining the turn is in red's
+            conn.sendall(message.encode())
 
     def send_information_of_players(self):
         cmd_send = server_game_rooms_commands["join_player_ok_cmd"]

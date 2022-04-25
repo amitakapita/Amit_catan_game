@@ -37,7 +37,8 @@ server_game_rooms_commands = {
     "leave_player_ok_cmd": "LEAVE_PLAYER_OK",
     "buy_building_ok_cmd": "BUY_BUILDING_OK",
     "buy_building_failed_cmd": "BUY_BLFA",
-    "pulled_cubes_cmd": "PULLED_CUBES"
+    "pulled_cubes_cmd": "PULLED_CUBES",
+    "turn_who_cmd": "TURN_WHO"
 }
 
 def build_message(cmd, msg=""):

@@ -16,6 +16,7 @@ from types import SimpleNamespace
 # Constants:
 count1 = 1
 colors = ["firebrick4", "SteelBlue4", "chartreuse4", "#DBB600"]
+dict_colors = {"firebrick4": "red", "SteelBlue4": "blue", "chartreuse4": "green", "#DBB600": "yellow"}
 
 
 class Client(object):
@@ -188,7 +189,7 @@ class Client(object):
         self.image_boat_2 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_blue.png").convert("RGBA"))
         self.image_boat_3 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_green.png").convert("RGBA"))
         self.image_boat_4 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_yellow.png").convert("RGBA"))
-        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes")
+        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes", state=tk.DISABLED)
         self.lbl_cube1 = tk.Label(self.root, bg="#2596be")
         self.lbl_cube2 = tk.Label(self.root, bg="#2596be")
         self.cubes_images = [ImageTk.PhotoImage(Image.open(fr"assets\cube_1.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_2.png").convert("RGBA")),
@@ -236,6 +237,7 @@ class Client(object):
         self.count_labels_recourses = tk.Label(self.root,
                                                text=f"{self.count_recourses[0]}        {self.count_recourses[1]}        {self.count_recourses[2]}        {self.count_recourses[3]}        {self.count_recourses[4]}",
                                                font="Arial 15", bg="#2596be")
+        self.turn_who_label = tk.Label(self.root, text="", font="Arial 15", bg="#2596be")
 
 
 
@@ -401,6 +403,12 @@ class Client(object):
                 recourses = json.loads(msg[1])
                 self.count_recourses = recourses
                 self.pull_cubes(results)
+            elif cmd == server_game_rooms_commands["turn_who_cmd"]:
+                msg = msg.split("#")
+                self.turn_who_label["text"] = "The turn of " + dict_colors[msg[0]]
+                self.turn_who_label["foreground"] = msg[0]
+                if msg[1] == self.username:
+                    self.button_buy_settlement["state"] = tk.NORMAL
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -799,6 +807,7 @@ class Client(object):
             self.list_of_labels[i].place(x=self.root.winfo_screenwidth() - 60 * i - 50, y=self.root.winfo_screenheight() - 100)
             self.count_labels_recourses.place(x=self.root.winfo_screenwidth() - 57 * i - 50,
                                               y=self.root.winfo_screenheight() - 50)
+        self.turn_who_label.place(x=self.root.winfo_screenwidth() - 350, y=10)
 
     def draw_map(self):
         for index, tile_image in enumerate(self.tiles_images):
@@ -826,9 +835,9 @@ class Client(object):
         self.button_buy.place_forget()
         self.cancel_buying_button.place_forget()
         self.where_place.place_forget()
-        for item in self.canvas.find_withtag("indexes_texts_rectangles"):
+        for item in self.canvas_game.find_withtag("indexes_texts_rectangles"):
             print(item, end=", ")  # not to delete
-            self.canvas.itemconfigure(item, state=tk.HIDDEN)
+            self.canvas_game.itemconfigure(item, state=tk.HIDDEN)
         position1 = self.place_entry.get()
         if position1 != "":
             for element in position1:
@@ -906,9 +915,9 @@ class Client(object):
         self.where_place.place(x=self.root.winfo_screenwidth() - 300, y=self.root.winfo_screenheight() - 230)
         self.cancel_buying_button.place(x=self.root.winfo_screenwidth() - 300,
                                         y=self.root.winfo_screenheight() - 150)
-        for item in self.canvas.find_withtag("indexes_texts_rectangles"):
+        for item in self.canvas_game.find_withtag("indexes_texts_rectangles"):
             print(item, end=", ")  # not to delete
-            self.canvas.itemconfigure(item, state=tk.DISABLED)
+            self.canvas_game.itemconfigure(item, state=tk.DISABLED)
 
     def pull_cubes(self, results):
         self.button_buy_city["state"] = tk.NORMAL

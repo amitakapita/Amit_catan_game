@@ -17,6 +17,7 @@ from types import SimpleNamespace
 count1 = 1
 colors = ["firebrick4", "SteelBlue4", "chartreuse4", "#DBB600"]
 dict_colors = {"firebrick4": "red", "SteelBlue4": "blue", "chartreuse4": "green", "#DBB600": "yellow"}
+dict_colors1 = {"red": "firebrick4", "blue": "SteelBlue4", "green": "chartreuse4", "yellow": "#DBB600"}
 
 
 class Client(object):
@@ -238,6 +239,8 @@ class Client(object):
                                                text=f"{self.count_recourses[0]}        {self.count_recourses[1]}        {self.count_recourses[2]}        {self.count_recourses[3]}        {self.count_recourses[4]}",
                                                font="Arial 15", bg="#2596be")
         self.turn_who_label = tk.Label(self.root, text="", font="Arial 15", bg="#2596be")
+        self.dict_colors_indexes = {"bricks": 4, "iron": 3, "wheat": 2, "lumber": 1, "field": 0}
+        self.dict_colors_players_indexes = {"firebrick4": 0, "SteelBlue4": 1, "chartreuse4": 2, "#DBB600": 3}
 
 
 
@@ -853,6 +856,7 @@ class Client(object):
         building = json.loads(msg, object_hook=lambda d: SimpleNamespace(**d))
         print(building.type1)
         if building.type1 == "Road":
+            building = Road(building[0], building[1], building[2])
             self.roads.append((building.index, building))
             building.draw_road(self.canvas_game)
             self.canvas_game.tag_lower("road",
@@ -864,6 +868,7 @@ class Client(object):
                                       is_settlement_or_city=False)
                     print(tile)
         elif building.type1 == "Boat":
+            building = Boat(building[0], building[1], building[2], self.image_boat_1)
             building.image = self.image_boat_1
             self.boats.append((building.index, building))
             for tile in what_part_is_on_what_tile_hex[0][building.index]:
@@ -881,6 +886,7 @@ class Client(object):
             for index, settlement in self.settlements:
                 if index == building.index and settlement.color == "red":
                     building.img = self.image_city_red
+                    building = City(building.color, building.index, building.position, building.img)
                     self.canvas_game.delete(settlement.id)
                     self.settlements.remove((index, settlement))
                     building.draw_city(self.canvas_game)
@@ -899,6 +905,7 @@ class Client(object):
                     break
         elif building.type1 == "Settlement":
             building.img = self.image1
+            building = Settlement(building.color, building.index, building.position, building.img)
             building.draw_settlement(self.canvas_game)
             index2 = 0
             for index1 in [index for index in what_part_is_on_what_tile_hex[1][building.index - 155]]:

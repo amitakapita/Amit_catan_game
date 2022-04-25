@@ -1088,16 +1088,6 @@ class PortGame(object):
         return f"PortGame:({self.index}, {self.port_kind}, {self.placement}, {self.on_tile})"
 
 
-class BitSettlement(object):
-    def __init__(self, color, index, position):
-        self.color = color
-        self.index = index
-        self.position = position
-
-    def __repr__(self):
-        return f"Settlement:(color:{self.color}, index:{self.index}, position:{self.position})"
-
-
 class Settlement(object):
     def __init__(self, color, index, position, img):
         self.color = color
@@ -1105,6 +1095,7 @@ class Settlement(object):
         self.position = position
         self.img = img
         self.id = None
+        self.type1 = "Settlement"
 
     def draw_settlement(self, canvas):
         self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags=("red_settlement", "settlement"))
@@ -1114,16 +1105,6 @@ class Settlement(object):
         return f"Settlement:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
 
 
-class BitCity(object):
-    def __init__(self, color, index, position):
-        self.color = color
-        self.index = index
-        self.position = position
-
-    def __repr__(self):
-        return f"City:(color:{self.color}, index:{self.index}, position:{self.position})"
-
-
 class City(object):
     def __init__(self, color, index, position, img):
         self.color = color
@@ -1131,6 +1112,7 @@ class City(object):
         self.position = position
         self.img = img
         self.id = None
+        self.type1 = "City"
 
     def draw_city(self, canvas):
         self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags=(f"{self.color}_city", "city"))
@@ -1146,6 +1128,7 @@ class Road(object):
         self.index = index
         self.position = position
         self.id = None
+        self.type1 = "Road"
 
     def draw_road(self, canvas):
         self.id = canvas.create_line(placements_parts_builds_in_game[1][self.position[0] - 155][0],
@@ -1159,20 +1142,13 @@ class Road(object):
         return f"Road:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
 
 
-class BitBoat(Road):
-    def __init__(self, color, index, position):
-        super().__init__(color=color, index=index, position=position)
-
-    def __repr__(self):
-        return f"Boat:(color:{self.color}, index:{self.index}, position:{self.position}, id:{self.id})"
-
-
 class Boat(Road):
     def __init__(self, color, index, position, image1):
         super().__init__(color=color, index=index, position=position)
         print(image1)
         self.image = image1
         # self.image = self.image NOT TO DELETE
+        self.type1 = "Boat"
 
     def draw_boat(self, canvas):
         self.id = canvas.create_line(placements_parts_builds_in_game[1][self.position[0] - 155][0],

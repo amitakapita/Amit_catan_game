@@ -850,8 +850,9 @@ class Client(object):
             return "there was an error, check again your input"
 
     def handle_buttons(self, msg):
-        building = json.loads(msg)
-        if Type[building] == Type[Road]:
+        building = json.loads(msg, object_hook=lambda d: SimpleNamespace(**d))
+        print(building.type1)
+        if building.type1 == "Road":
             self.roads.append((building.index, building))
             building.draw_road(self.canvas_game)
             self.canvas_game.tag_lower("road",
@@ -862,7 +863,8 @@ class Client(object):
                     tile.add_building(building, places_in_each_placements_for_the_hexes[0][building.index],
                                       is_settlement_or_city=False)
                     print(tile)
-        elif Type[building] == Type[BitBoat]:
+        elif building.type1 == "Boat":
+            building.image = self.image_boat_1
             self.boats.append((building.index, building))
             for tile in what_part_is_on_what_tile_hex[0][building.index]:
                 if tile is not None:
@@ -875,9 +877,10 @@ class Client(object):
                                   "settlement")  # that for the assuming that roads are built after placing settlements and over and more
             # and in order to see the boat's image
             self.canvas_game.tag_lower("road", "boat")
-        elif Type[building] == Type[BitCity]:
+        elif building.type1 == "City":
             for index, settlement in self.settlements:
                 if index == building.index and settlement.color == "red":
+                    building.img = self.image_city_red
                     self.canvas_game.delete(settlement.id)
                     self.settlements.remove((index, settlement))
                     building.draw_city(self.canvas_game)
@@ -894,8 +897,9 @@ class Client(object):
                     print(self.settlements)
                     print(self.cities)
                     break
-        elif Type[building] == Type[BitSettlement]:
-            building.draw_settlement(self.canvas)
+        elif building.type1 == "Settlement":
+            building.img = self.image1
+            building.draw_settlement(self.canvas_game)
             index2 = 0
             for index1 in [index for index in what_part_is_on_what_tile_hex[1][building.index - 155]]:
                 if index1 is not None:

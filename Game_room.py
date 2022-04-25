@@ -169,6 +169,7 @@ class GameRoom (object):
                 cmd_send = server_game_rooms_commands["buy_building_failed_cmd"]
             else:
                 cmd_send = server_game_rooms_commands["buy_building_ok_cmd"]
+                msg_send = message[1]
         elif cmd == client_commands["pull_cubes_cmd"]:
             self.pull_cubes()
             return
@@ -436,7 +437,7 @@ class GameRoom (object):
                         # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                 elif current_button == "boat":
                     if self.checking_boats_is_near_a_settlement_or_city(position1, "red") or self.checking_boats_is_near_the_road_or_a_boat(position1, "red") and self.check_parts_in_game_recources("boat", first_round, "red"):
-                        boat = BitBoat(index=position1, color="red", position=(indexes_roads_xyx1y1_positions[position1]), image1=self.image_boat_1)
+                        boat = Boat(index=position1, color="red", position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
                         # boat.draw_boat(self.canvas)
                         self.boats.append((position1, boat))
                         for tile in what_part_is_on_what_tile_hex[0][position1]:
@@ -454,7 +455,7 @@ class GameRoom (object):
                         if index == position1 and settlement.color == "red" and self.check_parts_in_game_recources("city", first_round, "red"):
                             # self.canvas.delete(settlement.id)
                             self.settlements.remove((index, settlement))
-                            city1 = BitCity(color="red", index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=self.image_city_red)
+                            city1 = City(color="red", index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=None)
                             print(city1)  # not to delete
                             # city1.draw_city(self.canvas)
                             print(city1)  # not to delete
@@ -471,7 +472,7 @@ class GameRoom (object):
                             break
                 elif current_button == "settlement":
                     if self.checking_settlement(position1, "red") and self.check_parts_in_game_recources("settlement", first_round, "red"):
-                        settlement1 = BitSettlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)])
+                        settlement1 = Settlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=None)
                         print(settlement1)
                         # settlement1.draw_settlement(self.canvas)
                         index2 = 0
@@ -512,14 +513,14 @@ class GameRoom (object):
                 for part_in_game in tile.parts_in_game:
                     print(part_in_game[1])
                     if tile.terrain_kind == "gold_mine":
-                        if Type[type(part_in_game[1])] == Type[BitSettlement]:
+                        if Type[type(part_in_game[1])] == Type[Settlement]:
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 1
-                        elif Type[type(part_in_game[1])] == Type[BitCity]:
+                        elif Type[type(part_in_game[1])] == Type[City]:
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 2
                     else:
-                        if Type[type(part_in_game[1])] == Type[BitSettlement]:
+                        if Type[type(part_in_game[1])] == Type[Settlement]:
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 1
-                        elif Type[type(part_in_game[1])] == Type[BitCity]:
+                        elif Type[type(part_in_game[1])] == Type[City]:
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 2
 
     def check_parts_in_game_recources(self, building_part, first_round, color):

@@ -1098,7 +1098,7 @@ class Settlement(object):
         self.type1 = "Settlement"
 
     def draw_settlement(self, canvas):
-        self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags=("red_settlement", "settlement"))
+        self.id = canvas.create_image(self.position[0], self.position[1], image=self.img, tags=(f"{self.color}_settlement", "settlement"))
         return self.id
 
     def __repr__(self):
@@ -1134,7 +1134,7 @@ class Road(object):
         self.id = canvas.create_line(placements_parts_builds_in_game[1][self.position[0] - 155][0],
                                placements_parts_builds_in_game[1][self.position[0] - 155][1],
                                placements_parts_builds_in_game[1][self.position[1] - 155][0],
-                               placements_parts_builds_in_game[1][self.position[1] - 155][1], fill=colors[0], width=5,
+                               placements_parts_builds_in_game[1][self.position[1] - 155][1], fill=self.color, width=5,
                                activewidth=8, tags=("road", f"{self.color}_road"))
         return self.id
 

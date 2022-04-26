@@ -166,8 +166,7 @@ class Client(object):
                                                 activebackground="SkyBlue2",
                                                 command=lambda: self.change_current_button("declare_victory"), state=tk.DISABLED)
         self.button_next_turn = tk.Button(self.root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3",
-                                          activebackground="SkyBlue2",
-                                          command=lambda: self.change_current_button("next_turn"), state=tk.DISABLED)
+                                          activebackground="SkyBlue2", state=tk.DISABLED)
         self.where_place = tk.Label(self.root, text="Where to place?", bg="#2596be", font="Arial 15")
         self.place_entry = tk.Entry(self.root, bg="SkyBlue3", font="Arial 15")
         self.button_buy = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Buy", relief="solid")
@@ -310,7 +309,8 @@ class Client(object):
                 data = conn.recv(1024).decode()
                 self.handle_received_connection(conn, data)
         except BaseException:
-            print(traceback.format_exc())
+            # print(traceback.format_exc())
+            print("you have disconnected from the main server.")
             return
 
     def send_messages(self, conn, data, msg=""):
@@ -367,7 +367,7 @@ class Client(object):
                 conn.close()
                 ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
                 conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
-                self.waiting_room_lobby_menu([(self.username, colors[0])], session_id, conn=conn)
+                self.waiting_room_lobby_menu([[(self.username, colors[0])]], session_id, conn=conn)
                 self.send_messages(conn, client_commands["join_my_player_cmd"], self.username)
                 self.main_server = False
             elif cmd == server_commands["join_player_game_room_server_ok_cmd"]:
@@ -407,11 +407,13 @@ class Client(object):
                 self.count_recourses = recourses
                 self.pull_cubes(results)
             elif cmd == server_game_rooms_commands["turn_who_cmd"]:
-                msg = msg.split("#")
+                msg = msg.split("*")
                 self.turn_who_label["text"] = "The turn of " + dict_colors[msg[0]]
                 self.turn_who_label["foreground"] = msg[0]
                 if msg[1] == self.username:
                     self.button_buy_settlement["state"] = tk.NORMAL
+                    self.button_buy_road["state"] = tk.NORMAL
+                    self.button_buy_boat["state"] = tk.NORMAL
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -708,7 +710,8 @@ class Client(object):
         space = 0
         self.participants_lbl.place(x=280, y=180)
         print(list_of_names)
-        for name, color in list_of_names:
+        for name_and_color in list_of_names:
+            (name, color) = name_and_color[0][0], name_and_color[0][1]
             print("meow hav 1 1")
             self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
             space += 30
@@ -811,6 +814,7 @@ class Client(object):
             self.count_labels_recourses.place(x=self.root.winfo_screenwidth() - 57 * i - 50,
                                               y=self.root.winfo_screenheight() - 50)
         self.turn_who_label.place(x=self.root.winfo_screenwidth() - 350, y=10)
+        self.button_next_turn["command"] = lambda: self.close_placements(conn, finished_turn=True)
 
     def draw_map(self):
         for index, tile_image in enumerate(self.tiles_images):
@@ -833,7 +837,7 @@ class Client(object):
         # for index1, port in enumerate(self.ports):
         #     port.draw_port(self.canvas)
 
-    def close_placements(self, conn):
+    def close_placements(self, conn, finished_turn=False):
         self.place_entry.place_forget()
         self.button_buy.place_forget()
         self.cancel_buying_button.place_forget()
@@ -841,6 +845,14 @@ class Client(object):
         for item in self.canvas_game.find_withtag("indexes_texts_rectangles"):
             print(item, end=", ")  # not to delete
             self.canvas_game.itemconfigure(item, state=tk.HIDDEN)
+        if finished_turn:
+            self.send_messages(conn, client_commands["finished_my_turn_cmd"])
+            self.button_buy_settlement["state"] = tk.DISABLED
+            self.button_buy_road["state"] = tk.DISABLED
+            self.button_buy_boat["state"] = tk.DISABLED
+            self.button_buy_city["state"] = tk.DISABLED
+            self.button_next_turn["state"] = tk.DISABLED
+            return "finished my turn"
         position1 = self.place_entry.get()
         if position1 != "":
             for element in position1:
@@ -867,9 +879,17 @@ class Client(object):
                     tile.add_building(building, places_in_each_placements_for_the_hexes[0][building.index],
                                       is_settlement_or_city=False)
                     print(tile)
+            self.button_next_turn["state"] = tk.NORMAL
         elif building.type1 == "Boat":
             building = Boat(building.color, building.index, building.position, self.image_boat_1)
-            building.image = self.image_boat_1
+            if building.color == "firebrick4":
+                building.image = self.image_boat_1
+            elif building.color == "SteelBlue4":
+                building.image = self.image_boat_2
+            elif building.color == "chartreuse4":
+                building.image = self.image_boat_3
+            elif building.color == "#DBB600":
+                building.image = self.image_boat_4
             self.boats.append((building.index, building))
             for tile in what_part_is_on_what_tile_hex[0][building.index]:
                 if tile is not None:
@@ -882,9 +902,10 @@ class Client(object):
                                   "settlement")  # that for the assuming that roads are built after placing settlements and over and more
             # and in order to see the boat's image
             self.canvas_game.tag_lower("road", "boat")
+            self.button_next_turn["state"] = tk.NORMAL
         elif building.type1 == "City":
             for index, settlement in self.settlements:
-                if index == building.index and settlement.color == "red":
+                if index == building.index and settlement.color == settlement.color:
                     building.img = self.image_city_red
                     building = City(building.color, building.index, building.position, building.img)
                     self.canvas_game.delete(settlement.id)
@@ -904,7 +925,14 @@ class Client(object):
                     print(self.cities)
                     break
         elif building.type1 == "Settlement":
-            building.img = self.image1
+            if building.color == "firebrick4":
+                building.img = self.image1
+            elif building.color == "SteelBlue4":
+                building.img = self.image2
+            elif building.color == "chartreuse4":
+                building.img = self.image3
+            elif building.color == "#DBB600":
+                building.img = self.image4
             building = Settlement(building.color, building.index, building.position, building.img)
             building.draw_settlement(self.canvas_game)
             index2 = 0

@@ -13,7 +13,8 @@ client_commands = {
     "leave_my_player_cmd": "LEAVE_PLAYER",
     "join_game_room_cmd": "JGR",
     "buy_building_cmd": "BUY_BUILDING",
-    "pull_cubes_cmd": "PULL_CUBES"
+    "pull_cubes_cmd": "PULL_CUBES",
+    "finished_my_turn_cmd": "FINISHED_MY_TURN"
 }
 
 server_commands = {

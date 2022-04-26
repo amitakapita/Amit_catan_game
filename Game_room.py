@@ -33,7 +33,6 @@ class GameRoom (object):
         self.is_full = False
         self.server_open = True
         self.tiles = []
-        self.ports = []
         self.ids_placements = []
         self.settlements = []  # (index, settlement)
         self.cities = []  # (index, city)
@@ -44,6 +43,7 @@ class GameRoom (object):
         self.dict_colors_indexes = {"bricks": 4, "iron": 3, "wheat": 2, "lumber": 1, "field": 0}
         self.dict_colors_players_indexes = {"firebrick4": 0, "SteelBlue4": 1, "chartreuse4": 2, "#DBB600": 3}
         self.is_first_round = True
+        self.turns_of = None
 
     def join_a_player(self, player_name, conn):
         if self.count_players <= self.maximum_players:
@@ -160,7 +160,7 @@ class GameRoom (object):
         elif cmd == client_commands["start_game_cmd"]:
             print("meow meow")
             self.generate_map()
-            self.start_game(self.tiles, self.ports)
+            self.start_game(self.tiles)
             return
         elif cmd == client_commands["buy_building_cmd"]:
             msg = msg.split("#")
@@ -170,8 +170,17 @@ class GameRoom (object):
             else:
                 cmd_send = server_game_rooms_commands["buy_building_ok_cmd"]
                 msg_send = message[1]
+            message = protocol_library.build_message(cmd_send, msg_send)
+            for player in self.players:
+                player.conn.sendall(message.encode())
+                print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message}")
+            return
         elif cmd == client_commands["pull_cubes_cmd"]:
             self.pull_cubes()
+            return
+        elif cmd == client_commands["finished_my_turn_cmd"]:
+            self.turns_of = self.players[(self.players.index(self.turns_of) + 1) % self.count_players]
+            self.send_who_turns_of()
             return
         message = protocol_library.build_message(cmd_send, msg_send)
         print(f"[Server] -> [Client {conn.getpeername()}] {message}")
@@ -192,7 +201,7 @@ class GameRoom (object):
         except Exception as e:
             print(e)
 
-    def start_game(self, tiles, ports):
+    def start_game(self, tiles):
         self.current = "playing"  # starting the game from the waiting room
         for value in self.players:
             conn = value.conn  # conn
@@ -202,9 +211,10 @@ class GameRoom (object):
                 conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}").encode())  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
                 message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}")  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
                 print(f"[Server] -> [Client {conn.getpeername()}] {message}")
-            message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"firebrick4#{self.players[0].player_name}")  # at the beggining the turn is in red's
+            message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"firebrick4*{self.players[0].player_name}")  # at the beggining the turn is in red's
             conn.sendall(message.encode())
             print(f"\n[Server] -> [Client {conn.getpeername()}] {message}")
+            self.turns_of = self.players[0]
 
     def send_information_of_players(self):
         cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
@@ -231,35 +241,6 @@ class GameRoom (object):
             # temp_tile1 = [temp_number, place, temp_tile, index, False]
             self.tiles.append(temp_tile1)
         self.check_tile_validation()
-        ports_games_kinds_copy = ports_games_kinds[:]
-        for _ in range(10):
-            tiles_count_copy = []
-            for index, tile in enumerate(self.tiles):
-                if tile.terrain_kind != "sea":
-                    list1 = []
-                    for index1, placement in enumerate(forbidden_placements[index]):
-                        if placement is not None and self.tiles[placement].terrain_kind == "sea" and not self.tiles[
-                            placement].has_is_port and not tile.has_is_port:
-                            list1.append(index1)
-                    if list1 is not None and list1 != []:
-                        tiles_count_copy.append((tile, list1))  # [(tile, list1)]
-            if tiles_count_copy is None or tiles_count_copy == []:  # in case that there are not enough shores and beaches (sea near land) in the map, the generator will give up generating placements and ports
-                break
-            tile_temp = random.choice(tiles_count_copy)
-            print(tile_temp)
-            placement_for_the_port = random.choice(tile_temp[1])
-            print(placement_for_the_port)
-            self.tiles[forbidden_placements[tile_temp[0].index][placement_for_the_port]].has_is_port = True
-            self.tiles[tile_temp[0].index].has_is_port = True
-            tiles_count_copy.remove(tile_temp)
-            placement1 = placements_middle_hexes_vertex_hexes[tile_temp[0].index][0][placement_for_the_port]
-            kind_of_the_port = random.choice(ports_games_kinds_copy)
-            ports_games_kinds_copy.remove(kind_of_the_port)
-            # port1 = PortGame(placement_for_the_port, kind_of_the_port, placement1,
-            #                  ports_games_degrees[placement_for_the_port], tile_temp)
-            port1 = [placement_for_the_port, kind_of_the_port, placement1, ports_games_degrees[placement_for_the_port], tile_temp]
-            # port1 = BitPortGame(placement_for_the_port, kind_of_the_port, placement1, ports_games_degrees[placement_for_the_port], tile_temp)
-            self.ports.append(port1)
 
     def check_tile_validation(self):
         """
@@ -424,8 +405,8 @@ class GameRoom (object):
             if 0 <= position1 <= 154:
                 if current_button == "road":
                     # if there is not there any road, and there is a the player's settlement or city near, or there is a road of the player near
-                    if (self.checking_city_or_settlement_is_near_the_road(position1, "red") or self.checking_roads_or_boats_is_near_the_road(position1, "red")) and self.check_parts_in_game_recources("road", first_round, "red"):
-                        road = Road(index=position1, color="red", position=indexes_roads_xyx1y1_positions[position1])
+                    if (self.checking_city_or_settlement_is_near_the_road(position1, self.turns_of.color) or self.checking_roads_or_boats_is_near_the_road(position1, self.turns_of.color)) and self.check_parts_in_game_recources("road", first_round, self.turns_of.color):
+                        road = Road(index=position1, color=self.turns_of.color, position=indexes_roads_xyx1y1_positions[position1])
                         # road.draw_road(self.canvas)
                         self.roads.append((position1, road))
                         for tile in what_part_is_on_what_tile_hex[0][position1]:
@@ -436,8 +417,8 @@ class GameRoom (object):
                         msg = json.dumps(road, cls=BitPortGameEncoder)
                         # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                 elif current_button == "boat":
-                    if self.checking_boats_is_near_a_settlement_or_city(position1, "red") or self.checking_boats_is_near_the_road_or_a_boat(position1, "red") and self.check_parts_in_game_recources("boat", first_round, "red"):
-                        boat = Boat(index=position1, color="red", position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
+                    if self.checking_boats_is_near_a_settlement_or_city(position1, self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(position1, self.turns_of.color) and self.check_parts_in_game_recources("boat", first_round, self.turns_of.color):
+                        boat = Boat(index=position1, color=self.turns_of.color, position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
                         # boat.draw_boat(self.canvas)
                         self.boats.append((position1, boat))
                         for tile in what_part_is_on_what_tile_hex[0][position1]:
@@ -452,10 +433,10 @@ class GameRoom (object):
             elif 267 > position1 > 154:
                 if current_button == "city":
                     for index, settlement in self.settlements:
-                        if index == position1 and settlement.color == "red" and self.check_parts_in_game_recources("city", first_round, "red"):
+                        if index == position1 and settlement.color == self.turns_of.color and self.check_parts_in_game_recources("city", first_round, self.turns_of.color):
                             # self.canvas.delete(settlement.id)
                             self.settlements.remove((index, settlement))
-                            city1 = City(color="red", index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=None)
+                            city1 = City(color=self.turns_of.color, index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=None)
                             print(city1)  # not to delete
                             # city1.draw_city(self.canvas)
                             print(city1)  # not to delete
@@ -471,8 +452,8 @@ class GameRoom (object):
                             msg = json.dumps(city1, cls=BitPortGameEncoder)
                             break
                 elif current_button == "settlement":
-                    if self.checking_settlement(position1, "red") and self.check_parts_in_game_recources("settlement", first_round, "red"):
-                        settlement1 = Settlement(color="red", index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=None)
+                    if self.checking_settlement(position1, self.turns_of.color) and self.check_parts_in_game_recources("settlement", first_round, self.turns_of.color):
+                        settlement1 = Settlement(color=self.turns_of.color, index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=None)
                         print(settlement1)
                         # settlement1.draw_settlement(self.canvas)
                         index2 = 0
@@ -558,6 +539,14 @@ class GameRoom (object):
                 return True
         return False
 
+    def send_who_turns_of(self):
+        message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"{self.turns_of.color}*{self.turns_of.player_name}")
+        for player in self.players:
+            player.conn.sendall(message.encode())
+
+    def send_for_all_players(self, message):
+        for player in self.players:
+            player.conn.sendall(message.encode())
 
 
 if __name__ == "__main__":

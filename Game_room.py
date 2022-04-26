@@ -169,7 +169,7 @@ class GameRoom (object):
                 cmd_send = server_game_rooms_commands["buy_building_failed_cmd"]
             else:
                 cmd_send = server_game_rooms_commands["buy_building_ok_cmd"]
-                msg_send = message[1]
+                msg_send = f"{message[1]}#{self.is_first_round}#{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}"
             message = protocol_library.build_message(cmd_send, msg_send)
             for player in self.players:
                 player.conn.sendall(message.encode())
@@ -179,6 +179,8 @@ class GameRoom (object):
             self.pull_cubes()
             return
         elif cmd == client_commands["finished_my_turn_cmd"]:
+            if self.players.index(self.turns_of) + 1 >= self.count_players:
+                self.is_first_round = False
             self.turns_of = self.players[(self.players.index(self.turns_of) + 1) % self.count_players]
             self.send_who_turns_of()
             return
@@ -211,7 +213,7 @@ class GameRoom (object):
                 conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}").encode())  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
                 message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}")  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
                 print(f"[Server] -> [Client {conn.getpeername()}] {message}")
-            message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"firebrick4*{self.players[0].player_name}")  # at the beggining the turn is in red's
+            message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"firebrick4*{self.players[0].player_name}*{self.is_first_round}")  # at the beggining the turn is in red's
             conn.sendall(message.encode())
             print(f"\n[Server] -> [Client {conn.getpeername()}] {message}")
             self.turns_of = self.players[0]
@@ -540,13 +542,15 @@ class GameRoom (object):
         return False
 
     def send_who_turns_of(self):
-        message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"{self.turns_of.color}*{self.turns_of.player_name}")
+        message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"{self.turns_of.color}*{self.turns_of.player_name}*{self.is_first_round}")
         for player in self.players:
             player.conn.sendall(message.encode())
+            print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message}")
 
     def send_for_all_players(self, message):
         for player in self.players:
             player.conn.sendall(message.encode())
+            print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message}")
 
 
 if __name__ == "__main__":

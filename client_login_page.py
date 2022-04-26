@@ -411,9 +411,14 @@ class Client(object):
                 self.turn_who_label["text"] = "The turn of " + dict_colors[msg[0]]
                 self.turn_who_label["foreground"] = msg[0]
                 if msg[1] == self.username:
-                    self.button_buy_settlement["state"] = tk.NORMAL
-                    self.button_buy_road["state"] = tk.NORMAL
-                    self.button_buy_boat["state"] = tk.NORMAL
+                    if msg[2] == "True":
+                        self.button_buy_settlement["state"] = tk.NORMAL
+                        self.button_buy_road["state"] = tk.NORMAL
+                        self.button_buy_boat["state"] = tk.NORMAL
+                    else:
+                        self.button_pull_cubes["state"] = tk.NORMAL
+                        print("meow")
+                        self.button_next_turn["state"] = tk.DISABLED
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -694,6 +699,7 @@ class Client(object):
             self.back_btn["text"] = "Close lobby"
             self.start_game_menu_button.place(x=1070, y=500)
             self.start_game_menu_button["command"] = lambda: self.send_messages(conn, client_commands["start_game_cmd"])
+            self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0][0]} to start the game"
         else:
             self.not_in_Game_rooms_lobby_menu()
             self.back_btn["text"] = "Leave Room"
@@ -701,8 +707,8 @@ class Client(object):
             self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
             print("button is set")
             self.name_leader.pack(padx=450, pady=20, side=tk.TOP)
+            self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
         self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
-        self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
         self.session_id_lbl["text"] = "Game room id: " + session_id
         self.waiting_to_start_lbl.pack(padx=400, pady=10, side=tk.TOP)
         self.session_id_lbl.place(x=920, y=180)
@@ -865,8 +871,11 @@ class Client(object):
             return "there was an error, check again your input"
 
     def handle_buttons(self, msg):
-        building = json.loads(msg, object_hook=lambda d: SimpleNamespace(**d))
+        building, first_turn, list_of_recourses = msg.split("#")
+        building = json.loads(building, object_hook=lambda d: SimpleNamespace(**d))
         print(building.type1)
+        list_of_recourses = json.loads(list_of_recourses)  # else it gives only the characters
+        self.count_labels_recourses["text"] = f"{list_of_recourses[0]}        {list_of_recourses[1]}        {list_of_recourses[2]}        {list_of_recourses[3]}        {list_of_recourses[4]}"
         if building.type1 == "Road":
             building = Road(building.color, building.index, building.position)
             self.roads.append((building.index, building))
@@ -879,7 +888,10 @@ class Client(object):
                     tile.add_building(building, places_in_each_placements_for_the_hexes[0][building.index],
                                       is_settlement_or_city=False)
                     print(tile)
-            self.button_next_turn["state"] = tk.NORMAL
+            if first_turn:
+                self.button_next_turn["state"] = tk.NORMAL
+                self.button_buy_road["state"] = tk.DISABLED
+                self.button_buy_boat["state"] = tk.DISABLED
         elif building.type1 == "Boat":
             building = Boat(building.color, building.index, building.position, self.image_boat_1)
             if building.color == "firebrick4":
@@ -902,11 +914,21 @@ class Client(object):
                                   "settlement")  # that for the assuming that roads are built after placing settlements and over and more
             # and in order to see the boat's image
             self.canvas_game.tag_lower("road", "boat")
-            self.button_next_turn["state"] = tk.NORMAL
+            if first_turn:
+                self.button_next_turn["state"] = tk.NORMAL
+                self.button_buy_road["state"] = tk.DISABLED
+                self.button_buy_boat["state"] = tk.DISABLED
         elif building.type1 == "City":
             for index, settlement in self.settlements:
                 if index == building.index and settlement.color == settlement.color:
-                    building.img = self.image_city_red
+                    if building.color == "firebrick4":
+                        building.img = self.image_city_red
+                    elif building.color == "SteelBlue4":
+                        building.img = self.image_city_blue
+                    elif building.color == "chartreuse4":
+                        building.img = self.image_city_green
+                    elif building.color == "#DBB600":
+                        building.img = self.image_city_yellow
                     building = City(building.color, building.index, building.position, building.img)
                     self.canvas_game.delete(settlement.id)
                     self.settlements.remove((index, settlement))
@@ -945,8 +967,10 @@ class Client(object):
                                       is_settlement_or_city=True)
                 index2 += 1
             self.settlements.append((building.index, building))
-            self.button_buy_boat["state"] = tk.NORMAL
-            self.button_buy_road["state"] = tk.NORMAL
+            if first_turn:
+                self.button_buy_boat["state"] = tk.NORMAL
+                self.button_buy_road["state"] = tk.NORMAL
+                self.button_buy_settlement["state"] = tk.DISABLED
 
     def change_current_button(self, new_current):
         self.current_button = new_current
@@ -976,6 +1000,7 @@ class Client(object):
         self.sum_cubes_lbl.place(x=self.root.winfo_screenwidth() - 340, y=self.root.winfo_screenheight() - 135)
         print(self.count_labels_recourses)
         self.count_labels_recourses["text"] = f"{self.count_recourses[0]}        {self.count_recourses[1]}        {self.count_recourses[2]}        {self.count_recourses[3]}        {self.count_recourses[4]}"
+        self.button_pull_cubes["state"] = tk.DISABLED
 
     def configure_tiles(self):
         for tile in self.tiles:

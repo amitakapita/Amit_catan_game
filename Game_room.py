@@ -433,7 +433,7 @@ class GameRoom (object):
                                 tile = self.tiles[tile]
                                 tile.add_building(road, places_in_each_placements_for_the_hexes[0][position1], is_settlement_or_city=False)
                                 print(tile)
-                        msg = json.dumps(road)
+                        msg = json.dumps(road, cls=BitPortGameEncoder)
                         # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                 elif current_button == "boat":
                     if self.checking_boats_is_near_a_settlement_or_city(position1, "red") or self.checking_boats_is_near_the_road_or_a_boat(position1, "red") and self.check_parts_in_game_recources("boat", first_round, "red"):
@@ -448,7 +448,7 @@ class GameRoom (object):
                         # self.canvas.tag_lower("boat", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                         # and in order to see the boat's image
                         # self.canvas.tag_lower("road", "boat")
-                        msg = json.dumps(boat)
+                        msg = json.dumps(boat, cls=BitPortGameEncoder)
             elif 267 > position1 > 154:
                 if current_button == "city":
                     for index, settlement in self.settlements:
@@ -468,7 +468,7 @@ class GameRoom (object):
                                     print(index2, tile_index1, tile_index)
                             print(self.settlements)
                             print(self.cities)
-                            msg = json.dumps(city1)
+                            msg = json.dumps(city1, cls=BitPortGameEncoder)
                             break
                 elif current_button == "settlement":
                     if self.checking_settlement(position1, "red") and self.check_parts_in_game_recources("settlement", first_round, "red"):

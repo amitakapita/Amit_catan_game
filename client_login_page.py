@@ -856,7 +856,7 @@ class Client(object):
         building = json.loads(msg, object_hook=lambda d: SimpleNamespace(**d))
         print(building.type1)
         if building.type1 == "Road":
-            building = Road(building[0], building[1], building[2])
+            building = Road(building.color, building.index, building.position)
             self.roads.append((building.index, building))
             building.draw_road(self.canvas_game)
             self.canvas_game.tag_lower("road",
@@ -868,7 +868,7 @@ class Client(object):
                                       is_settlement_or_city=False)
                     print(tile)
         elif building.type1 == "Boat":
-            building = Boat(building[0], building[1], building[2], self.image_boat_1)
+            building = Boat(building.color, building.index, building.position, self.image_boat_1)
             building.image = self.image_boat_1
             self.boats.append((building.index, building))
             for tile in what_part_is_on_what_tile_hex[0][building.index]:
@@ -913,10 +913,12 @@ class Client(object):
                     tile = self.tiles[index1]
                     print(tile, index1)
                     tile.add_building(building=building,
-                                      index1=places_in_each_placements_for_the_hexes[1][building.idnex - 155][index2],
+                                      index1=places_in_each_placements_for_the_hexes[1][building.index - 155][index2],
                                       is_settlement_or_city=True)
                 index2 += 1
             self.settlements.append((building.index, building))
+            self.button_buy_boat["state"] = tk.NORMAL
+            self.button_buy_road["state"] = tk.NORMAL
 
     def change_current_button(self, new_current):
         self.current_button = new_current
@@ -948,6 +950,8 @@ class Client(object):
         self.count_labels_recourses["text"] = f"{self.count_recourses[0]}        {self.count_recourses[1]}        {self.count_recourses[2]}        {self.count_recourses[3]}        {self.count_recourses[4]}"
 
     def configure_tiles(self):
+        for tile in self.tiles:
+            self.tiles[tile.index] = TerrainTile1(tile.number, tile.placement, tile.terrain_kind, tile.index)
         for tile in self.tiles:
             image1 = ImageTk.PhotoImage(Image.open(fr"assets\{tile.terrain_kind}_hex_rotated1.png").convert("RGBA").resize((150, int(150 * (258 / 269))),
                                                                       PIL.Image.Resampling.LANCZOS))  # resampling is the change from the PIL module update

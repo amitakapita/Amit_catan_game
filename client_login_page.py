@@ -158,9 +158,6 @@ class Client(object):
         self.button_buy_city = tk.Button(self.root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3",
                                          activebackground="SkyBlue2",
                                          command=lambda: self.change_current_button("city"), state=tk.DISABLED)
-        self.button_buy_development_card = tk.Button(self.root, text="Buy Development Card", relief="solid", font="Arial 15",
-                                                     bg="SkyBlue3", activebackground="SkyBlue2",
-                                                     command=lambda: self.change_current_button("development_card"), state=tk.DISABLED)
         self.button_declare_victory = tk.Button(self.root, text="Declare Victory", relief="solid", font="Arial 15",
                                                 bg="SkyBlue3",
                                                 activebackground="SkyBlue2",
@@ -309,7 +306,7 @@ class Client(object):
                 data = conn.recv(1024).decode()
                 self.handle_received_connection(conn, data)
         except BaseException:
-            # print(traceback.format_exc())
+            print(traceback.format_exc())  #
             print("you have disconnected from the main server.")
             return
 
@@ -373,6 +370,7 @@ class Client(object):
             elif cmd == server_commands["join_player_game_room_server_ok_cmd"]:
                 conn.close()
                 msg = msg.split("#")
+                print(msg)
                 self.join_room_game_lobby(msg[0], msg[2], msg[1], msg[3])
             elif cmd == server_commands["join_player_game_room_server_failed_cmd"]:
                 self.message_failed_join_error_game["text"] = msg
@@ -415,10 +413,17 @@ class Client(object):
                         self.button_buy_settlement["state"] = tk.NORMAL
                         self.button_buy_road["state"] = tk.NORMAL
                         self.button_buy_boat["state"] = tk.NORMAL
+                        self.button_next_turn["state"] = tk.DISABLED
                     else:
                         self.button_pull_cubes["state"] = tk.NORMAL
                         print("meow")
                         self.button_next_turn["state"] = tk.DISABLED
+                        self.button_buy_road["state"] = tk.DISABLED
+                        self.button_buy_boat["state"] = tk.DISABLED
+                        self.button_next_turn["state"] = tk.DISABLED
+                        self.button_buy_settlement["state"] = tk.DISABLED
+                        self.button_buy_city["state"] = tk.DISABLED
+                        self.button_declare_victory["state"] = tk.DISABLED
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -693,13 +698,26 @@ class Client(object):
         self.from_lobby_game_waiting_or_in_actual_game = False
 
     def waiting_room_lobby_menu(self, list_of_names: list, session_id="", from_creating=True, conn = None):
+        self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
+        self.session_id_lbl["text"] = "Game room id: " + session_id
+        self.waiting_to_start_lbl.pack(padx=400, pady=10, side=tk.TOP)
+        self.session_id_lbl.place(x=920, y=180)
+        self.participants_lbl["text"] = "Players:"
+        space = 0
         self.current_lobby = "waiting_game_room_lobby"
+        self.participants_lbl.place(x=280, y=180)
+        print(list_of_names, type(list_of_names))
         if from_creating and conn is not None:
             self.not_in_create_lobby_game_room()
             self.back_btn["text"] = "Close lobby"
             self.start_game_menu_button.place(x=1070, y=500)
             self.start_game_menu_button["command"] = lambda: self.send_messages(conn, client_commands["start_game_cmd"])
             self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0][0]} to start the game"
+            for name_and_color in list_of_names:
+                (name, color) = name_and_color[0][0], name_and_color[0][1]
+                print("meow hav 1 1")
+                self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
+                space += 30
         else:
             self.not_in_Game_rooms_lobby_menu()
             self.back_btn["text"] = "Leave Room"
@@ -708,19 +726,17 @@ class Client(object):
             print("button is set")
             self.name_leader.pack(padx=450, pady=20, side=tk.TOP)
             self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
-        self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
-        self.session_id_lbl["text"] = "Game room id: " + session_id
-        self.waiting_to_start_lbl.pack(padx=400, pady=10, side=tk.TOP)
-        self.session_id_lbl.place(x=920, y=180)
-        self.participants_lbl["text"] = "Players:"
-        space = 0
-        self.participants_lbl.place(x=280, y=180)
-        print(list_of_names)
-        for name_and_color in list_of_names:
-            (name, color) = name_and_color[0][0], name_and_color[0][1]
-            print("meow hav 1 1")
-            self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
-            space += 30
+            if len(list_of_names) == 2:
+                (name, color) = list_of_names[0], list_of_names[1]
+                self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17",
+                                                                state=tk.DISABLED, anchor=tk.NW)
+            else:
+                for name_and_color in list_of_names:
+                    (name, color) = name_and_color[0], name_and_color[1]
+                    print("meow hav 1 1")
+                    self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17",
+                                                                    state=tk.DISABLED, anchor=tk.NW)
+                    space += 30
 
     def connect_to_game_room_server(self, ip2, port2, leader_lobby_game_room=True):
         try:
@@ -803,8 +819,6 @@ class Client(object):
         self.button_buy_boat.place(x=self.root.winfo_screenwidth() - 250, y=self.root.winfo_screenheight() - 420)
         self.button_buy_settlement.place(x=self.root.winfo_screenwidth() - 430, y=self.root.winfo_screenheight() - 420)
         self.button_buy_city.place(x=self.root.winfo_screenwidth() - 112, y=self.root.winfo_screenheight() - 360)
-        self.button_buy_development_card.place(x=self.root.winfo_screenwidth() - 352,
-                                               y=self.root.winfo_screenheight() - 360)
         self.button_declare_victory.place(x=self.root.winfo_screenwidth() - 174, y=self.root.winfo_screenheight() - 300)
         self.button_next_turn.place(x=self.root.winfo_screenwidth() - 367, y=self.root.winfo_screenheight() - 300)
         self.button_buy["command"] = lambda: self.close_placements(conn)
@@ -858,6 +872,7 @@ class Client(object):
             self.button_buy_boat["state"] = tk.DISABLED
             self.button_buy_city["state"] = tk.DISABLED
             self.button_next_turn["state"] = tk.DISABLED
+            self.button_declare_victory["state"] = tk.DISABLED
             return "finished my turn"
         position1 = self.place_entry.get()
         if position1 != "":
@@ -871,10 +886,11 @@ class Client(object):
             return "there was an error, check again your input"
 
     def handle_buttons(self, msg):
-        building, first_turn, list_of_recourses = msg.split("#")
+        building, first_turn, list_of_recourses, is_my_turn = msg.split("#")
         building = json.loads(building, object_hook=lambda d: SimpleNamespace(**d))
         print(building.type1)
         list_of_recourses = json.loads(list_of_recourses)  # else it gives only the characters
+        print(is_my_turn)
         self.count_labels_recourses["text"] = f"{list_of_recourses[0]}        {list_of_recourses[1]}        {list_of_recourses[2]}        {list_of_recourses[3]}        {list_of_recourses[4]}"
         if building.type1 == "Road":
             building = Road(building.color, building.index, building.position)
@@ -888,7 +904,7 @@ class Client(object):
                     tile.add_building(building, places_in_each_placements_for_the_hexes[0][building.index],
                                       is_settlement_or_city=False)
                     print(tile)
-            if first_turn:
+            if first_turn and is_my_turn == "True":
                 self.button_next_turn["state"] = tk.NORMAL
                 self.button_buy_road["state"] = tk.DISABLED
                 self.button_buy_boat["state"] = tk.DISABLED
@@ -914,13 +930,13 @@ class Client(object):
                                   "settlement")  # that for the assuming that roads are built after placing settlements and over and more
             # and in order to see the boat's image
             self.canvas_game.tag_lower("road", "boat")
-            if first_turn:
+            if first_turn and is_my_turn == "True":
                 self.button_next_turn["state"] = tk.NORMAL
                 self.button_buy_road["state"] = tk.DISABLED
                 self.button_buy_boat["state"] = tk.DISABLED
         elif building.type1 == "City":
             for index, settlement in self.settlements:
-                if index == building.index and settlement.color == settlement.color:
+                if index == building.index and settlement.color == building.color:
                     if building.color == "firebrick4":
                         building.img = self.image_city_red
                     elif building.color == "SteelBlue4":
@@ -967,7 +983,7 @@ class Client(object):
                                       is_settlement_or_city=True)
                 index2 += 1
             self.settlements.append((building.index, building))
-            if first_turn:
+            if first_turn and is_my_turn == "True":
                 self.button_buy_boat["state"] = tk.NORMAL
                 self.button_buy_road["state"] = tk.NORMAL
                 self.button_buy_settlement["state"] = tk.DISABLED
@@ -990,7 +1006,6 @@ class Client(object):
         self.button_buy_road["state"] = tk.NORMAL
         self.button_next_turn["state"] = tk.NORMAL
         self.button_buy_settlement["state"] = tk.NORMAL
-        self.button_buy_development_card["state"] = tk.NORMAL
         self.button_declare_victory["state"] = tk.NORMAL
         self.lbl_cube1["image"] = self.cubes_images[results[0] - 1]
         self.lbl_cube2["image"] = self.cubes_images[results[1] - 1]

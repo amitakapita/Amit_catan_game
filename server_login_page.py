@@ -1,5 +1,6 @@
 import socket
 import sqlite3
+import sys
 import threading
 import protocol_library
 import sqlite3 as sql
@@ -162,10 +163,11 @@ class Server(object):
                         self.count += 1
                         session_id1 = in_game_dict[player_name][1]
                         print(session_id1)
-                        if game_room_server_lobbies_session_ids_and_ports[session_id1][2]:
-                            game_room_server_lobbies_session_ids_and_ports[session_id1][2] = False
-                        game_room_server_lobbies_session_ids_and_ports[session_id1][3] -= 1  # decreasing number of players that are connected
-                        # if game_room_server_lobbies_session_ids_and_ports[session_id1][0] == player_name:
+                        if session_id1 in game_room_server_lobbies_session_ids_and_ports.keys():
+                            if game_room_server_lobbies_session_ids_and_ports[session_id1][2]:
+                                game_room_server_lobbies_session_ids_and_ports[session_id1][2] = False
+                            game_room_server_lobbies_session_ids_and_ports[session_id1][3] -= 1  # decreasing number of players that are connected
+                            # if game_room_server_lobbies_session_ids_and_ports[session_id1][0] == player_name:
 
                         del in_game_dict[player_name]
                         break

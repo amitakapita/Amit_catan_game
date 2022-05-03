@@ -1063,6 +1063,10 @@ class StatsScreen(object):
         for index, content in list1:
             self.list_of_contents[index] = content
 
+    def close(self):
+        self.note_book_players.pack_forget()
+        self.note_book_players.destroy()
+
 
 class PortGame(object):
     def __init__(self, index, port_kind, placement, degree_rotate_to, on_tile):

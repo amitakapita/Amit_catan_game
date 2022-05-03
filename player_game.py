@@ -7,6 +7,7 @@ class Player(object):
         self.player_name = player_name
         self.materials = {"grain": 0, "lumber": 0, "brick": 0, "wool": 0, "ore": 0, "development_card": 0}
         self.points = 0
+        self.sum_rounds_and_boats = 0
 
     def increase_points(self, amount_increase_player=1):
         self.points += amount_increase_player

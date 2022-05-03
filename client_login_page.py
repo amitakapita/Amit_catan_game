@@ -133,6 +133,8 @@ class Client(object):
         self.participants_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 17")
         self.name_leader = tk.Label(self.root, bg="#2596be", font="Arial 30")
         self.list_of_players = []
+        self.temp_information_about_the_room = []
+        self.is_first_time_getting_players = True
 
         # playing room
         self.canvas_game = tk.Canvas(self.root, bg="#2596be", width=900, highlightbackground="black", highlightthickness=3)
@@ -242,7 +244,7 @@ class Client(object):
 
 
 
-    def start(self):
+    def start(self, connection_lobby_not_failed=True):
         try:
             print("meow")
             client_socket = self.connect_to_server(self.ip, self.port)
@@ -290,8 +292,9 @@ class Client(object):
                 receive_connection_thread.daemon = True
                 receive_connection_thread.start()
                 self.send_messages(client_socket, client_commands["login_cmd"], "%s#%s" % (self.username, self.password))
-                self.Game_rooms_lobby_menu(conn=client_socket)
-                self.create_lobby_game_room_create_button["state"] = tk.NORMAL
+                if connection_lobby_not_failed:
+                    self.Game_rooms_lobby_menu(conn=client_socket)
+                    self.create_lobby_game_room_create_button["state"] = tk.NORMAL
                 time.sleep(2)
                 self.second_time_connect = False
 
@@ -367,10 +370,12 @@ class Client(object):
                 self.waiting_room_lobby_menu([[(self.username, colors[0])]], session_id, conn=conn)
                 self.send_messages(conn, client_commands["join_my_player_cmd"], self.username)
                 self.main_server = False
+                self.temp_information_about_the_room = [self.username, colors[0], session_id, conn]
             elif cmd == server_commands["join_player_game_room_server_ok_cmd"]:
                 conn.close()
                 msg = msg.split("#")
                 print(msg)
+                time.sleep(1)
                 self.join_room_game_lobby(msg[0], msg[2], msg[1], msg[3])
             elif cmd == server_commands["join_player_game_room_server_failed_cmd"]:
                 self.message_failed_join_error_game["text"] = msg
@@ -378,6 +383,14 @@ class Client(object):
                 return
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
+                if self.is_first_time_getting_players and self.username == self.temp_information_about_the_room[0][0]:
+                    print(self.temp_information_about_the_room)
+                    self.waiting_room_lobby_menu(list_of_names=[[(self.temp_information_about_the_room[0], self.temp_information_about_the_room[1])]], session_id=self.temp_information_about_the_room[2], conn=self.temp_information_about_the_room[3])
+                    self.is_first_time_getting_players = False
+                elif self.is_first_time_getting_players:
+                    print(self.temp_information_about_the_room)
+                    self.waiting_room_lobby_menu(list_of_names=[self.temp_information_about_the_room[0]], session_id=self.temp_information_about_the_room[1], conn=self.temp_information_about_the_room[3], from_creating=self.temp_information_about_the_room[2])
+                    self.is_first_time_getting_players = False
                 print("meow meow hav hav")
                 self.update_list_of_players(json.loads(msg))
             elif cmd == server_game_rooms_commands["close_lobby_ok_cmd"]:
@@ -403,7 +416,8 @@ class Client(object):
                 results = json.loads(msg[0])
                 recourses = json.loads(msg[1])
                 self.count_recourses = recourses
-                self.pull_cubes(results)
+                self.pull_cubes(results, msg[2])
+                # self.who_turn = msg[2] not to delete
             elif cmd == server_game_rooms_commands["turn_who_cmd"]:
                 msg = msg.split("*")
                 self.turn_who_label["text"] = "The turn of " + dict_colors[msg[0]]
@@ -424,6 +438,11 @@ class Client(object):
                         self.button_buy_settlement["state"] = tk.DISABLED
                         self.button_buy_city["state"] = tk.DISABLED
                         self.button_declare_victory["state"] = tk.DISABLED
+            elif cmd == server_game_rooms_commands["join_player_failed_cmd"]:
+                self.message_failed_join_error_game["text"] = "could not connect to the lobby, maybe the game has started."
+                self.message_failed_join_error_game.place(x=465, y=115)
+                self.second_time_connect = True
+                self.start(connection_lobby_not_failed=False)
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -558,6 +577,12 @@ class Client(object):
             self.not_in_waiting_room_lobby_menu()
             self.start()
             self.refresh_lobby_rooms(from_refresh=True)
+        elif self.current_lobby == "playing_room":
+            self.back_btn["text"] = "Back"
+            self.second_time_connect = True
+            self.not_in_playing_room()
+            self.start()
+
 
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
@@ -763,7 +788,7 @@ class Client(object):
         print(client_socket)
         return client_socket
 
-    def not_in_waiting_room_lobby_menu(self):
+    def not_in_waiting_room_lobby_menu(self, out_lobby=True):
         self.lobby_name_game_room_lbl.pack_forget()
         self.start_game_menu_button.place_forget()
         self.waiting_room_lobby_menu_canvas.delete()
@@ -772,6 +797,9 @@ class Client(object):
         self.session_id_lbl.place_forget()
         self.participants_lbl.place_forget()
         self.name_leader.pack_forget()
+        if out_lobby:
+            self.list_of_players = []
+
 
     def update_list_of_players(self, new_list_of_players):
         if self.current_lobby == "waiting_game_room_lobby":
@@ -786,8 +814,8 @@ class Client(object):
     def join_room_game_lobby(self, ip1, port1, session_id, leader_name):
         conn1 = self.connect_to_game_room_server(ip1, port1)
         self.main_server = False
+        self.temp_information_about_the_room = [[leader_name, colors[0]], session_id, False, conn1]
         self.send_messages(conn1, client_commands["join_my_player_cmd"], self.username)
-        self.waiting_room_lobby_menu([leader_name, colors[0]], session_id, False, conn1)
 
     def leave_room_game_lobby(self, conn):
         print("meow meow hav bye hav")
@@ -797,19 +825,20 @@ class Client(object):
         self.back_to_the_menu()
 
     def start_game(self, conn):
-        self.not_in_waiting_room_lobby_menu()
+        self.current_lobby = "playing_room"
+        self.not_in_waiting_room_lobby_menu(out_lobby=False)
         self.configure_tiles()
         self.canvas_game.pack(side=tk.LEFT)
         self.canvas_game["height"] = self.root.winfo_screenheight()
         self.draw_map()
-        self.Stats_screen.start(sorted(self.list_of_players, key=lambda x: x[0]))  # only the players from (players, colors) and start a Stats_screen
+        self.Stats_screen.start(map(lambda x: x[0], self.list_of_players))  # only the players from (players, colors) and start a Stats_screen
         for index, placement1 in enumerate(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1]):
             id_placement = self.canvas_game.create_image(placement1[0], placement1[1], image=self.none_any_circle,
-                                                    activeimage=self.Circle_choosing_photo_image, tags="circle_tag")
+                                                         activeimage=self.Circle_choosing_photo_image, tags="circle_tag")
             print(id_placement, end=", ")
             self.ids_placements.append(id_placement)
             i = self.canvas_game.create_text(placement1[0], placement1[1], text=str(index), state=tk.DISABLED,
-                                        tags="indexes_texts_rectangles")
+                                             tags="indexes_texts_rectangles")
             r = self.canvas_game.create_rectangle(self.canvas_game.bbox(i), fill="#2596be", tags="indexes_texts_rectangles")
             self.canvas_game.itemconfigure(i, state=tk.HIDDEN)
             self.canvas_game.itemconfigure(r, state=tk.HIDDEN)
@@ -886,7 +915,7 @@ class Client(object):
             return "there was an error, check again your input"
 
     def handle_buttons(self, msg):
-        building, first_turn, list_of_recourses, is_my_turn = msg.split("#")
+        building, first_turn, list_of_recourses, is_my_turn, points = msg.split("#")
         building = json.loads(building, object_hook=lambda d: SimpleNamespace(**d))
         print(building.type1)
         list_of_recourses = json.loads(list_of_recourses)  # else it gives only the characters
@@ -987,6 +1016,7 @@ class Client(object):
                 self.button_buy_boat["state"] = tk.NORMAL
                 self.button_buy_road["state"] = tk.NORMAL
                 self.button_buy_settlement["state"] = tk.DISABLED
+                self.Stats_screen.list_of_contents[2 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"points: {points}"
 
     def change_current_button(self, new_current):
         self.current_button = new_current
@@ -1000,13 +1030,14 @@ class Client(object):
             print(item, end=", ")  # not to delete
             self.canvas_game.itemconfigure(item, state=tk.DISABLED)
 
-    def pull_cubes(self, results):
-        self.button_buy_city["state"] = tk.NORMAL
-        self.button_buy_boat["state"] = tk.NORMAL
-        self.button_buy_road["state"] = tk.NORMAL
-        self.button_next_turn["state"] = tk.NORMAL
-        self.button_buy_settlement["state"] = tk.NORMAL
-        self.button_declare_victory["state"] = tk.NORMAL
+    def pull_cubes(self, results, who_turns):
+        if who_turns == self.username:
+            self.button_buy_city["state"] = tk.NORMAL
+            self.button_buy_boat["state"] = tk.NORMAL
+            self.button_buy_road["state"] = tk.NORMAL
+            self.button_next_turn["state"] = tk.NORMAL
+            self.button_buy_settlement["state"] = tk.NORMAL
+            self.button_declare_victory["state"] = tk.NORMAL
         self.lbl_cube1["image"] = self.cubes_images[results[0] - 1]
         self.lbl_cube2["image"] = self.cubes_images[results[1] - 1]
         self.lbl_cube1.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 210)
@@ -1029,6 +1060,50 @@ class Client(object):
                 self.tiles_images.append((image1, image_number))
             else:
                 self.tiles_images.append(image1)
+
+    def not_in_playing_room(self):
+        self.canvas_game.delete("all")
+        self.canvas_game.pack_forget()
+        self.button_buy_city.place_forget()
+        self.button_declare_victory.place_forget()
+        self.button_next_turn.place_forget()
+        self.button_buy_boat.place_forget()
+        self.button_buy_settlement.place_forget()
+        self.button_buy_road.place_forget()
+        self.tiles = []
+        self.count_recourses = [0, 0, 0, 0, 0]
+        self.count_labels_recourses.place_forget()
+        self.tiles_images = []
+        self.bytes_times_counter = 0
+        self.map_storage = None
+        self.boats = []
+        self.roads = []
+        self.cities = []
+        self.settlements = []
+        self.ids_placements = []
+        self.current_button = None
+        self.list_of_players = []
+        self.where_place.place_forget()
+        self.place_entry.place_forget()
+        self.cancel_buying_button.place_forget()
+        self.button_pull_cubes.place_forget()
+        self.Stats_screen.close()
+        self.resources_label.place_forget()
+        self.turn_who_label.place_forget()
+        self.lbl_recourse2.place_forget()
+        self.lbl_recourse1.place_forget()
+        self.lbl_recourse3.place_forget()
+        self.lbl_recourse4.place_forget()
+        self.lbl_recourse5.place_forget()
+        self.sum_cubes_lbl.place_forget()
+        self.lbl_cube1.place_forget()
+        self.lbl_cube2.place_forget()
+        self.lbl_cube1["image"] = ""
+        self.lbl_cube2["image"] = ""
+        self.is_first_time_getting_players = True
+
+
+
 
 if __name__ == "__main__":
     ip = "127.0.0.1"

@@ -1032,25 +1032,19 @@ class StatsScreen(object):
     def add_note(self, name, i):
         frame = tk.Frame(self.note_book_players, bg="#2596be")
         lbl0 = tk.Label(frame, text=f"color: {colors1[i]}", font="Arial 15", bg="#2596be", fg=colors[i])
-        lbl1 = tk.Label(frame, text=f"points: 12", font="Arial 15", bg="#2596be")
-        lbl2 = tk.Label(frame, text="number of resources: 7", font="Arial 15", bg="#2596be")
-        lbl3 = tk.Label(frame, text="number of development cards: 3", font="Arial 15", bg="#2596be")
-        lbl4 = tk.Label(frame, text="number of roads and boats: 5", font="Arial 15", bg="#2596be")
-        lbl5 = tk.Label(frame, text="number of knights used: 2", font="Arial 15", bg="#2596be")
+        lbl1 = tk.Label(frame, text=f"points: 0", font="Arial 15", bg="#2596be")
+        lbl2 = tk.Label(frame, text="number of resources: 0", font="Arial 15", bg="#2596be")
+        lbl4 = tk.Label(frame, text="number of roads and boats: 0", font="Arial 15", bg="#2596be")
         self.list_of_contents.append(frame)
         self.list_of_contents.append(lbl0)
         self.list_of_contents.append(lbl1)
         self.list_of_contents.append(lbl2)
-        self.list_of_contents.append(lbl3)
         self.list_of_contents.append(lbl4)
-        self.list_of_contents.append(lbl5)
         frame.pack(fill="both", expand=True)
         lbl0.pack(padx=10, pady=10, anchor=tk.NW)
         lbl1.pack(padx=10, pady=5, anchor=tk.NW)
         lbl2.pack(padx=10, pady=5, anchor=tk.NW)
-        lbl3.pack(padx=10, pady=5, anchor=tk.NW)
         lbl4.pack(padx=10, pady=5, anchor=tk.NW)
-        lbl5.pack(padx=10, pady=5, anchor=tk.NW)
         self.note_book_players.add(frame, text=name[0])
 
     def number_of_notes(self):
@@ -1062,6 +1056,10 @@ class StatsScreen(object):
     def change_notes(self, list1):
         for index, content in list1:
             self.list_of_contents[index] = content
+
+    def close(self):
+        self.note_book_players.pack_forget()
+        self.note_book_players.destroy()
 
 
 class PortGame(object):

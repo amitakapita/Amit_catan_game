@@ -82,12 +82,12 @@ class GameRoom (object):
                 print("meow meow hav hav 1 1 hav meow")
                 client_socket, client_address = server_socket.accept()
                 print(f"A new client has conencted! {client_address}")
+                self.count_players += 1
                 print(f"Players: {self.count_players} out of {self.maximum_players}")
                 """if self.count_players == 1:
                     self.join_a_player(self.leader_name)
                 else:
                     self.join_a_player()"""
-                self.count_players += 1
                 print("hi meow hav")
                 self.handle_client(client_socket)
 
@@ -151,7 +151,7 @@ class GameRoom (object):
                 # sys.exit(1)
                 return "CLOSING SERVER"
         elif cmd == client_commands["leave_my_player_cmd"]:
-            self.player_exits_the_room(conn)
+            # self.player_exits_the_room(conn)
             message = protocol_library.build_message(server_game_rooms_commands["leave_player_ok_cmd"], self.players_information())
             for player in self.players:
                 print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
@@ -175,6 +175,7 @@ class GameRoom (object):
                     msg_send += f"True"
                 else:
                     msg_send += f"False"
+                msg_send = msg_send + f"#{self.turns_of.sum_rounds_and_boats}"
                 message1 = protocol_library.build_message(cmd_send, msg_send)
                 player.conn.sendall(message1.encode())
                 print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message1}")
@@ -423,6 +424,7 @@ class GameRoom (object):
                                 print(tile)
                         msg = json.dumps(road, cls=BitPortGameEncoder)
                         # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+                        self.turns_of.sum_rounds_and_boats += 1
                 elif current_button == "boat":
                     if self.checking_boats_is_near_a_settlement_or_city(position1, self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(position1, self.turns_of.color) and self.check_parts_in_game_recources("boat", first_round, self.turns_of.color):
                         boat = Boat(index=position1, color=self.turns_of.color, position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
@@ -437,6 +439,7 @@ class GameRoom (object):
                         # and in order to see the boat's image
                         # self.canvas.tag_lower("road", "boat")
                         msg = json.dumps(boat, cls=BitPortGameEncoder)
+                        self.turns_of.sum_rounds_and_boats += 1
             elif 267 > position1 > 154:
                 if current_button == "city":
                     for index, settlement in self.settlements:
@@ -457,6 +460,7 @@ class GameRoom (object):
                             print(self.settlements)
                             print(self.cities)
                             msg = json.dumps(city1, cls=BitPortGameEncoder)
+                            self.turns_of.points += 1
                             break
                 elif current_button == "settlement":
                     if self.checking_settlement(position1, self.turns_of.color) and self.check_parts_in_game_recources("settlement", first_round, self.turns_of.color):
@@ -472,6 +476,7 @@ class GameRoom (object):
                             index2 += 1
                         self.settlements.append((position1, settlement1))
                         msg = json.dumps(settlement1, cls=BitPortGameEncoder)
+                        self.turns_of.points += 1
         if msg is not None:
             return True, msg
         else:
@@ -483,7 +488,7 @@ class GameRoom (object):
         self.results_cubes = (cube1, cube2, sum_cubes)
         self.what_tile_is_on()
         for player in self.players:
-            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"], msg=f"{json.dumps(self.results_cubes)}#{json.dumps(self.players_recourses[self.dict_colors_players_indexes[player.color]])}")
+            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"], msg=f"{json.dumps(self.results_cubes)}#{json.dumps(self.players_recourses[self.dict_colors_players_indexes[player.color]])}#{self.turns_of.player_name}")
             player.conn.sendall(msg_to_send.encode())
             print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_to_send}")
 
@@ -491,7 +496,7 @@ class GameRoom (object):
         if self.results_cubes[2] == 7:
             for player_recourses_list in self.players_recourses:
                 sum1 = sum(player_recourses_list)
-                if sum1 > 7:
+                if sum1 > 10:
                     sum1 = sum1 // 2
                     for _ in range(sum1):
                         recourse_index = random.choice([index for index, free_index in enumerate(player_recourses_list) if free_index != 0])

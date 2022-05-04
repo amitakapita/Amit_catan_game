@@ -38,6 +38,7 @@ class Client(object):
         self.root.geometry("500x500+30+30")
         self.back_btn = tk.Button(self.root, text="Back", relief="solid", font="Arial 15", background="#c76969")
         screen_width, screen_height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        self.root.iconphoto(True, ImageTk.PhotoImage(Image.open(r"assets\favicon-32x32.png").convert("RGBA")))
 
         # Labels and Entries
         self.lbl_welcome_message = tk.Label(self.root, text="Welcome to Catan game!", font="Arial 17")
@@ -915,7 +916,7 @@ class Client(object):
             return "there was an error, check again your input"
 
     def handle_buttons(self, msg):
-        building, first_turn, list_of_recourses, is_my_turn, points = msg.split("#")
+        building, first_turn, list_of_recourses, is_my_turn, points = msg.split("*")
         building = json.loads(building, object_hook=lambda d: SimpleNamespace(**d))
         print(building.type1)
         list_of_recourses = json.loads(list_of_recourses)  # else it gives only the characters

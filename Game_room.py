@@ -169,17 +169,17 @@ class GameRoom (object):
                 cmd_send = server_game_rooms_commands["buy_building_failed_cmd"]
             else:
                 cmd_send = server_game_rooms_commands["buy_building_ok_cmd"]
-                msg_send = f"{message[1]}#{self.is_first_round}#{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}#"
+                msg_send = f"{message[1]}*{self.is_first_round}*{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*"
             for player in self.players:
                 if self.turns_of.player_name == player.player_name:
                     msg_send += f"True"
                 else:
                     msg_send += f"False"
-                msg_send = msg_send + f"#{self.turns_of.sum_rounds_and_boats}"
+                msg_send = msg_send + f"*{self.turns_of.sum_rounds_and_boats}"
                 message1 = protocol_library.build_message(cmd_send, msg_send)
                 player.conn.sendall(message1.encode())
                 print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message1}")
-                msg_send = f"{message[1]}#{self.is_first_round}#{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}#"
+                msg_send = f"{message[1]}*{self.is_first_round}*{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*"
             return
         elif cmd == client_commands["pull_cubes_cmd"]:
             self.pull_cubes()

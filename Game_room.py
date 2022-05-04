@@ -39,7 +39,7 @@ class GameRoom (object):
         self.roads = []
         self.boats = []
         self.results_cubes = None
-        self.players_recourses = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
+        self.players_recourses = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
         self.dict_colors_indexes = {"bricks": 4, "iron": 3, "wheat": 2, "lumber": 1, "field": 0}
         self.dict_colors_players_indexes = {"firebrick4": 0, "SteelBlue4": 1, "chartreuse4": 2, "#DBB600": 3}
         self.is_first_round = True
@@ -82,7 +82,8 @@ class GameRoom (object):
                 print("meow meow hav hav 1 1 hav meow")
                 client_socket, client_address = server_socket.accept()
                 print(f"A new client has conencted! {client_address}")
-                self.count_players += 1
+                if self.current == "waiting":
+                    self.count_players += 1
                 print(f"Players: {self.count_players} out of {self.maximum_players}")
                 """if self.count_players == 1:
                     self.join_a_player(self.leader_name)
@@ -175,7 +176,7 @@ class GameRoom (object):
                     msg_send += f"True"
                 else:
                     msg_send += f"False"
-                msg_send = msg_send + f"*{self.turns_of.sum_rounds_and_boats}"
+                msg_send = msg_send + f"*{self.turns_of.sum_rounds_and_boats}*{self.turns_of.points}"
                 message1 = protocol_library.build_message(cmd_send, msg_send)
                 player.conn.sendall(message1.encode())
                 print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message1}")
@@ -488,19 +489,21 @@ class GameRoom (object):
         self.results_cubes = (cube1, cube2, sum_cubes)
         self.what_tile_is_on()
         for player in self.players:
-            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"], msg=f"{json.dumps(self.results_cubes)}#{json.dumps(self.players_recourses[self.dict_colors_players_indexes[player.color]])}#{self.turns_of.player_name}")
+            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"], msg=f"{json.dumps(self.results_cubes)}#{json.dumps(self.players_recourses[self.dict_colors_players_indexes[player.color]])}#{self.turns_of.player_name}#{[self.players_recourses[i][-1] for i in range(self.count_players)]}")
             player.conn.sendall(msg_to_send.encode())
             print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_to_send}")
 
     def what_tile_is_on(self):
         if self.results_cubes[2] == 7:
             for player_recourses_list in self.players_recourses:
-                sum1 = sum(player_recourses_list)
+                sum1 = sum(player_recourses_list[:-1])  # the last one is a sum
                 if sum1 > 10:
                     sum1 = sum1 // 2
+                    print(sum1)
                     for _ in range(sum1):
-                        recourse_index = random.choice([index for index, free_index in enumerate(player_recourses_list) if free_index != 0])
+                        recourse_index = random.choice([index for index, free_index in enumerate(player_recourses_list[:-1]) if free_index != 0])
                         player_recourses_list[recourse_index] -= 1
+                    player_recourses_list[-1] -= sum1
         for tile in self.tiles:
             if tile.number == self.results_cubes[2]:
                 for part_in_game in tile.parts_in_game:
@@ -508,13 +511,17 @@ class GameRoom (object):
                     if tile.terrain_kind == "gold_mine":
                         if Type[type(part_in_game[1])] == Type[Settlement]:
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 1
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][-1] += 1
                         elif Type[type(part_in_game[1])] == Type[City]:
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 2
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][-1] += 2
                     else:
                         if Type[type(part_in_game[1])] == Type[Settlement]:
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 1
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][-1] += 1
                         elif Type[type(part_in_game[1])] == Type[City]:
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 2
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][-1] += 2
 
     def check_parts_in_game_recources(self, building_part, first_round, color):
         if first_round and (building_part == "settlement" or building_part == "road" or building_part == "boat"):
@@ -530,24 +537,28 @@ class GameRoom (object):
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] -= 1
+                self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 4
                 return True
         elif building_part == "road":
             if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] > 0 and \
                     self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] > 0:
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] -= 1
+                self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 2
                 return True
         elif building_part == "boat":
             if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] > 0 and \
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] > 0:
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] -= 1
+                self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 2
                 return True
         elif building_part == "city":
             if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["iron"]] >= 3 and \
                     self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] >= 2:
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["iron"]] -= 3
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] -= 2
+                self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 5
                 return True
         return False
 

@@ -286,6 +286,8 @@ class Client(object):
                 self.lbl1_message.pack()
                 self.register_btn.pack()
                 self.name1_input.focus()
+
+                self.root.mainloop()
             else:
                 self.current_lobby = "game_rooms_lobby"
                 self.main_server = True
@@ -298,8 +300,6 @@ class Client(object):
                     self.create_lobby_game_room_create_button["state"] = tk.NORMAL
                 time.sleep(2)
                 self.second_time_connect = False
-
-            self.root.mainloop()
 
         except socket.error as e:
             print(e)
@@ -405,6 +405,8 @@ class Client(object):
             elif cmd == server_game_rooms_commands["buy_building_ok_cmd"]:
                 self.handle_buttons(msg)
             elif cmd == server_game_rooms_commands["start_game_ok"]:
+                if self.bytes_times_counter == 0:
+                    self.back_btn["state"] = tk.DISABLED
                 self.tiles = self.tiles + json.loads(msg, object_hook=lambda d: SimpleNamespace(**d))  # , self.ports , self.ports + json.loads(temp1)
                 print(len(self.tiles))
                 if self.bytes_times_counter == 8:
@@ -826,6 +828,8 @@ class Client(object):
         self.back_to_the_menu()
 
     def start_game(self, conn):
+        if self.back_btn["text"] == "Close lobby":
+            self.back_btn["text"] = "Leave Room"
         self.current_lobby = "playing_room"
         self.not_in_waiting_room_lobby_menu(out_lobby=False)
         self.configure_tiles()
@@ -865,6 +869,8 @@ class Client(object):
                                               y=self.root.winfo_screenheight() - 50)
         self.turn_who_label.place(x=self.root.winfo_screenwidth() - 350, y=10)
         self.button_next_turn["command"] = lambda: self.close_placements(conn, finished_turn=True)
+        self.back_btn["state"] = tk.NORMAL
+        self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
 
     def draw_map(self):
         for index, tile_image in enumerate(self.tiles_images):

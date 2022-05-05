@@ -1024,6 +1024,8 @@ class StatsScreen(object):
         self.list_of_contents = []
 
     def start(self, list1):
+        self.note_book_players = ttk.Notebook(self.root, width=self.root.winfo_screenwidth() - 900, padding="0.05i",
+                                              style="TNotebook")
         self.note_book_players.pack(anchor=tk.NE, expand=True, pady=60, padx=20)
         self.note_book_players.enable_traversal()  # can navigate with Ctrl + Shift + Tab, Ctrl + Tab
         for i, name in enumerate(list1):
@@ -1060,6 +1062,7 @@ class StatsScreen(object):
     def close(self):
         self.note_book_players.pack_forget()
         self.note_book_players.destroy()
+        self.list_of_contents = []
 
 
 class PortGame(object):

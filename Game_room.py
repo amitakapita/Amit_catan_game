@@ -105,16 +105,23 @@ class GameRoom (object):
                 status = self.handle_client_cmd(conn, request)
                 if status is not None and status == "CLOSING SERVER":
                     raise BaseException
-        except ConnectionError or OSError:
+        except ConnectionError:
             print(f"There was an error with the client {conn.getpeername()}, so the server closed the socket with him")
             self.player_exits_the_room(conn)
             self.send_information_of_players()
+        except ConnectionRefusedError or ConnectionResetError or ConnectionAbortedError:
+            pass
+        except OSError:
+            print(f"There was an error with the last client, so the server closed the socket with him")
+            self.player_exits_the_room(conn)
+            self.send_information_of_players()
+            if len(self.players) == 0:
+                self.server_open = False
+                print("The server has closed")
         except BaseException as e:
             print("meow hav meow meow hav hav meow hav", e, traceback.format_exc())
             sys.exit(0)
             conn.close()
-        except ConnectionRefusedError or ConnectionResetError or ConnectionAbortedError:
-            pass
 
     def handle_client(self, conn):
         client_handler = threading.Thread(target=self.handle_player_conn,
@@ -140,23 +147,34 @@ class GameRoom (object):
         elif cmd == client_commands["close_lobby_cmd"]:
             print(self.players)
             if self.players[0].conn == conn:
-                message = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"], "game server closed, switched back to the main server")
-                for player in self.players:
-                    print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
-                    conn.sendall(message.encode())
-                    self.player_exits_the_room(player.conn)
-                    player.conn.close()
+                if self.current == "playing":
+                    message = protocol_library.build_message(server_game_rooms_commands["leave_player_ok_cmd"],
+                                                             self.players_information())
+                    for player in self.players:
+                        print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
+                        conn.sendall(message.encode())
+                else:
+                    message = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"], "game server closed, switched back to the main server")
+                    for player in self.players:
+                        print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
+                        conn.sendall(message.encode())
+                        self.player_exits_the_room(player.conn)
+                        player.conn.close()
 
-                print("CLOSING SERVER")
-                self.server_open = False
-                # sys.exit(1)
-                return "CLOSING SERVER"
+                    print("CLOSING SERVER")
+                    self.server_open = False
+                    # sys.exit(1)
+                    return "CLOSING SERVER"
         elif cmd == client_commands["leave_my_player_cmd"]:
             # self.player_exits_the_room(conn)
             message = protocol_library.build_message(server_game_rooms_commands["leave_player_ok_cmd"], self.players_information())
-            for player in self.players:
-                print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
-                conn.sendall(message.encode())
+            if len(self.players) > 1:
+                for player in self.players:
+                    print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
+                    conn.sendall(message.encode())
+            elif self.count_players == 1:
+                self.server_open = False
+                self.players[0].conn.close()
             return
         elif cmd == client_commands["start_game_cmd"]:
             print("meow meow")

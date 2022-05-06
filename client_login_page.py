@@ -579,7 +579,7 @@ class Client(object):
             self.second_time_connect = True
             self.not_in_waiting_room_lobby_menu()
             self.start()
-            self.refresh_lobby_rooms(from_refresh=True)
+            # self.refresh_lobby_rooms(conn, from_refresh=True)
         elif self.current_lobby == "playing_room":
             self.back_btn["text"] = "Back"
             self.second_time_connect = True

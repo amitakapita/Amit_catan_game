@@ -44,6 +44,7 @@ class GameRoom (object):
         self.dict_colors_players_indexes = {"firebrick4": 0, "SteelBlue4": 1, "chartreuse4": 2, "#DBB600": 3}
         self.is_first_round = True
         self.turns_of = None
+        self.server_socket1 = None
 
     def join_a_player(self, player_name, conn):
         if self.count_players <= self.maximum_players:
@@ -75,6 +76,7 @@ class GameRoom (object):
             print("meow hi hav")
             server_socket.bind((self.ip, self.port))
             server_socket.listen()
+            self.server_socket1 = server_socket  # a pointer
 
             while self.server_open:
                 if self.count_players == 0:
@@ -91,6 +93,7 @@ class GameRoom (object):
                     self.join_a_player()"""
                 print("hi meow hav")
                 self.handle_client(client_socket)
+            server_socket.close()
 
         except socket.error as e:
             print(e)
@@ -120,6 +123,7 @@ class GameRoom (object):
                 print("The server has closed")
         except BaseException as e:
             print("meow hav meow meow hav hav meow hav", e, traceback.format_exc())
+            self.server_socket1.close()
             sys.exit(0)
             conn.close()
 

@@ -111,15 +111,16 @@ class GameRoom (object):
         except ConnectionError:
             print(f"There was an error with the client {conn.getpeername()}, so the server closed the socket with him")
             self.player_exits_the_room(conn)
-            self.send_information_of_players()
+            self.send_information_of_players(is_leave=True)
         except ConnectionRefusedError or ConnectionResetError or ConnectionAbortedError:
             pass
         except OSError:
             print(f"There was an error with the last client, so the server closed the socket with him")
             self.player_exits_the_room(conn)
-            self.send_information_of_players()
+            self.send_information_of_players(is_leave=True)
             if len(self.players) == 0:
                 self.server_open = False
+                self.server_socket1.close()
                 print("The server has closed")
         except BaseException as e:
             print("meow hav meow meow hav hav meow hav", e, traceback.format_exc())
@@ -190,20 +191,23 @@ class GameRoom (object):
             message = self.handle_buttons(msg[0], msg[1], self.is_first_round)  # index 0 - 266 (including them both), current button
             if not message[0]:
                 cmd_send = server_game_rooms_commands["buy_building_failed_cmd"]
+                conn.sendall(protocol_library.build_message(cmd_send, message[1]).encode())
+                print(f"[SERVER] -> [CLIENT {conn.getpeername()}] {protocol_library.build_message(cmd_send, message[1])}")
+                return
             else:
                 cmd_send = server_game_rooms_commands["buy_building_ok_cmd"]
                 msg_send = f"{message[1]}*{self.is_first_round}*{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*"
-            for player in self.players:
-                if self.turns_of.player_name == player.player_name:
-                    msg_send += f"True"
-                else:
-                    msg_send += f"False"
-                msg_send = msg_send + f"*{self.turns_of.sum_rounds_and_boats}*{self.turns_of.points}"
-                message1 = protocol_library.build_message(cmd_send, msg_send)
-                player.conn.sendall(message1.encode())
-                print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message1}")
-                msg_send = f"{message[1]}*{self.is_first_round}*{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*"
-            return
+                for player in self.players:
+                    if self.turns_of.player_name == player.player_name:
+                        msg_send += f"True"
+                    else:
+                        msg_send += f"False"
+                    msg_send = msg_send + f"*{self.turns_of.sum_rounds_and_boats}*{self.turns_of.points}"
+                    message1 = protocol_library.build_message(cmd_send, msg_send)
+                    player.conn.sendall(message1.encode())
+                    print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message1}")
+                    msg_send = f"{message[1]}*{self.is_first_round}*{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*"
+                return
         elif cmd == client_commands["pull_cubes_cmd"]:
             self.pull_cubes()
             return
@@ -247,8 +251,11 @@ class GameRoom (object):
             print(f"\n[Server] -> [Client {conn.getpeername()}] {message}")
             self.turns_of = self.players[0]
 
-    def send_information_of_players(self):
-        cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
+    def send_information_of_players(self, is_leave=False):
+        if not is_leave:
+            cmd_send = server_game_rooms_commands["join_player_ok_cmd"]
+        else:
+            cmd_send = server_game_rooms_commands["leave_player_ok_cmd"]
         msg_send = self.players_information()
         message = protocol_library.build_message(cmd_send, msg_send)
         for player in self.players:

@@ -240,6 +240,7 @@ class Client(object):
         self.turn_who_label = tk.Label(self.root, text="", font="Arial 15", bg="#2596be")
         self.dict_colors_indexes = {"bricks": 4, "iron": 3, "wheat": 2, "lumber": 1, "field": 0}
         self.dict_colors_players_indexes = {"firebrick4": 0, "SteelBlue4": 1, "chartreuse4": 2, "#DBB600": 3}
+        self.error_message_game_building = tk.Label(self.root, text="", font="Arial 10", bg="#2596be")
 
 
 
@@ -298,6 +299,9 @@ class Client(object):
                 if connection_lobby_not_failed:
                     self.Game_rooms_lobby_menu(conn=client_socket)
                     self.create_lobby_game_room_create_button["state"] = tk.NORMAL
+                else:
+                    self.refresh_lobby_rooms(conn=client_socket, cmd=client_commands["get_lobby_rooms_cmd"])
+                    self.message_failed_join_error_game.place(x=465, y=115)
                 time.sleep(2)
                 self.second_time_connect = False
 
@@ -368,7 +372,7 @@ class Client(object):
                 conn.close()
                 ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
                 conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
-                self.waiting_room_lobby_menu([[(self.username, colors[0])]], session_id, conn=conn)
+                self.waiting_room_lobby_menu(list_of_names=[[(self.username, colors[0])]], session_id=session_id, conn=conn)
                 self.send_messages(conn, client_commands["join_my_player_cmd"], self.username)
                 self.main_server = False
                 self.temp_information_about_the_room = [self.username, colors[0], session_id, conn]
@@ -390,7 +394,7 @@ class Client(object):
                     self.is_first_time_getting_players = False
                 elif self.is_first_time_getting_players:
                     print(self.temp_information_about_the_room)
-                    self.waiting_room_lobby_menu(list_of_names=[self.temp_information_about_the_room[0]], session_id=self.temp_information_about_the_room[1], conn=self.temp_information_about_the_room[3], from_creating=self.temp_information_about_the_room[2])
+                    self.waiting_room_lobby_menu(list_of_names=[[(self.temp_information_about_the_room[0])]], session_id=self.temp_information_about_the_room[1], conn=self.temp_information_about_the_room[3], from_creating=self.temp_information_about_the_room[2])
                     self.is_first_time_getting_players = False
                 print("meow meow hav hav")
                 self.update_list_of_players(json.loads(msg))
@@ -403,6 +407,7 @@ class Client(object):
             elif cmd == server_game_rooms_commands["leave_player_ok_cmd"]:
                 self.update_list_of_players(json.loads(msg))
             elif cmd == server_game_rooms_commands["buy_building_ok_cmd"]:
+                self.error_message_game_building.place_forget()
                 self.handle_buttons(msg)
             elif cmd == server_game_rooms_commands["start_game_ok"]:
                 if self.bytes_times_counter == 0:
@@ -422,6 +427,7 @@ class Client(object):
                 self.pull_cubes(results, msg[2], msg[3])
                 # self.who_turn = msg[2] not to delete
             elif cmd == server_game_rooms_commands["turn_who_cmd"]:
+                self.error_message_game_building.place_forget()
                 msg = msg.split("*")
                 self.turn_who_label["text"] = "The turn of " + dict_colors[msg[0]]
                 self.turn_who_label["foreground"] = msg[0]
@@ -446,6 +452,9 @@ class Client(object):
                 self.message_failed_join_error_game.place(x=465, y=115)
                 self.second_time_connect = True
                 self.start(connection_lobby_not_failed=False)
+            elif cmd == server_game_rooms_commands["buy_building_failed_cmd"]:
+                pass
+                self.handle_error_message(msg)
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -749,18 +758,18 @@ class Client(object):
         else:
             self.not_in_Game_rooms_lobby_menu()
             self.back_btn["text"] = "Leave Room"
-            self.name_leader["text"] = f"Waiting room - {list_of_names[0][0]}'s lobby"
+            self.name_leader["text"] = f"Waiting room - {list_of_names[0][0][0]}'s lobby"
             self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
             print("button is set")
             self.name_leader.pack(padx=450, pady=20, side=tk.TOP)
-            self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0]} to start the game"
+            self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0][0]} to start the game"
             if len(list_of_names) == 2:
-                (name, color) = list_of_names[0], list_of_names[1]
+                (name, color) = list_of_names[0][0], list_of_names[0][1]
                 self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17",
                                                                 state=tk.DISABLED, anchor=tk.NW)
             else:
                 for name_and_color in list_of_names:
-                    (name, color) = name_and_color[0], name_and_color[1]
+                    (name, color) = name_and_color[0][0], name_and_color[0][1]
                     print("meow hav 1 1")
                     self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17",
                                                                     state=tk.DISABLED, anchor=tk.NW)
@@ -1117,6 +1126,11 @@ class Client(object):
         self.lbl_cube1["image"] = ""
         self.lbl_cube2["image"] = ""
         self.is_first_time_getting_players = True
+        self.error_message_game_building.place_forget()
+
+    def handle_error_message(self, message):
+        self.error_message_game_building["text"] = message
+        self.error_message_game_building.place(x=self.root.winfo_screenwidth() - 440, y=self.root.winfo_screenheight() - 480)
 
 
 

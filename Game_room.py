@@ -45,6 +45,7 @@ class GameRoom (object):
         self.is_first_round = True
         self.turns_of = None
         self.server_socket1 = None
+        self.top_roads_and_boats = 0  # None 0
 
     def join_a_player(self, player_name, conn):
         if self.count_players <= self.maximum_players:
@@ -120,11 +121,11 @@ class GameRoom (object):
             self.send_information_of_players(is_leave=True)
             if len(self.players) == 0:
                 self.server_open = False
-                self.server_socket1.close()
+                self.server_socket1.close()  #
                 print("The server has closed")
         except BaseException as e:
             print("meow hav meow meow hav hav meow hav", e, traceback.format_exc())
-            self.server_socket1.close()
+            # self.server_socket1.close()
             sys.exit(0)
             conn.close()
 
@@ -196,17 +197,17 @@ class GameRoom (object):
                 return
             else:
                 cmd_send = server_game_rooms_commands["buy_building_ok_cmd"]
-                msg_send = f"{message[1]}*{self.is_first_round}*{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*"
+                msg_send = f"{message[1]}*{self.is_first_round}*"
                 for player in self.players:
                     if self.turns_of.player_name == player.player_name:
-                        msg_send += f"True"
+                        msg_send += f"{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*True"
                     else:
-                        msg_send += f"False"
+                        msg_send += f"{str(self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]][-1])}*False"
                     msg_send = msg_send + f"*{self.turns_of.sum_rounds_and_boats}*{self.turns_of.points}"
                     message1 = protocol_library.build_message(cmd_send, msg_send)
                     player.conn.sendall(message1.encode())
                     print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message1}")
-                    msg_send = f"{message[1]}*{self.is_first_round}*{self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*"
+                    msg_send = f"{message[1]}*{self.is_first_round}*"  # {self.players_recourses[self.dict_colors_players_indexes[self.turns_of.color]]}*
                 return
         elif cmd == client_commands["pull_cubes_cmd"]:
             self.pull_cubes()
@@ -455,6 +456,7 @@ class GameRoom (object):
                         msg = json.dumps(road, cls=BitPortGameEncoder)
                         # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                         self.turns_of.sum_rounds_and_boats += 1
+                        self.the_highest_amount_of_roads_and_boats()
                 elif current_button == "boat":
                     if self.checking_boats_is_near_a_settlement_or_city(position1, self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(position1, self.turns_of.color) and self.check_parts_in_game_recources("boat", first_round, self.turns_of.color):
                         boat = Boat(index=position1, color=self.turns_of.color, position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
@@ -470,6 +472,9 @@ class GameRoom (object):
                         # self.canvas.tag_lower("road", "boat")
                         msg = json.dumps(boat, cls=BitPortGameEncoder)
                         self.turns_of.sum_rounds_and_boats += 1
+                        self.the_highest_amount_of_roads_and_boats()
+                        for player in self.players:
+                            print(player.sum_rounds_and_boats)
             elif 267 > position1 > 154:
                 if current_button == "city":
                     for index, settlement in self.settlements:
@@ -601,6 +606,21 @@ class GameRoom (object):
         for player in self.players:
             player.conn.sendall(message.encode())
             print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message}")
+
+    def the_highest_amount_of_roads_and_boats(self):
+        for index, amount in enumerate(map(lambda x: x.sum_rounds_and_boats , self.players)):
+            if type(self.top_roads_and_boats) == Type[int]:  # type(int)
+                if amount > 5:
+                    if not self.players[index].color == self.top_roads_and_boats.color:
+                        self.players_recourses[index][-1] += 2
+                        self.players_recourses[self.players.index(self.top_roads_and_boats)][-1] -= 2
+                    self.top_roads_and_boats = self.players[index]
+            elif type(self.top_roads_and_boats) == Type[Player] and amount > self.top_roads_and_boats.sum_rounds_and_boats and amount > 5:
+                if not self.players[index].color == self.top_roads_and_boats.color:
+                    self.players_recourses[index][-1] += 2
+                    self.players_recourses[self.players.index(self.top_roads_and_boats)][-1] -= 2
+                self.top_roads_and_boats = self.players[index]
+
 
 
 if __name__ == "__main__":

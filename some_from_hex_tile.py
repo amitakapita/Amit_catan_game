@@ -1155,8 +1155,8 @@ class Boat(Road):
         self.id = canvas.create_line(placements_parts_builds_in_game[1][self.position[0] - 155][0],
                                      placements_parts_builds_in_game[1][self.position[0] - 155][1],
                                      placements_parts_builds_in_game[1][self.position[1] - 155][0],
-                                     placements_parts_builds_in_game[1][self.position[1] - 155][1], fill=colors[0], width=5,
-                                     activewidth=8, tags=("road", f"{self.color}_road"))
+                                     placements_parts_builds_in_game[1][self.position[1] - 155][1], fill=self.color, width=5,
+                                     activewidth=8, tags=("road", f"{self.color}_road"))  # colors[0]
         self.id = (self.id, canvas.create_image(placements_parts_builds_in_game[0][self.index][0], placements_parts_builds_in_game[0][self.index][1], tags=("boat", f"{self.color}_boat"), image=self.image))
         return self.id
 

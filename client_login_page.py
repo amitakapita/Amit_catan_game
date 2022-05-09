@@ -923,11 +923,13 @@ class Client(object):
         if position1 != "":
             for element in position1:
                 if element not in "1234567890":
+                    self.error_message_game_building["text"] = "an index is in numbers"
                     return "an index is in numbers"
         position1 = int(position1)
         if (0 <= position1 <= 154 and (self.current_button == "road" or self.current_button == "boat")) or (267 > position1 > 154 and (self.current_button == "city" or self.current_button == "settlement")):
             self.send_messages(conn, client_commands["buy_building_cmd"], f"{position1}#{self.current_button}")
         else:
+            self.error_message_game_building["text"] = "there was an error, check again your input"
             return "there was an error, check again your input"
 
     def handle_buttons(self, msg):
@@ -936,8 +938,12 @@ class Client(object):
         print(building.type1)
         list_of_recourses = json.loads(list_of_recourses)  # else it gives only the characters
         print(is_my_turn)
-        self.count_labels_recourses["text"] = f"{list_of_recourses[0]}        {list_of_recourses[1]}        {list_of_recourses[2]}        {list_of_recourses[3]}        {list_of_recourses[4]}"
-        self.Stats_screen.list_of_contents[3 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"number of resources: {list_of_recourses[-1]}"
+        if is_my_turn == "True":
+            self.count_labels_recourses["text"] = f"{list_of_recourses[0]}        {list_of_recourses[1]}        {list_of_recourses[2]}        {list_of_recourses[3]}        {list_of_recourses[4]}"
+            self.Stats_screen.list_of_contents[3 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"number of resources: {list_of_recourses[-1]}"
+        else:
+            self.Stats_screen.list_of_contents[3 + 5 * self.dict_colors_players_indexes[building.color]][
+            "text"] = f"number of resources: {list_of_recourses}"  # [-1]
         if building.type1 == "Road":
             building = Road(building.color, building.index, building.position)
             self.roads.append((building.index, building))
@@ -952,8 +958,8 @@ class Client(object):
                 self.button_next_turn["state"] = tk.NORMAL
                 self.button_buy_road["state"] = tk.DISABLED
                 self.button_buy_boat["state"] = tk.DISABLED
-                self.canvas_game.tag_lower("road",
-                                           "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+                # self.canvas_game.tag_lower("road",
+                #                            "settlement")  # that for the assuming that roads are built after placing settlements and over and more
             self.Stats_screen.list_of_contents[4 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"number of roads and boats: {number_of_roads_and_boats_included}"
         elif building.type1 == "Boat":
             building = Boat(building.color, building.index, building.position, self.image_boat_1)
@@ -972,15 +978,16 @@ class Client(object):
                     tile.add_building(building, places_in_each_placements_for_the_hexes[0][building.index],
                                       is_settlement_or_city=False)
                     print(tile)
-            self.canvas_game.tag_lower("boat",
-                                  "settlement")  # that for the assuming that roads are built after placing settlements and over and more
+            # self.canvas_game.tag_lower("boat",
+            #                       "settlement")  # that for the assuming that roads are built after placing settlements and over and more
             # and in order to see the boat's image
-            self.canvas_game.tag_lower("road", "boat")
+            # self.canvas_game.tag_lower("road", "boat")
             if first_turn and is_my_turn == "True":
                 self.button_next_turn["state"] = tk.NORMAL
                 self.button_buy_road["state"] = tk.DISABLED
                 self.button_buy_boat["state"] = tk.DISABLED
-                building.draw_boat(self.canvas_game)
+            building.draw_boat(self.canvas_game)
+            self.Stats_screen.list_of_contents[4 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"number of roads and boats: {number_of_roads_and_boats_included}"
         elif building.type1 == "City":
             for index, settlement in self.settlements:
                 if index == building.index and settlement.color == building.color:
@@ -1131,6 +1138,7 @@ class Client(object):
     def handle_error_message(self, message):
         self.error_message_game_building["text"] = message
         self.error_message_game_building.place(x=self.root.winfo_screenwidth() - 440, y=self.root.winfo_screenheight() - 480)
+        self.root.after(5000, lambda: self.error_message_game_building.place_forget())
 
 
 

@@ -91,7 +91,7 @@ class Server(object):
             else:
                 to_send = server_commands["login_failed_cmd"]
         elif cmd == client_commands["sign_up_cmd"]:
-            to_send = self.register_check(msg, con)
+            to_send, msg_to_send = self.register_check(msg, con)
         elif cmd == client_commands["get_profile_cmd"]:
             to_send, msg_to_send = self.profile(conn, con)
         elif cmd == client_commands["logout_cmd"]:
@@ -185,9 +185,18 @@ class Server(object):
         :return: SIGN_UP_OK OR SIGN_UP_FAILED with the reason why it has failed
         """
         username, password, confirm_password, email = msg.split("#")
-        if password != confirm_password:
+        if len(password) < 4 or len(confirm_password) < 4:
+            return server_commands["sign_up_failed_cmd"], "The password is too short."
+        elif password != confirm_password:
             return server_commands["sign_up_failed_cmd"], "The passwords does not match each other"
+        if not protocol_library.check_username_validability(username):
+            return server_commands["sign_up_failed_cmd"], "The username should be in letters a-z, A-Z, 0-9 include."
+        if "@" not in email:
+            return server_commands["sign_up_failed_cmd"], "The email is not valid"
         cur = con.cursor()
+        cur.execute("SELECT Username FROM accounts WHERE Username = ?", (username))
+        if cur.fetchall():
+            return server_commands["sign_up_failed_cmd"], "The username is already taken."
         cur.execute("INSERT INTO accounts (Username, Password, Email, Played_games, Wined_games) values (?, ?, ?, ?, ?)", (username, password, email, 0, 0))
         """list1 = cur.fetchall()
         if username in sorted(list1, key=lambda x: x[0]):
@@ -199,7 +208,7 @@ class Server(object):
         print(f"INSERT INTO accounts(Username, Password, Email) VALUES ('{username}', '{password}', '{email}')")
         cur.execute(f"INSERT INTO accounts('Username', 'Password', 'Email', 'Played_games', 'Wined_games') VALUES ('{username}', '{password}', '{email}', '{0}', '{0}')")"""
         con.commit()
-        return server_commands["sign_up_ok_cmd"]
+        return server_commands["sign_up_ok_cmd"], "registering has succeeded"
 
     """def handle_DB(self, query):
         # con = sql.connect("accounts_database.db")

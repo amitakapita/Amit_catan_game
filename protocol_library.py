@@ -21,7 +21,7 @@ server_commands = {
     "login_ok_cmd": "LOGIN_OK",
     "login_failed_cmd": "LOGIN_FAILED",
     "sign_up_ok_cmd": "SIGN_UP_OK",
-    "sign_up_failed": "SIGN_UP_FAILED",
+    "sign_up_failed_cmd": "SIGN_UP_FAILED",
     "get_profile_ok": "GET_PROFILE_OK",
     "get_lr_ok_cmd": "GET_LR_OK",
     "create_room_game_lobby_ok_cmd": "CREATE_ROOM_OK",
@@ -69,8 +69,8 @@ def check_username_validability(username):
     if username == "" or username is None:
         return False
     for char in username:
-        if not ("a" < char < "z" or \
-            "A" < char < "Z" or \
-            "0" < char < "9"):
+        if not ("a" <= char <= "z" or \
+            "A" <= char <= "Z" or \
+            "0" <= char <= "9"):
             return False
     return True

@@ -357,7 +357,7 @@ class Client(object):
                 time.sleep(2)
                 self.not_in_register_menu()
                 self.login_menu()
-            elif cmd == server_commands["sign_up_failed"]:
+            elif cmd == server_commands["sign_up_failed_cmd"]:
                 self.lbl2_message["text"] = msg
             elif cmd == server_commands["get_profile_ok"]:
                 games_played, games_win, self.Email = msg.split("#")

@@ -386,6 +386,8 @@ class Client(object):
                 self.message_failed_join_error_game["text"] = msg
                 self.message_failed_join_error_game.place(x=465, y=115)
                 return
+            elif cmd == server_commands["create_room_game_lobby_failed_cmd"]:
+                self.number_players_not_valid.place(x=360, y=260)
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
                 if self.is_first_time_getting_players and self.username == self.temp_information_about_the_room[0][0]:
@@ -721,6 +723,7 @@ class Client(object):
     def send_create_game_room_lobby(self, conn):
         maximum_players1 = self.maximum_players_entry.get()
         print(maximum_players1)
+        self.number_players_not_valid.place_forget()
         if maximum_players1 in ("2", "3", "4"):
             self.send_messages(conn, client_commands["create_game_room_lobby_cmd"], maximum_players1)
             self.create_lobby_game_room_create_button["state"] = tk.DISABLED

@@ -26,7 +26,8 @@ server_commands = {
     "get_lr_ok_cmd": "GET_LR_OK",
     "create_room_game_lobby_ok_cmd": "CREATE_ROOM_OK",
     "join_player_game_room_server_ok_cmd": "JP_GR_OK",
-    "join_player_game_room_server_failed_cmd": "JP_GR_FAILED"
+    "join_player_game_room_server_failed_cmd": "JP_GR_FAILED",
+    "create_room_game_lobby_failed_cmd": "CR_FAILED"
 }
 
 server_game_rooms_commands = {

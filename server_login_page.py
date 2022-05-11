@@ -101,30 +101,33 @@ class Server(object):
         elif cmd == client_commands["get_lobby_rooms_cmd"]:
             to_send, msg_to_send = self.lobby_rooms()
         elif cmd == client_commands["create_game_room_lobby_cmd"]:
-            session_id = str(random.randint(10000, 100000))
-            port_server = str(random.randint(10000, 65535))  # ports available - 10000 - 65535
-            while conn.connect_ex(("0.0.0.0", int(port_server))) == 0 and (session_id in game_room_server_lobbies_session_ids_and_ports or port_server == self.port):
-                # conn.connect_ex() tries to connect but if there is an error it returns an executing code instead of raising an exception
+            if "2" <= msg <= "4":
                 session_id = str(random.randint(10000, 100000))
                 port_server = str(random.randint(10000, 65535))  # ports available - 10000 - 65535
-            game_room_server_lobbies_session_ids_and_ports[session_id] = [login_dict[conn][1], msg, False, 1, port_server]
-            print(f"[Server] Server [{session_id}, {port_server}] is opening")
-            # self.create_lobby_rooms_games(conn, msg, session_id, port_server)
-            to_send = server_commands["create_room_game_lobby_ok_cmd"]
-            msg_to_send = "127.0.0.1#" + port_server + "#" + session_id
-            to_send = protocol_library.build_message(to_send, msg_to_send)
-            print(f"[Server] -> [{conn.getpeername()}] {to_send}")
-            conn.sendall(to_send.encode())
-            print(f"{login_dict[conn][0]} has been switched to game room {session_id}")
-            in_game_dict[login_dict[conn][-1]] = True, session_id
-            temp_name = login_dict[conn][1]
-            del login_dict[conn]
-            conn.close()
-            self.count_in_lobby_games_rooms += 1
-            self.count -= 1
-            print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
-            self.create_lobby_rooms_games(temp_name, msg, session_id, port_server)
-            return
+                while conn.connect_ex(("0.0.0.0", int(port_server))) == 0 and (session_id in game_room_server_lobbies_session_ids_and_ports or port_server == self.port):
+                    # conn.connect_ex() tries to connect but if there is an error it returns an executing code instead of raising an exception
+                    session_id = str(random.randint(10000, 100000))
+                    port_server = str(random.randint(10000, 65535))  # ports available - 10000 - 65535
+                game_room_server_lobbies_session_ids_and_ports[session_id] = [login_dict[conn][1], msg, False, 1, port_server]
+                print(f"[Server] Server [{session_id}, {port_server}] is opening")
+                # self.create_lobby_rooms_games(conn, msg, session_id, port_server)
+                to_send = server_commands["create_room_game_lobby_ok_cmd"]
+                msg_to_send = "127.0.0.1#" + port_server + "#" + session_id
+                to_send = protocol_library.build_message(to_send, msg_to_send)
+                print(f"[Server] -> [{conn.getpeername()}] {to_send}")
+                conn.sendall(to_send.encode())
+                print(f"{login_dict[conn][0]} has been switched to game room {session_id}")
+                in_game_dict[login_dict[conn][-1]] = True, session_id
+                temp_name = login_dict[conn][1]
+                del login_dict[conn]
+                conn.close()
+                self.count_in_lobby_games_rooms += 1
+                self.count -= 1
+                print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
+                self.create_lobby_rooms_games(temp_name, msg, session_id, port_server)
+                return
+            else:
+                to_send = server_commands["create_room_game_lobby_failed_cmd"]  # , msg_to_send = , "the maximum players limit is 4 and the minimun is 2."
         elif cmd == client_commands["join_game_room_cmd"]:
             to_send, msg_to_send = self.join_a_player_to_game_room(conn, msg)
             to_send = protocol_library.build_message(to_send, msg_to_send)

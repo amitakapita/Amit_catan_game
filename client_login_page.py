@@ -905,7 +905,7 @@ class Client(object):
         # for index1, port in enumerate(self.ports):
         #     port.draw_port(self.canvas)
 
-    def close_placements(self, conn, finished_turn=False):
+    def close_placements(self, conn=None, finished_turn=False):
         self.place_entry.place_forget()
         self.button_buy.place_forget()
         self.cancel_buying_button.place_forget()

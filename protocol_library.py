@@ -1,3 +1,6 @@
+from re import fullmatch
+
+regex_mail = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
 client_commands = {
     "login_cmd": "LOGIN",
@@ -14,7 +17,8 @@ client_commands = {
     "join_game_room_cmd": "JGR",
     "buy_building_cmd": "BUY_BUILDING",
     "pull_cubes_cmd": "PULL_CUBES",
-    "finished_my_turn_cmd": "FINISHED_MY_TURN"
+    "finished_my_turn_cmd": "FINISHED_MY_TURN",
+    "verify_cmd": "VERIFY"
 }
 
 server_commands = {
@@ -27,7 +31,9 @@ server_commands = {
     "create_room_game_lobby_ok_cmd": "CREATE_ROOM_OK",
     "join_player_game_room_server_ok_cmd": "JP_GR_OK",
     "join_player_game_room_server_failed_cmd": "JP_GR_FAILED",
-    "create_room_game_lobby_failed_cmd": "CR_FAILED"
+    "create_room_game_lobby_failed_cmd": "CR_FAILED",
+    "verify_ok_cmd": "VERIFY_OK",
+    "verify_failed_cmd": "VERIFY_FAILED"
 }
 
 server_game_rooms_commands = {
@@ -75,3 +81,7 @@ def check_username_validability(username):
             "0" <= char <= "9"):
             return False
     return True
+
+
+def check_email_validation(email):
+    return fullmatch(regex_mail, email)

@@ -38,7 +38,7 @@ class Client(object):
         self.root.geometry("500x500+30+30")
         self.back_btn = tk.Button(self.root, text="Back", relief="solid", font="Arial 15", background="#c76969")
         screen_width, screen_height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-        self.root.iconphoto(True, ImageTk.PhotoImage(Image.open(r"assets\favicon-32x32.png").convert("RGBA")))
+        self.root.iconphoto(True, ImageTk.PhotoImage(Image.open(r"assets\favicon-32x32.png").convert("RGBA")))  # it works (the favicon works)
 
         # Labels and Entries
         self.lbl_welcome_message = tk.Label(self.root, text="Welcome to Catan game!", font="Arial 17")
@@ -49,6 +49,8 @@ class Client(object):
         self.submit_btn = tk.Button(self.root, text="Login", relief="solid")
         self.lbl1_message = tk.Label(self.root)
         self.register_btn = tk.Button(self.root, text="Register", relief="solid")
+        self.email_verify = tk.Entry(self.root, font="Arial 13")
+        self.verify_check = tk.Button(self.root, font="Arial 13", relief="solid", text="Verify")
 
         self.username = ""
         self.password = ""
@@ -200,9 +202,9 @@ class Client(object):
         self.map_storage = None
         self.tiles_images = []
         self.place_numbers_path = r"assets\place_numbers.png"
-        self.place_numbers_image = Image.open(place_numbers_path).convert("RGBA")
+        self.place_numbers_image = Image.open(self.place_numbers_path).convert("RGBA")
         self.numbers_path = r"assets\numbers2.png"
-        self.numbers1_image = Image.open(numbers_path).convert("RGBA")
+        self.numbers1_image = Image.open(self.numbers_path).convert("RGBA")
         self.place_numbers_image = ImageTk.PhotoImage(self.place_numbers_image.resize((100, 100), PIL.Image.Resampling.LANCZOS))
         self.Stats_screen = StatsScreen(self.root)
         self.style1 = ttk.Style()
@@ -241,6 +243,7 @@ class Client(object):
         self.dict_colors_indexes = {"bricks": 4, "iron": 3, "wheat": 2, "lumber": 1, "field": 0}
         self.dict_colors_players_indexes = {"firebrick4": 0, "SteelBlue4": 1, "chartreuse4": 2, "#DBB600": 3}
         self.error_message_game_building = tk.Label(self.root, text="", font="Arial 10", bg="#2596be")
+        self.temp = True
 
 
 
@@ -263,6 +266,7 @@ class Client(object):
             self.create_lobby_game_room_button["command"] = lambda: self.create_lobby_game_room()
             self.create_lobby_game_room_create_button["command"] = lambda: self.send_create_game_room_lobby(
                 client_socket)
+            self.verify_check["command"] = lambda: self.verify_code(client_socket)
 
             # send_connection_thread = threading.Thread(target=self.send_messages, args=(client_socket,))
             # send_connection_thread.start()
@@ -296,14 +300,13 @@ class Client(object):
                 receive_connection_thread.daemon = True
                 receive_connection_thread.start()
                 self.send_messages(client_socket, client_commands["login_cmd"], "%s#%s" % (self.username, self.password))
-                if connection_lobby_not_failed:
-                    self.Game_rooms_lobby_menu(conn=client_socket)
-                    self.create_lobby_game_room_create_button["state"] = tk.NORMAL
-                else:
-                    self.refresh_lobby_rooms(conn=client_socket, cmd=client_commands["get_lobby_rooms_cmd"])
-                    self.message_failed_join_error_game.place(x=465, y=115)
-                time.sleep(2)
-                self.second_time_connect = False
+                self.email_verify.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2)
+                self.verify_check.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 + 20 + 5)
+                self.temp = connection_lobby_not_failed
+                self.back_btn["state"] = tk.DISABLED
+                self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
+                self.lbl1_message.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 - 40)
+                self.is_first_time_getting_players = True
 
         except socket.error as e:
             print(e)
@@ -339,10 +342,10 @@ class Client(object):
         if self.main_server:
             if cmd == server_commands["login_ok_cmd"]:
                 if not self.second_time_connect:
-                    self.lbl1_message["text"] = "login succeeded"
-                    print("login succeeded")
                     self.login_try_count = 0
-                    self.open_menu()
+                    self.email_verify.pack()
+                    self.verify_check.pack()
+                    self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
             elif cmd == server_commands["login_failed_cmd"]:
                 self.lbl1_message["text"] = f"login failed, you have {2 - self.login_try_count} attempts to login"
                 print("login failed")
@@ -388,9 +391,31 @@ class Client(object):
                 return
             elif cmd == server_commands["create_room_game_lobby_failed_cmd"]:
                 self.number_players_not_valid.place(x=360, y=260)
+            elif cmd == server_commands["verify_ok_cmd"]:
+                if not self.second_time_connect:
+                    # opening menu
+                    self.lbl1_message["text"] = "login succeeded"
+                    print("login succeeded")
+                    self.open_menu()    #
+                else:
+                    self.back_btn["state"] = tk.NORMAL
+                    self.email_verify.place_forget()
+                    self.verify_check.place_forget()
+                    self.lbl1_message.place_forget()
+                    if self.temp:
+                        self.Game_rooms_lobby_menu(conn=conn)
+                        self.create_lobby_game_room_create_button["state"] = tk.NORMAL
+                        self.temp = False
+                    else:
+                        self.refresh_lobby_rooms(conn=conn, cmd=client_commands["get_lobby_rooms_cmd"])
+                        self.message_failed_join_error_game.place(x=465, y=115)
+                    time.sleep(2)
+                    self.second_time_connect = False
+            elif cmd == server_commands["verify_failed_cmd"]:
+                self.lbl1_message["text"] = "verifying has failed"
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
-                if self.is_first_time_getting_players and self.username == self.temp_information_about_the_room[0][0]:
+                if self.is_first_time_getting_players and self.username == self.temp_information_about_the_room[0]:  # [0]
                     print(self.temp_information_about_the_room)
                     self.waiting_room_lobby_menu(list_of_names=[[(self.temp_information_about_the_room[0], self.temp_information_about_the_room[1])]], session_id=self.temp_information_about_the_room[2], conn=self.temp_information_about_the_room[3])
                     self.is_first_time_getting_players = False
@@ -533,6 +558,8 @@ class Client(object):
         self.lbl1_message.pack_forget()
         self.register_btn.pack_forget()
         self.lbl_welcome_message.pack_forget()
+        self.verify_check.pack_forget()
+        self.email_verify.pack_forget()
 
     def not_in_register_menu(self):
         self.title.pack_forget()
@@ -1143,7 +1170,14 @@ class Client(object):
         self.error_message_game_building.place(x=self.root.winfo_screenwidth() - 440, y=self.root.winfo_screenheight() - 480)
         self.root.after(5000, lambda: self.error_message_game_building.place_forget())
 
-
+    def verify_code(self, conn):
+        code = self.email_verify.get()
+        for char in code:
+            if not "0" <= char <= "9":
+                self.lbl1_message["text"] = "the code is a number with 6 digits"
+        if len(code) != 6:
+            self.lbl1_message["text"] = "the code is a number with 6 digits"
+        self.send_messages(conn, client_commands["verify_cmd"], code)
 
 
 if __name__ == "__main__":

@@ -462,7 +462,7 @@ class HexTile1(object):
         self.placement = placement
         self.terrain_kind = terrain_kind
         self.index = index
-        self.has_is_port = False
+        # self.has_is_port = False
         self.parts_in_game = []
         self.forbidden_placements_in_tile = []
         self.roads_and_boats = []
@@ -532,7 +532,7 @@ class TerrainTile1(object):
             self.number_photo = numbers1_image.crop((0 + 40 * (self.number - 1) - 2, 0, 0 + 40 * self.number, 40))
             self.number_photo = self.number_photo.resize((30, 30), PIL.Image.LANCZOS)
             self.number_photo = ImageTk.PhotoImage(self.number_photo)
-        self.has_is_port = False
+        # self.has_is_port = False
         self.parts_in_game = []
         self.forbidden_placements_in_tile = []
         self.roads_and_boats = []

@@ -13,13 +13,17 @@ import os
 import asyncio
 import multiprocessing
 import time
+import smtplib
+from validate_email import validate_email
 
 
 # data bases
-wait_login = {}  # {client_socket: client_address}
+wait_login = {}  # {client_socket: client_address, code, username}  # code and username are when the client succeeded to login with username and password
 login_dict = {}  # {client_socket: wait_login[client_socket], username}
 game_room_server_lobbies_session_ids_and_ports = {}  # {session_id: [creator, max_players, is_full, players, port_server]}
 in_game_dict = {}  # {username: True ?, session_id}
+bot_verify_sender = "catan.bot.verify@gmail.com"
+bot_verify_sender_password = "catanbotver"
 
 
 class Server(object):
@@ -117,7 +121,7 @@ class Server(object):
                 print(f"[Server] -> [{conn.getpeername()}] {to_send}")
                 conn.sendall(to_send.encode())
                 print(f"{login_dict[conn][0]} has been switched to game room {session_id}")
-                in_game_dict[login_dict[conn][-1]] = True, session_id
+                in_game_dict[login_dict[conn][-2]] = True, session_id
                 temp_name = login_dict[conn][1]
                 del login_dict[conn]
                 conn.close()
@@ -135,10 +139,12 @@ class Server(object):
             conn.sendall(to_send.encode())
             if to_send == server_commands["join_player_game_room_server_ok_cmd"]:
                 print(f"{login_dict[conn][0]} has been switched to game room {msg}")
-                in_game_dict[login_dict[conn][-1]] = True, msg
+                in_game_dict[login_dict[conn][-2]] = True, msg
                 del login_dict[conn]
                 print(f"Number of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
             return
+        elif cmd == client_commands["verify_cmd"]:
+            to_send = self.verify_user(code=msg, conn=conn)[0]
 
         to_send = protocol_library.build_message(to_send, msg_to_send)
         print(f"[Server] -> [{conn.getpeername()}] {to_send}")
@@ -156,6 +162,7 @@ class Server(object):
         cur = con.cursor()
         cur.execute("SELECT * FROM accounts WHERE Username = ? and Password = ?", (username_input, password_input))
         x = cur.fetchall()
+        print(in_game_dict != {}, in_game_dict)
         if x:  # in a list of a tuples
             if in_game_dict != {}:
                 for player_name in in_game_dict.keys():
@@ -163,7 +170,7 @@ class Server(object):
                     if player_name == username_input:
                         print("mewo meow meow")
                         self.count_in_lobby_games_rooms -= 1
-                        self.count += 1
+                        # self.count += 1
                         session_id1 = in_game_dict[player_name][1]
                         print(session_id1)
                         if session_id1 in game_room_server_lobbies_session_ids_and_ports.keys():
@@ -171,14 +178,18 @@ class Server(object):
                                 game_room_server_lobbies_session_ids_and_ports[session_id1][2] = False
                             game_room_server_lobbies_session_ids_and_ports[session_id1][3] -= 1  # decreasing number of players that are connected
                             # if game_room_server_lobbies_session_ids_and_ports[session_id1][0] == player_name:
+                        print(
+                            f"\nNumber of connected clients: {self.count}\nNumber of players in lobby game rooms: {self.count_in_lobby_games_rooms}")
 
                         del in_game_dict[player_name]
                         break
-            if username_input not in map(lambda client: client[-1], login_dict.values()):
-                login_dict[conn] = wait_login[conn], username_input
-                print("meow and hav")
-                del wait_login[conn]
-                return True
+            if username_input not in map(lambda client: client[-2], login_dict.values()):
+                code = self.verify_sender(x[0][3])
+                if code is not None:
+                    wait_login[conn] = wait_login[conn], str(code), username_input
+                    return True
+                else:
+                    return False
         return False
 
     def register_check(self, msg, con):
@@ -194,10 +205,11 @@ class Server(object):
             return server_commands["sign_up_failed_cmd"], "The passwords does not match each other"
         if not protocol_library.check_username_validability(username):
             return server_commands["sign_up_failed_cmd"], "The username should be in letters a-z, A-Z, 0-9 include."
-        if "@" not in email:
+        if not protocol_library.check_email_validation(email) or not validate_email(email_address=email):
             return server_commands["sign_up_failed_cmd"], "The email is not valid"
+            # first with regex, second with checking its validation with the package validate_email
         cur = con.cursor()
-        cur.execute("SELECT Username FROM accounts WHERE Username = ?", (username))
+        cur.execute("SELECT Username FROM accounts WHERE Username = ?", (username,))  # the comma is for making the parameter a tuple and not char
         if cur.fetchall():
             return server_commands["sign_up_failed_cmd"], "The username is already taken."
         cur.execute("INSERT INTO accounts (Username, Password, Email, Played_games, Wined_games) values (?, ?, ?, ?, ?)", (username, password, email, 0, 0))
@@ -227,7 +239,7 @@ class Server(object):
         :return: games_played#win_games#Email
         """
         cur = con.cursor()
-        cur.execute("SELECT Played_games, Wined_games, Email FROM 'accounts' WHERE Username = ?", (login_dict[conn][1]))
+        cur.execute("SELECT Played_games, Wined_games, Email FROM 'accounts' WHERE Username = ?", (login_dict[conn][1],))  # the comma is for making the parameter a tuple and not char
         msg = cur.fetchall()
         return server_commands["get_profile_ok"], f"{msg[0][0]}#{msg[0][1]}#{msg[0][2]}"
 
@@ -250,7 +262,7 @@ class Server(object):
             print(type(game_room_server_lobbies_session_ids_and_ports[session_id][3]))
             if game_room_server_lobbies_session_ids_and_ports[session_id][2]:
                 return server_commands["join_player_game_room_server_failed_cmd"], "game room lobby is full or the game has started"
-            in_game_dict[login_dict[conn][-1]] = True, session_id
+            in_game_dict[login_dict[conn][-2]] = True, session_id
             self.count_in_lobby_games_rooms += 1
             self.count -= 1
             game_room_server_lobbies_session_ids_and_ports[session_id][3] += 1
@@ -259,6 +271,36 @@ class Server(object):
             return server_commands["join_player_game_room_server_ok_cmd"], f"127.0.0.1#{session_id}#{game_room_server_lobbies_session_ids_and_ports[session_id][4]}#{game_room_server_lobbies_session_ids_and_ports[session_id][0]}"
         except KeyError:
             return server_commands["join_player_game_room_server_failed_cmd"], "no such game room lobby, try to refresh"
+
+    def verify_user(self, code, conn):
+        for cher in code:
+            if cher not in "0123456789":
+                return server_commands["verify_failed_cmd"], False
+        if code == wait_login[conn][1]:
+            login_dict[conn] = wait_login[conn][0], wait_login[conn][2], str(code)  # peername, username, code
+            print("meow and hav")
+            del wait_login[conn]
+            return server_commands["verify_ok_cmd"], True
+        return server_commands["verify_failed_cmd"], False
+
+    def verify_sender(self, email):
+        number = random.randint(100000, 999999)  # 6 digits number random integer
+        try:
+            with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+                smtp.ehlo()
+                smtp.starttls()
+                smtp.ehlo()
+                smtp.login(bot_verify_sender, bot_verify_sender_password)
+                msg = f"Hello! I'm Catan verification bot.\nThis is your code: {number}"
+                smtp.sendmail(bot_verify_sender, email, msg)
+            print(f"The email verification has sent to {email}")
+            return number
+        except smtplib.SMTPException as e:
+            print(f"Unable to send email to {email}\n{e}")
+            return None
+        except Exception as e:
+            print(e)
+
 
 if __name__ == "__main__":
     ip = "0.0.0.0"

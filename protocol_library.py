@@ -49,6 +49,7 @@ server_game_rooms_commands = {
     "turn_who_cmd": "TURN_WHO"
 }
 
+
 def build_message(cmd, msg=""):
     """
     builds a message of the protocol with the parameters.
@@ -72,16 +73,26 @@ def disassemble_message(message):
     return cmd, msg
 
 
-def check_username_validability(username):
+def check_username_validation(username):
+    """
+    checks the username validation of the characters
+    :param username: string, the username
+    :return: True - valid, False - not valid
+    :rtype: bool
+    """
     if username == "" or username is None:
         return False
     for char in username:
-        if not ("a" <= char <= "z" or \
-            "A" <= char <= "Z" or \
-            "0" <= char <= "9"):
+        if not ("a" <= char <= "z" or "A" <= char <= "Z" or "0" <= char <= "9"):
             return False
     return True
 
 
 def check_email_validation(email):
+    """
+    checking the validation of the email by regex
+    :param email: string, the email that will be checked
+    :return: True - matched the whitelist, False - doesn't macht the whitelist, whitelist - the structure of the email by regex
+    :rtype: bool
+    """
     return fullmatch(regex_mail, email)

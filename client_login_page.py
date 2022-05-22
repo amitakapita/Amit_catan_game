@@ -373,6 +373,7 @@ class Client(object):
                 self.show_game_rooms(lobby_rooms, conn)
             elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
                 conn.close()
+                time.sleep(0.5)
                 ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
                 conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
                 self.waiting_room_lobby_menu(list_of_names=[[(self.username, colors[0])]], session_id=session_id, conn=conn)
@@ -492,7 +493,7 @@ class Client(object):
         elif self.password == "":
             self.lbl1_message["text"] = "the password isn't empty"
             print("the password isn't empty")
-        elif not protocol_library.check_username_validability(self.username):
+        elif not protocol_library.check_username_validation(self.username):
             self.lbl1_message["text"] = "the syntax of the username is not valid"
             print("the syntax of the username is not valid")
         else:
@@ -534,7 +535,7 @@ class Client(object):
         self.username, self.password, self.confirmed_password, self.Email = self.enter_name_input.get(), self.enter_password_input.get(), self.confirm_password_input_enter.get(), self.Email_enter_input.get()
         if self.username == "":
             self.lbl2_message["text"] = "the username isn't empty"
-        elif not protocol_library.check_username_validability(self.username):
+        elif not protocol_library.check_username_validation(self.username):
             self.lbl2_message["text"] = "the username must be built from characters between a-z, A-Z, 0-9 (including)"
         elif self.password == "":
             self.lbl2_message["text"] = "the password isn't empty"
@@ -955,12 +956,12 @@ class Client(object):
                 if element not in "1234567890":
                     self.error_message_game_building["text"] = "an index is in numbers"
                     return "an index is in numbers"
-        position1 = int(position1)
-        if (0 <= position1 <= 154 and (self.current_button == "road" or self.current_button == "boat")) or (267 > position1 > 154 and (self.current_button == "city" or self.current_button == "settlement")):
-            self.send_messages(conn, client_commands["buy_building_cmd"], f"{position1}#{self.current_button}")
-        else:
-            self.error_message_game_building["text"] = "there was an error, check again your input"
-            return "there was an error, check again your input"
+            position1 = int(position1)
+            if (0 <= position1 <= 154 and (self.current_button == "road" or self.current_button == "boat")) or (267 > position1 > 154 and (self.current_button == "city" or self.current_button == "settlement")):
+                self.send_messages(conn, client_commands["buy_building_cmd"], f"{position1}#{self.current_button}")
+            else:
+                self.error_message_game_building["text"] = "there was an error, check again your input"
+                return "there was an error, check again your input"
 
     def handle_buttons(self, msg):
         building, first_turn, list_of_recourses, is_my_turn, number_of_roads_and_boats_included, points = msg.split("*")
@@ -974,6 +975,8 @@ class Client(object):
         else:
             self.Stats_screen.list_of_contents[3 + 5 * self.dict_colors_players_indexes[building.color]][
             "text"] = f"number of resources: {list_of_recourses}"  # [-1]
+        self.Stats_screen.list_of_contents[2 + 5 * self.dict_colors_players_indexes[building.color]][
+        "text"] = f"points: {points}"
         if building.type1 == "Road":
             building = Road(building.color, building.index, building.position)
             self.roads.append((building.index, building))
@@ -1164,6 +1167,7 @@ class Client(object):
         self.lbl_cube2["image"] = ""
         self.is_first_time_getting_players = True
         self.error_message_game_building.place_forget()
+        self.button_buy.place_forget()
 
     def handle_error_message(self, message):
         self.error_message_game_building["text"] = message

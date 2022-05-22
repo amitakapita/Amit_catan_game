@@ -157,7 +157,7 @@ class Server(object):
         :return: True - the login succeeded, False - the login failed
         """
         username_input, password_input = msg.split("#", 1)
-        if (not protocol_library.check_username_validability(username_input)) or password_input == "" or password_input is None:
+        if (not protocol_library.check_username_validation(username_input)) or password_input == "" or password_input is None:
             return False
         cur = con.cursor()
         cur.execute("SELECT * FROM accounts WHERE Username = ? and Password = ?", (username_input, password_input))
@@ -203,7 +203,7 @@ class Server(object):
             return server_commands["sign_up_failed_cmd"], "The password is too short."
         elif password != confirm_password:
             return server_commands["sign_up_failed_cmd"], "The passwords does not match each other"
-        if not protocol_library.check_username_validability(username):
+        if not protocol_library.check_username_validation(username):
             return server_commands["sign_up_failed_cmd"], "The username should be in letters a-z, A-Z, 0-9 include."
         if not protocol_library.check_email_validation(email) or not validate_email(email_address=email):
             return server_commands["sign_up_failed_cmd"], "The email is not valid"

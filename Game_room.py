@@ -456,7 +456,7 @@ class GameRoom (object):
                         msg = json.dumps(road, cls=BitPortGameEncoder)
                         # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                         self.turns_of.sum_rounds_and_boats += 1
-                        self.the_highest_amount_of_roads_and_boats()
+                        self.the_highest_amount_of_roads_and_boats(self.turns_of.sum_rounds_and_boats)
                 elif current_button == "boat":
                     if self.checking_boats_is_near_a_settlement_or_city(position1, self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(position1, self.turns_of.color) and self.check_parts_in_game_recources("boat", first_round, self.turns_of.color):
                         boat = Boat(index=position1, color=self.turns_of.color, position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
@@ -472,7 +472,7 @@ class GameRoom (object):
                         # self.canvas.tag_lower("road", "boat")
                         msg = json.dumps(boat, cls=BitPortGameEncoder)
                         self.turns_of.sum_rounds_and_boats += 1
-                        self.the_highest_amount_of_roads_and_boats()
+                        self.the_highest_amount_of_roads_and_boats(self.turns_of.sum_rounds_and_boats)
                         for player in self.players:
                             print(player.sum_rounds_and_boats)
             elif 267 > position1 > 154:
@@ -607,19 +607,22 @@ class GameRoom (object):
             player.conn.sendall(message.encode())
             print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message}")
 
-    def the_highest_amount_of_roads_and_boats(self):
-        for index, amount in enumerate(map(lambda x: x.sum_rounds_and_boats , self.players)):
-            if type(self.top_roads_and_boats) == Type[int]:  # type(int)
-                if amount > 5:
-                    if not self.players[index].color == self.top_roads_and_boats.color:
-                        self.players_recourses[index][-1] += 2
-                        self.players_recourses[self.players.index(self.top_roads_and_boats)][-1] -= 2
-                    self.top_roads_and_boats = self.players[index]
-            elif type(self.top_roads_and_boats) == Type[Player] and amount > self.top_roads_and_boats.sum_rounds_and_boats and amount > 5:
-                if not self.players[index].color == self.top_roads_and_boats.color:
-                    self.players_recourses[index][-1] += 2
-                    self.players_recourses[self.players.index(self.top_roads_and_boats)][-1] -= 2
-                self.top_roads_and_boats = self.players[index]
+    def the_highest_amount_of_roads_and_boats(self, number_amount):
+        print(type(self.top_roads_and_boats), type(self.top_roads_and_boats) == int, type(self.top_roads_and_boats) == Player)
+        if type(self.top_roads_and_boats) == int:  # type(int)
+            if number_amount > 5:
+                # if not self.players[index].color == self.top_roads_and_boats.color:
+                self.turns_of.points += 2
+                # self.
+                # self.players_recourses[index][-1] += 2
+                # self.players_recourses[self.players.index(self.top_roads_and_boats)][-1] -= 2
+                # else:
+                self.top_roads_and_boats = self.turns_of
+        elif type(self.top_roads_and_boats) == Player and number_amount > self.top_roads_and_boats.sum_rounds_and_boats and number_amount > 5:
+            if not self.turns_of.color == self.top_roads_and_boats.color:
+                self.turns_of.points += 2
+                self.top_roads_and_boats.points -= 2
+                self.top_roads_and_boats = self.turns_of
 
 
 

@@ -483,6 +483,9 @@ class Client(object):
             elif cmd == server_game_rooms_commands["buy_building_failed_cmd"]:
                 pass
                 self.handle_error_message(msg)
+            elif cmd == server_game_rooms_commands["update_points_cmd"]:
+                msg = msg.split("*")
+                self.update_points(msg[0], msg[1])
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -1182,6 +1185,9 @@ class Client(object):
         if len(code) != 6:
             self.lbl1_message["text"] = "the code is a number with 6 digits"
         self.send_messages(conn, client_commands["verify_cmd"], code)
+
+    def update_points(self, points, player_color):
+        self.Stats_screen.list_of_contents[2 + 5 * colors.index(player_color)]["text"] = f"points: {points}"
 
 
 if __name__ == "__main__":

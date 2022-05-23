@@ -45,7 +45,7 @@ class GameRoom (object):
         self.is_first_round = True
         self.turns_of = None
         self.server_socket1 = None
-        self.top_roads_and_boats = 0  # None 0
+        self.top_roads_and_boats = 5  # None 0
 
     def join_a_player(self, player_name, conn):
         if self.count_players <= self.maximum_players:
@@ -610,19 +610,24 @@ class GameRoom (object):
     def the_highest_amount_of_roads_and_boats(self, number_amount):
         print(type(self.top_roads_and_boats), type(self.top_roads_and_boats) == int, type(self.top_roads_and_boats) == Player)
         if type(self.top_roads_and_boats) == int:  # type(int)
-            if number_amount > 5:
+            if number_amount > self.top_roads_and_boats:
                 # if not self.players[index].color == self.top_roads_and_boats.color:
                 self.turns_of.points += 2
                 # self.
                 # self.players_recourses[index][-1] += 2
                 # self.players_recourses[self.players.index(self.top_roads_and_boats)][-1] -= 2
                 # else:
-                self.top_roads_and_boats = self.turns_of
-        elif type(self.top_roads_and_boats) == Player and number_amount > self.top_roads_and_boats.sum_rounds_and_boats and number_amount > 5:
-            if not self.turns_of.color == self.top_roads_and_boats.color:
+                self.top_roads_and_boats = [number_amount, self.players.index(self.turns_of)]  # (number_amount, index_player)
+        elif type(self.top_roads_and_boats) == list and number_amount > self.top_roads_and_boats[0]:  #  and number_amount > 5
+            if not self.turns_of.color == self.players[self.top_roads_and_boats[1]].color:
                 self.turns_of.points += 2
-                self.top_roads_and_boats.points -= 2
-                self.top_roads_and_boats = self.turns_of
+                self.players[self.top_roads_and_boats[1]].points -= 2
+                self.send_for_all_players(protocol_library.build_message(
+                    server_game_rooms_commands["update_points_cmd"], f"{self.players[self.top_roads_and_boats[1]].points}*{self.players[self.top_roads_and_boats[1]].color}"
+                ))
+                self.top_roads_and_boats = [number_amount, self.players.index(self.turns_of)]
+            else:
+                self.top_roads_and_boats[0] = number_amount
 
 
 

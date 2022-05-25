@@ -99,9 +99,12 @@ class Server(object):
         elif cmd == client_commands["get_profile_cmd"]:
             to_send, msg_to_send = self.profile(conn, con)
         elif cmd == client_commands["logout_cmd"]:
-            wait_login[conn] = login_dict[conn][0]  # only the peer name
-            del login_dict[conn]
-            return
+            try:
+                wait_login[conn] = login_dict[conn][0]  # only the peer name
+                del login_dict[conn]
+                return
+            except KeyError:  # if the player is between the main server to the games rooms server
+                return
         elif cmd == client_commands["get_lobby_rooms_cmd"]:
             to_send, msg_to_send = self.lobby_rooms()
         elif cmd == client_commands["create_game_room_lobby_cmd"]:

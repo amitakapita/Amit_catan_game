@@ -47,7 +47,8 @@ server_game_rooms_commands = {
     "buy_building_failed_cmd": "BUY_BLFA",
     "pulled_cubes_cmd": "PULLED_CUBES",
     "turn_who_cmd": "TURN_WHO",
-    "update_points_cmd": "UP_POINTS"
+    "update_points_cmd": "UP_POINTS",
+    "Wined_cmd": "WINS"
 }
 
 

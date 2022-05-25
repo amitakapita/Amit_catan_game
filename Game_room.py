@@ -101,12 +101,13 @@ class GameRoom (object):
 
     def handle_player_conn(self, conn):
         try:
+            con = sql.connect("Data_Bases/accounts_database.db")
             while True:
                 request = conn.recv(1024).decode()
                 if request is None or request == "":
                     raise ConnectionError
                 print(f"\n[Client {conn.getpeername()}] {request}")
-                status = self.handle_client_cmd(conn, request)
+                status = self.handle_client_cmd(conn, request, con)
                 if status is not None and status == "CLOSING SERVER":
                     raise BaseException
         except ConnectionError:
@@ -121,13 +122,13 @@ class GameRoom (object):
             self.send_information_of_players(is_leave=True)
             if len(self.players) == 0:
                 self.server_open = False
-                self.server_socket1.close()  #
+                self.server_socket1.close()  # #
                 print("The server has closed")
         except BaseException as e:
             print("meow hav meow meow hav hav meow hav", e, traceback.format_exc())
-            # self.server_socket1.close()
-            sys.exit(0)
+            self.server_socket1.close()  # #
             conn.close()
+            sys.exit(0)
 
     def handle_client(self, conn):
         client_handler = threading.Thread(target=self.handle_player_conn,
@@ -136,8 +137,7 @@ class GameRoom (object):
         client_handler.start()
         threads1.append(client_handler)
 
-    def handle_client_cmd(self, conn, request):
-        con = sql.connect("Data_Bases/accounts_database.db")
+    def handle_client_cmd(self, conn, request, con):
         cmd, msg = protocol_library.disassemble_message(request)
         cmd_send, msg_send = "", ""
         if cmd == client_commands["join_my_player_cmd"]:
@@ -213,7 +213,19 @@ class GameRoom (object):
             self.pull_cubes()
             return
         elif cmd == client_commands["finished_my_turn_cmd"]:
-            if self.players.index(self.turns_of) + 1 >= self.count_players:
+            if self.turns_of.points >= 12:
+                # won
+                msg_send = protocol_library.build_message(server_game_rooms_commands["Wined_cmd"], f"{self.turns_of.player_name}*{self.turns_of.color}")
+                self.send_for_all_players(msg_send)
+                for player in self.players:  # quits the players from the game room
+                    print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_send}")
+                    conn.sendall(msg_send.encode())
+                    self.player_exits_the_room(player.conn)
+                    player.conn.close()
+                self.server_open = False  # closing server
+                self.server_socket1.close()  # closing server
+                print("The server has closed")  # closing server
+            elif self.is_first_round and self.players.index(self.turns_of) + 1 >= self.count_players:
                 self.is_first_round = False
             self.turns_of = self.players[(self.players.index(self.turns_of) + 1) % self.count_players]
             self.send_who_turns_of()
@@ -242,7 +254,7 @@ class GameRoom (object):
         for value in self.players:
             conn = value.conn  # conn
             for i in range(0, 41, 5):  # 9 times in average the last one is 38 + 5 = 43 the last index in the tiles
-                time.sleep(0.1)
+                time.sleep(0.01)
                 print(i, i + 5)
                 conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}").encode())  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
                 message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}")  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()

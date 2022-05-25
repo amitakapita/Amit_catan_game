@@ -244,7 +244,7 @@ class Client(object):
         self.dict_colors_players_indexes = {"firebrick4": 0, "SteelBlue4": 1, "chartreuse4": 2, "#DBB600": 3}
         self.error_message_game_building = tk.Label(self.root, text="", font="Arial 10", bg="#2596be")
         self.temp = True
-
+        self.win_game_lbl = tk.Label(self.root, font="Arial 15", bg="#2596be")
 
 
 
@@ -303,7 +303,7 @@ class Client(object):
                 self.email_verify.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2)
                 self.verify_check.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 + 20 + 5)
                 self.temp = connection_lobby_not_failed
-                self.back_btn["state"] = tk.DISABLED
+                self.current_lobby = "main_lobby"  # self.back_btn["command"] = lambda: self.send_messages(client_socket, client_commands["logout_cmd"])  # ["state"] = tk.DISABLED
                 self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
                 self.lbl1_message.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 - 40)
                 self.is_first_time_getting_players = True
@@ -343,9 +343,10 @@ class Client(object):
             if cmd == server_commands["login_ok_cmd"]:
                 if not self.second_time_connect:
                     self.login_try_count = 0
+                    self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
                     self.email_verify.pack()
                     self.verify_check.pack()
-                    self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
+                self.second_time_connect = False
             elif cmd == server_commands["login_failed_cmd"]:
                 self.lbl1_message["text"] = f"login failed, you have {2 - self.login_try_count} attempts to login"
                 print("login failed")
@@ -393,13 +394,14 @@ class Client(object):
             elif cmd == server_commands["create_room_game_lobby_failed_cmd"]:
                 self.number_players_not_valid.place(x=360, y=260)
             elif cmd == server_commands["verify_ok_cmd"]:
-                if not self.second_time_connect:
+                if (not self.second_time_connect) and self.current_lobby == "login":
                     # opening menu
                     self.lbl1_message["text"] = "login succeeded"
                     print("login succeeded")
                     self.open_menu()    #
+                    self.create_lobby_game_room_create_button["state"] = tk.NORMAL
                 else:
-                    self.back_btn["state"] = tk.NORMAL
+                    self.back_btn["command"] = lambda: self.back_to_the_menu(conn=conn)  # self.back_btn["state"] = tk.NORMAL
                     self.email_verify.place_forget()
                     self.verify_check.place_forget()
                     self.lbl1_message.place_forget()
@@ -486,6 +488,9 @@ class Client(object):
             elif cmd == server_game_rooms_commands["update_points_cmd"]:
                 msg = msg.split("*")
                 self.update_points(msg[0], msg[1])
+            elif cmd == server_game_rooms_commands["Wined_cmd"]:
+                msg = msg.split("*")
+                self.handle_win_game(color=msg[1], player_name=msg[0])  # g
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -584,7 +589,7 @@ class Client(object):
         if self.current_lobby == "main_lobby":
             self.root.attributes("-fullscreen", False)
             self.root.configure(bg="#f0f0f0")
-            self.current_lobby = "login"
+        self.current_lobby = "login"
         # packs login
         self.lbl_welcome_message.pack()
         self.name1.pack()
@@ -602,7 +607,10 @@ class Client(object):
             self.login_menu()
         elif self.current_lobby == "main_lobby":
             self.not_in_main_lobby()
-            self.send_messages(conn, client_commands["logout_cmd"])
+            try:
+                self.send_messages(conn, client_commands["logout_cmd"])
+            except Exception:
+                pass
             self.login_menu()
         elif self.current_lobby == "profile":
             self.not_in_profile_menu()
@@ -635,6 +643,8 @@ class Client(object):
             self.back_btn.place_forget()
         self.profile_btn.place_forget()
         self.game_rooms_lobby_btn.place_forget()
+        self.verify_check.place_forget()
+        self.email_verify.place_forget()
 
     def profile_menu(self, conn):
         self.current_lobby = "profile"
@@ -793,7 +803,7 @@ class Client(object):
             self.not_in_Game_rooms_lobby_menu()
             self.back_btn["text"] = "Leave Room"
             self.name_leader["text"] = f"Waiting room - {list_of_names[0][0][0]}'s lobby"
-            self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
+            self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)  # 4
             print("button is set")
             self.name_leader.pack(padx=450, pady=20, side=tk.TOP)
             self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0][0]} to start the game"
@@ -865,7 +875,10 @@ class Client(object):
 
     def leave_room_game_lobby(self, conn):
         print("meow meow hav bye hav")
-        self.send_messages(conn, client_commands["leave_my_player_cmd"])
+        try:
+            self.send_messages(conn, client_commands["leave_my_player_cmd"])
+        except Exception:
+            pass
         time.sleep(2)
         conn.close()
         self.back_to_the_menu()
@@ -1188,6 +1201,17 @@ class Client(object):
 
     def update_points(self, points, player_color):
         self.Stats_screen.list_of_contents[2 + 5 * colors.index(player_color)]["text"] = f"points: {points}"
+
+    def handle_win_game(self, color, player_name):
+        self.win_game_lbl["text"] = f"{player_name} wins"
+        self.win_game_lbl["fg"] = color
+        self.win_game_lbl.place(x=300, y=20)
+        self.button_buy_boat["state"] = tk.DISABLED
+        self.button_buy_road["state"] = tk.DISABLED
+        self.button_next_turn["state"] = tk.DISABLED
+        self.button_pull_cubes["state"] = tk.DISABLED
+        self.button_buy_settlement["state"] = tk.DISABLED
+        self.button_buy_city["state"] = tk.DISABLED
 
 
 if __name__ == "__main__":

@@ -299,14 +299,17 @@ class Client(object):
                 receive_connection_thread = threading.Thread(target=self.receive_messages, args=(client_socket,))
                 receive_connection_thread.daemon = True
                 receive_connection_thread.start()
-                self.send_messages(client_socket, client_commands["login_cmd"], "%s#%s" % (self.username, self.password))
-                self.email_verify.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2)
-                self.verify_check.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 + 20 + 5)
-                self.temp = connection_lobby_not_failed
-                self.current_lobby = "main_lobby"  # self.back_btn["command"] = lambda: self.send_messages(client_socket, client_commands["logout_cmd"])  # ["state"] = tk.DISABLED
-                self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
-                self.lbl1_message.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 - 40)
-                self.is_first_time_getting_players = True
+                if not connection_lobby_not_failed:
+                    self.send_messages(client_socket, client_commands["login_again_cmd"], "%s#%s" % (self.username, self.password))
+                else:
+                    self.send_messages(client_socket, client_commands["login_cmd"], "%s#%s" % (self.username, self.password))
+                    self.email_verify.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2)
+                    self.verify_check.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 + 20 + 5)
+                    self.temp = connection_lobby_not_failed
+                    self.current_lobby = "main_lobby"  # self.back_btn["command"] = lambda: self.send_messages(client_socket, client_commands["logout_cmd"])  # ["state"] = tk.DISABLED#
+                    self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
+                    self.lbl1_message.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 - 40)
+                    self.is_first_time_getting_players = True
 
         except socket.error as e:
             print(e)
@@ -341,7 +344,12 @@ class Client(object):
         cmd, msg = protocol_library.disassemble_message(data)
         if self.main_server:
             if cmd == server_commands["login_ok_cmd"]:
-                if not self.second_time_connect:
+                if msg == "again":  # join game server failed
+                    self.back_btn["command"] = lambda: self.back_to_the_menu(conn=conn)
+                    self.email_verify.place_forget()
+                    self.verify_check.place_forget()
+                    self.lbl1_message.place_forget()
+                elif not self.second_time_connect:  # rejoins the main server
                     self.login_try_count = 0
                     self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
                     self.email_verify.pack()
@@ -442,7 +450,8 @@ class Client(object):
             elif cmd == server_game_rooms_commands["start_game_ok"]:
                 if self.bytes_times_counter == 0:
                     self.back_btn["state"] = tk.DISABLED
-                self.tiles = self.tiles + json.loads(msg, object_hook=lambda d: SimpleNamespace(**d))  # , self.ports , self.ports + json.loads(temp1)
+                self.tiles = self.tiles + json.loads(msg, object_hook=lambda d: SimpleNamespace(**d))
+                # , self.ports , self.ports + json.loads(temp1)
                 print(len(self.tiles))
                 if self.bytes_times_counter == 8:
                     self.bytes_times_counter = 0
@@ -738,7 +747,7 @@ class Client(object):
         self.maximum_players_entry.place(x=702, y=180)
         self.create_lobby_game_room_create_button.place(x=890, y=330)
 
-    def refresh_lobby_rooms(self, conn="", cmd="", msg="", from_refresh=True):
+    def refresh_lobby_rooms(self, conn=None, cmd="", msg="", from_refresh=True):  # ""
         # self.not_in_Game_rooms_lobby_menu()
         if from_refresh:
             self.message_failed_join_error_game.place_forget()  # even if the label is not placed it won't do an error
@@ -973,7 +982,8 @@ class Client(object):
                     self.error_message_game_building["text"] = "an index is in numbers"
                     return "an index is in numbers"
             position1 = int(position1)
-            if (0 <= position1 <= 154 and (self.current_button == "road" or self.current_button == "boat")) or (267 > position1 > 154 and (self.current_button == "city" or self.current_button == "settlement")):
+            if (0 <= position1 <= 154 and (self.current_button == "road" or self.current_button == "boat")) or \
+                    (267 > position1 > 154 and (self.current_button == "city" or self.current_button == "settlement")):
                 self.send_messages(conn, client_commands["buy_building_cmd"], f"{position1}#{self.current_button}")
             else:
                 self.error_message_game_building["text"] = "there was an error, check again your input"
@@ -1184,6 +1194,8 @@ class Client(object):
         self.is_first_time_getting_players = True
         self.error_message_game_building.place_forget()
         self.button_buy.place_forget()
+        self.win_game_lbl.place_forget()
+        self.button_pull_cubes["state"] = tk.DISABLED
 
     def handle_error_message(self, message):
         self.error_message_game_building["text"] = message
@@ -1205,7 +1217,7 @@ class Client(object):
     def handle_win_game(self, color, player_name):
         self.win_game_lbl["text"] = f"{player_name} wins"
         self.win_game_lbl["fg"] = color
-        self.win_game_lbl.place(x=300, y=20)
+        self.win_game_lbl.place(x=300 + 300 + 200, y=20)
         self.button_buy_boat["state"] = tk.DISABLED
         self.button_buy_road["state"] = tk.DISABLED
         self.button_next_turn["state"] = tk.DISABLED

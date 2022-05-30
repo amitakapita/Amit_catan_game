@@ -18,12 +18,12 @@ from validate_email import validate_email
 
 
 # data bases
-wait_login = {}  # {client_socket: client_address, code, username}  # code and username are when the client succeeded to login with username and password
-login_dict = {}  # {client_socket: wait_login[client_socket], username}
+wait_login = {}  # {client_socket: client_address, code, username}  # code and username are when the client succeeded to login with username and password # or {client_socket: client_address, username}}
+login_dict = {}  # {client_socket: wait_login[client_socket][0], username}
 game_room_server_lobbies_session_ids_and_ports = {}  # {session_id: [creator, max_players, is_full, players, port_server]}
 in_game_dict = {}  # {username: True ?, session_id}
-bot_verify_sender = "catan.bot.verify@gmail.com"
-bot_verify_sender_password = "catanbotver"
+bot_verify_sender = "catan.bot.verify@outlook.com"  # gmail
+bot_verify_sender_password = "Catanbotver1"  # or catanbotver
 
 
 class Server(object):
@@ -33,7 +33,6 @@ class Server(object):
         self.port = port1
         self.count = 0
         self.count_in_lobby_games_rooms = 0
-
 
     def start(self):
         try:
@@ -148,12 +147,17 @@ class Server(object):
             return
         elif cmd == client_commands["verify_cmd"]:
             to_send = self.verify_user(code=msg, conn=conn)[0]
+        elif cmd == client_commands["login_again_cmd"]:
+            if self.check_login(conn, msg, con, True):
+                to_send, msg_to_send = server_commands["login_ok_cmd"], "again"
+            else:
+                to_send = server_commands["login_failed_cmd"]
 
         to_send = protocol_library.build_message(to_send, msg_to_send)
         print(f"[Server] -> [{conn.getpeername()}] {to_send}")
         conn.sendall(to_send.encode())
 
-    def check_login(self, conn, msg, con):
+    def check_login(self, conn, msg, con, again=False):
         """
         checks the login attempt
         :rtype: bool
@@ -186,6 +190,11 @@ class Server(object):
 
                         del in_game_dict[player_name]
                         break
+            if again:
+                login_dict[conn] = wait_login[conn][0], player_name  # peer name, username
+                print("meow and hav")
+                del wait_login[conn]
+                return True
             if username_input not in map(lambda client: client[-2], login_dict.values()):
                 code = self.verify_sender(x[0][3])
                 if code is not None:
@@ -244,6 +253,7 @@ class Server(object):
         cur = con.cursor()
         cur.execute("SELECT Played_games, Wined_games, Email FROM 'accounts' WHERE Username = ?", (login_dict[conn][1],))  # the comma is for making the parameter a tuple and not char
         msg = cur.fetchall()
+        print(msg)
         return server_commands["get_profile_ok"], f"{msg[0][0]}#{msg[0][1]}#{msg[0][2]}"
 
     def lobby_rooms(self):
@@ -289,12 +299,12 @@ class Server(object):
     def verify_sender(self, email):
         number = random.randint(100000, 999999)  # 6 digits number random integer
         try:
-            with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+            with smtplib.SMTP("smtp.office365.com", 587) as smtp:
                 smtp.ehlo()
                 smtp.starttls()
                 smtp.ehlo()
                 smtp.login(bot_verify_sender, bot_verify_sender_password)
-                msg = f"Hello! I'm Catan verification bot.\nThis is your code: {number}"
+                msg = f"From: {bot_verify_sender}\r\nTo: {email}\r\n\r\nHello! I'm Catan verification bot.\nThis is your code: {number}"
                 smtp.sendmail(bot_verify_sender, email, msg)
             print(f"The email verification has sent to {email}")
             return number

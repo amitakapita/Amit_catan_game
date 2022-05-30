@@ -18,7 +18,8 @@ client_commands = {
     "buy_building_cmd": "BUY_BUILDING",
     "pull_cubes_cmd": "PULL_CUBES",
     "finished_my_turn_cmd": "FINISHED_MY_TURN",
-    "verify_cmd": "VERIFY"
+    "verify_cmd": "VERIFY",
+    "login_again_cmd": "LOGIN_AGAIN"
 }
 
 server_commands = {

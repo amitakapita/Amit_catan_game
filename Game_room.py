@@ -5,7 +5,7 @@ import protocol_library
 import sqlite3 as sql
 from protocol_library import client_commands, server_game_rooms_commands
 import json
-from player_game import  Player
+from player_game import Player
 import sys
 import time
 import subprocess
@@ -20,7 +20,7 @@ subprocess1 = ""
 threads1 = []
 
 
-class GameRoom (object):
+class GameRoom(object):
     def __init__(self, leader_name, maximum_players, ip1, port1, session_id):
         self.session_id = session_id
         self.leader_name = leader_name
@@ -126,7 +126,7 @@ class GameRoom (object):
                 print("The server has closed")
         except BaseException as e:
             print("meow hav meow meow hav hav meow hav", e, traceback.format_exc())
-            self.server_socket1.close()  # #
+            # self.server_socket1.close()  #
             conn.close()
             sys.exit(0)
 
@@ -160,7 +160,8 @@ class GameRoom (object):
                         print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
                         conn.sendall(message.encode())
                 else:
-                    message = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"], "game server closed, switched back to the main server")
+                    message = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"],
+                                                             "game server closed, switched back to the main server")
                     for player in self.players:
                         print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
                         conn.sendall(message.encode())
@@ -173,7 +174,8 @@ class GameRoom (object):
                     return "CLOSING SERVER"
         elif cmd == client_commands["leave_my_player_cmd"]:
             # self.player_exits_the_room(conn)
-            message = protocol_library.build_message(server_game_rooms_commands["leave_player_ok_cmd"], self.players_information())
+            message = protocol_library.build_message(server_game_rooms_commands["leave_player_ok_cmd"],
+                                                     self.players_information())
             if len(self.players) > 1:
                 for player in self.players:
                     print(f"[Server] -> [Client {player.conn.getpeername()}] {message}")
@@ -189,11 +191,13 @@ class GameRoom (object):
             return
         elif cmd == client_commands["buy_building_cmd"]:
             msg = msg.split("#")
-            message = self.handle_buttons(msg[0], msg[1], self.is_first_round)  # index 0 - 266 (including them both), current button
+            message = self.handle_buttons(msg[0], msg[1],
+                                          self.is_first_round)  # index 0 - 266 (including them both), current button
             if not message[0]:
                 cmd_send = server_game_rooms_commands["buy_building_failed_cmd"]
                 conn.sendall(protocol_library.build_message(cmd_send, message[1]).encode())
-                print(f"[SERVER] -> [CLIENT {conn.getpeername()}] {protocol_library.build_message(cmd_send, message[1])}")
+                print(
+                    f"[SERVER] -> [CLIENT {conn.getpeername()}] {protocol_library.build_message(cmd_send, message[1])}")
                 return
             else:
                 cmd_send = server_game_rooms_commands["buy_building_ok_cmd"]
@@ -215,7 +219,8 @@ class GameRoom (object):
         elif cmd == client_commands["finished_my_turn_cmd"]:
             if self.turns_of.points >= 12:
                 # won
-                msg_send = protocol_library.build_message(server_game_rooms_commands["Wined_cmd"], f"{self.turns_of.player_name}*{self.turns_of.color}")
+                msg_send = protocol_library.build_message(server_game_rooms_commands["Wined_cmd"],
+                                                          f"{self.turns_of.player_name}*{self.turns_of.color}")
                 self.send_for_all_players(msg_send)
                 for player in self.players:  # quits the players from the game room
                     print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_send}")
@@ -244,7 +249,8 @@ class GameRoom (object):
                     list1.append((player_name.player_name, player_name.color))
                 elif self.current != "waiting" or player_name.get_color() == colors[index]:
                     list1.append((player_name.player_name, player_name.color))
-            list1 = json.dumps(list1 if list1 != [] else [(player_name.player_name, player_name.color) for player in self.players])
+            list1 = json.dumps(
+                list1 if list1 != [] else [(player_name.player_name, player_name.color) for player in self.players])
             return list1
         except Exception as e:
             print(e)
@@ -256,10 +262,13 @@ class GameRoom (object):
             for i in range(0, 41, 5):  # 9 times in average the last one is 38 + 5 = 43 the last index in the tiles
                 time.sleep(0.01)
                 print(i, i + 5)
-                conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}").encode())  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
-                message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"], f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}")  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
+                conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"],
+                                                            f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}").encode())  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
+                message = protocol_library.build_message(server_game_rooms_commands["start_game_ok"],
+                                                         f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}")  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()
                 print(f"[Server] -> [Client {conn.getpeername()}] {message}")
-            message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"firebrick4*{self.players[0].player_name}*{self.is_first_round}")  # at the beggining the turn is in red's
+            message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"],
+                                                     f"firebrick4*{self.players[0].player_name}*{self.is_first_round}")  # at the beggining the turn is in red's
             conn.sendall(message.encode())
             print(f"\n[Server] -> [Client {conn.getpeername()}] {message}")
             self.turns_of = self.players[0]
@@ -305,33 +314,35 @@ class GameRoom (object):
         for gold_mine_tile in gold_mine_tiles:
             if gold_mine_tile.number == 6 or gold_mine_tile.number == 8:
                 temp_tile = random.choice([tile1 for tile1 in self.tiles if
-                                           tile1.number != 6 and tile1.number != 8 and tile1.terrain_kind != "gold_mine" and tile1.terrain_kind != "sea"])
+                                           tile1.number != 6 and tile1.number != 8 and tile1.terrain_kind != "gold_mine"
+                                           and tile1.terrain_kind != "sea"])
                 print(gold_mine_tile, temp_tile)
                 self.tiles[gold_mine_tile.index].number, self.tiles[
                     temp_tile.index].number = temp_tile.number, gold_mine_tile.number
                 # self.tiles[gold_mine_tile.index].change_photo_number()
                 # self.tiles[temp_tile.index].change_photo_number()
                 print(gold_mine_tile, temp_tile)
-        if gold_mine_tiles[0].index in forbidden_placements[gold_mine_tiles[1].index]:
+        if gold_mine_tiles[0].index in forbidden_placements[gold_mine_tiles[1].index]:  # near to the other gold mine
             tile_xchange = random.choice(
                 self.tiles[:gold_mine_tiles[0].index] + self.tiles[gold_mine_tiles[1].index + 1:] + self.tiles[
                                                                                                     gold_mine_tiles[
                                                                                                         0].index + 1:
                                                                                                     gold_mine_tiles[
-                                                                                                        1].index])  # tile_xchange points to the same id in the memory as the selected tile
+                                                                                                        1].index])
+            # tile_xchange points to the same id in the memory as the selected tile
             while tile_xchange.index in forbidden_placements[gold_mine_tiles[1].index]:
                 tile_xchange = random.choice(
                     self.tiles[:gold_mine_tiles[0].index] + self.tiles[gold_mine_tiles[1].index + 1:] + self.tiles[
                                                                                                         gold_mine_tiles[
                                                                                                             0].index + 1:
                                                                                                         gold_mine_tiles[
-                                                                                                            1].index])  # tile_xchange points to the same id in the memory as the selected tile
+                                                                                                            1].index])
+                # tile_xchange points to the same id in the memory as the selected tile
+            # swap placements and indexes
             self.tiles[gold_mine_tiles[0].index].placement, self.tiles[
                 tile_xchange.index].placement = tile_xchange.placement, gold_mine_tiles[0].placement
-            self.tiles[gold_mine_tiles[0].index].index, self.tiles[tile_xchange.index].index = tile_xchange.index, \
-                                                                                               gold_mine_tiles[0].index
-            self.tiles[gold_mine_tiles[0].index], self.tiles[tile_xchange.index] = self.tiles[tile_xchange.index], \
-                                                                                   self.tiles[gold_mine_tiles[0].index]
+            self.tiles[gold_mine_tiles[0].index].index, self.tiles[tile_xchange.index].index = tile_xchange.index, gold_mine_tiles[0].index
+            self.tiles[gold_mine_tiles[0].index], self.tiles[tile_xchange.index] = self.tiles[tile_xchange.index], self.tiles[gold_mine_tiles[0].index]
 
     def checking_city_or_settlement_is_near_the_road(self, index_road, color):
         for index_road1 in self.roads:  # there is already a road there
@@ -369,7 +380,8 @@ class GameRoom (object):
                 counter_none_and_sea_tiles += 1
         if counter_none_and_sea_tiles >= 2:
             return False
-        for placement in near_road_boat_numbers_indexes[index_road]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
+        for placement in near_road_boat_numbers_indexes[
+            index_road]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
             for index_road1 in self.roads:
                 if index_road1[0] == placement and index_road1[1].color == color:
                     return True
@@ -378,22 +390,43 @@ class GameRoom (object):
                     return True
         return False
 
-    def checking_settlement(self, position, color):
+    def checking_settlement(self, position, color, first_turn):
         for index_settlement in self.settlements:  # if there is already a settlement or a city in this index
             if index_settlement[0] == position:
                 return False
         for index_city in self.cities:  # about the city if there is already a settlement or a city in this index
             if index_city[0] == position:
                 return False
+        if not first_turn:
+            # check in the not first round if the player builds a settlement near a road or a boat, else it is illegal
+            finished_check = False
+            for index in roads_and_boats_near_settlement_or_city_indexes[position - 155]:
+                if finished_check:
+                    break
+                for road in self.roads:
+                    print(index == road[1].index, index, road[1].index, road)
+                    if index == road[0] and road[1].color == color:
+                        finished_check = True
+                        break
+                for boat in self.boats:
+                    print(boat[1].index == index and boat[1].color == color, index, boat[1].index, color, boat[1].color)
+                    if boat.index[1] == index and boat[1].color == color:
+                        finished_check = True
+                        break
+            if not finished_check:
+                return False
         counter_sea_tiles_and_Nones = 0
-        for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][position - 155]]):  # if there is not only seas or Nones
+        for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][
+            position - 155]]):  # if there is not only seas or Nones
             if tile is None or self.tiles[tile].terrain_kind == "sea":
                 counter_sea_tiles_and_Nones += 1
                 print(counter_sea_tiles_and_Nones, tile)
                 continue
             tile = self.tiles[tile]
-            print(f"\n{tile}\n{places_in_each_placements_for_the_hexes[1][position - 155][index3]}\n{tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][index3])}\n{counter_sea_tiles_and_Nones}")
-            if not tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][index3]):  # fi it's valid from the fact that it can be only after 2 roads and that
+            print(
+                f"\n{tile}\n{places_in_each_placements_for_the_hexes[1][position - 155][index3]}\n{tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][index3])}\n{counter_sea_tiles_and_Nones}")
+            if not tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][
+                                                               index3]):  # fi it's valid from the fact that it can be only after 2 roads and that
                 return False
         if counter_sea_tiles_and_Nones >= 3:
             return False
@@ -413,7 +446,8 @@ class GameRoom (object):
                 counter_none_and_sea_tiles += 1
         if counter_none_and_sea_tiles == 0:  # only land
             return False
-        for placement in near_road_boat_numbers_indexes[index_boat]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
+        for placement in near_road_boat_numbers_indexes[
+            index_boat]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
             for index_road1 in self.roads:
                 if index_road1[0] == placement and index_road1[1].color == color:
                     return True
@@ -456,28 +490,38 @@ class GameRoom (object):
             if 0 <= position1 <= 154:
                 if current_button == "road":
                     # if there is not there any road, and there is a the player's settlement or city near, or there is a road of the player near
-                    if (self.checking_city_or_settlement_is_near_the_road(position1, self.turns_of.color) or self.checking_roads_or_boats_is_near_the_road(position1, self.turns_of.color)) and self.check_parts_in_game_recources("road", first_round, self.turns_of.color):
-                        road = Road(index=position1, color=self.turns_of.color, position=indexes_roads_xyx1y1_positions[position1])
+                    if (self.checking_city_or_settlement_is_near_the_road(position1,
+                                                                          self.turns_of.color) or self.checking_roads_or_boats_is_near_the_road(
+                        position1, self.turns_of.color)) and self.check_parts_in_game_recources("road", first_round,
+                                                                                                self.turns_of.color):
+                        road = Road(index=position1, color=self.turns_of.color,
+                                    position=indexes_roads_xyx1y1_positions[position1])
                         # road.draw_road(self.canvas)
                         self.roads.append((position1, road))
                         for tile in what_part_is_on_what_tile_hex[0][position1]:
                             if tile is not None:
                                 tile = self.tiles[tile]
-                                tile.add_building(road, places_in_each_placements_for_the_hexes[0][position1], is_settlement_or_city=False)
+                                tile.add_building(road, places_in_each_placements_for_the_hexes[0][position1],
+                                                  is_settlement_or_city=False)
                                 print(tile)
                         msg = json.dumps(road, cls=BitPortGameEncoder)
                         # self.canvas.tag_lower("road", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                         self.turns_of.sum_rounds_and_boats += 1
                         self.the_highest_amount_of_roads_and_boats(self.turns_of.sum_rounds_and_boats)
                 elif current_button == "boat":
-                    if self.checking_boats_is_near_a_settlement_or_city(position1, self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(position1, self.turns_of.color) and self.check_parts_in_game_recources("boat", first_round, self.turns_of.color):
-                        boat = Boat(index=position1, color=self.turns_of.color, position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
+                    if self.checking_boats_is_near_a_settlement_or_city(position1,
+                                                                        self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(
+                        position1, self.turns_of.color) and self.check_parts_in_game_recources("boat", first_round,
+                                                                                               self.turns_of.color):
+                        boat = Boat(index=position1, color=self.turns_of.color,
+                                    position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
                         # boat.draw_boat(self.canvas)
                         self.boats.append((position1, boat))
                         for tile in what_part_is_on_what_tile_hex[0][position1]:
                             if tile is not None:
                                 tile = self.tiles[tile]
-                                tile.add_building(boat, places_in_each_placements_for_the_hexes[0][position1], is_settlement_or_city=False)
+                                tile.add_building(boat, places_in_each_placements_for_the_hexes[0][position1],
+                                                  is_settlement_or_city=False)
                                 print(tile)
                         # self.canvas.tag_lower("boat", "settlement")  # that for the assuming that roads are built after placing settlements and over and more
                         # and in order to see the boat's image
@@ -490,19 +534,25 @@ class GameRoom (object):
             elif 267 > position1 > 154:
                 if current_button == "city":
                     for index, settlement in self.settlements:
-                        if index == position1 and settlement.color == self.turns_of.color and self.check_parts_in_game_recources("city", first_round, self.turns_of.color):
+                        if index == position1 and settlement.color == self.turns_of.color and self.check_parts_in_game_recources(
+                                "city", first_round, self.turns_of.color):
                             # self.canvas.delete(settlement.id)
                             self.settlements.remove((index, settlement))
-                            city1 = City(color=self.turns_of.color, index=position1, position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=None)
+                            city1 = City(color=self.turns_of.color, index=position1,
+                                         position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)],
+                                         img=None)
                             print(city1)  # not to delete
                             # city1.draw_city(self.canvas)
                             print(city1)  # not to delete
                             self.cities.append((position1, city1))
-                            for index2, tile_index in enumerate([index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]):
+                            for index2, tile_index in enumerate(
+                                    [index for index in what_part_is_on_what_tile_hex[1][position1 - 155]]):
                                 if tile_index is not None:
                                     tile_index1 = self.tiles[tile_index]
-                                    tile_index1.delete_building(places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
-                                    tile_index1.add_building(city1, places_in_each_placements_for_the_hexes[1][position1 - 155][index2], is_settlement_or_city=False)
+                                    tile_index1.delete_building(
+                                        places_in_each_placements_for_the_hexes[1][position1 - 155][index2])
+                                    tile_index1.add_building(city1, places_in_each_placements_for_the_hexes[1][
+                                        position1 - 155][index2], is_settlement_or_city=True)
                                     print(index2, tile_index1, tile_index)
                             print(self.settlements)
                             print(self.cities)
@@ -510,8 +560,11 @@ class GameRoom (object):
                             self.turns_of.points += 1
                             break
                 elif current_button == "settlement":
-                    if self.checking_settlement(position1, self.turns_of.color) and self.check_parts_in_game_recources("settlement", first_round, self.turns_of.color):
-                        settlement1 = Settlement(color=self.turns_of.color, index=int(position1), position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)], img=None)
+                    if self.checking_settlement(position1, self.turns_of.color, first_round) and self.check_parts_in_game_recources(
+                            "settlement", first_round, self.turns_of.color):
+                        settlement1 = Settlement(color=self.turns_of.color, index=int(position1),
+                                                 position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)],
+                                                 img=None)
                         print(settlement1)
                         # settlement1.draw_settlement(self.canvas)
                         index2 = 0
@@ -519,7 +572,9 @@ class GameRoom (object):
                             if index1 is not None:
                                 tile = self.tiles[index1]
                                 print(tile, index1)
-                                tile.add_building(building=settlement1, index1=places_in_each_placements_for_the_hexes[1][position1 - 155][index2], is_settlement_or_city=True)
+                                tile.add_building(building=settlement1,
+                                                  index1=places_in_each_placements_for_the_hexes[1][position1 - 155][
+                                                      index2], is_settlement_or_city=True)
                             index2 += 1
                         self.settlements.append((position1, settlement1))
                         msg = json.dumps(settlement1, cls=BitPortGameEncoder)
@@ -535,7 +590,11 @@ class GameRoom (object):
         self.results_cubes = (cube1, cube2, sum_cubes)
         self.what_tile_is_on()
         for player in self.players:
-            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"], msg=f"{json.dumps(self.results_cubes)}#{json.dumps(self.players_recourses[self.dict_colors_players_indexes[player.color]])}#{self.turns_of.player_name}#{[self.players_recourses[i][-1] for i in range(self.count_players)]}")
+            msg_to_send = protocol_library.build_message(cmd=server_game_rooms_commands["pulled_cubes_cmd"],
+                                                         msg=f"{json.dumps(self.results_cubes)}#"
+                                                             f"{json.dumps(self.players_recourses[self.dict_colors_players_indexes[player.color]])}#"
+                                                             f"{self.turns_of.player_name}#"
+                                                             f"{[self.players_recourses[i][-1] for i in range(self.count_players)]}")
             player.conn.sendall(msg_to_send.encode())
             print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_to_send}")
 
@@ -547,7 +606,8 @@ class GameRoom (object):
                     sum1 = sum1 // 2
                     print(sum1)
                     for _ in range(sum1):
-                        recourse_index = random.choice([index for index, free_index in enumerate(player_recourses_list[:-1]) if free_index != 0])
+                        recourse_index = random.choice(
+                            [index for index, free_index in enumerate(player_recourses_list[:-1]) if free_index != 0])
                         player_recourses_list[recourse_index] -= 1
                     player_recourses_list[-1] -= sum1
         for tile in self.tiles:
@@ -556,17 +616,23 @@ class GameRoom (object):
                     print(part_in_game[1])
                     if tile.terrain_kind == "gold_mine":
                         if Type[type(part_in_game[1])] == Type[Settlement]:
-                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 1
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][
+                                random.randint(0, 4)] += 1
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][-1] += 1
                         elif Type[type(part_in_game[1])] == Type[City]:
-                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][random.randint(0, 4)] += 2
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][
+                                random.randint(0, 4)] += 1  # 2
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][
+                                random.randint(0, 4)] += 1  # 2 random resources at all
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][-1] += 2
                     else:
                         if Type[type(part_in_game[1])] == Type[Settlement]:
-                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 1
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][
+                                self.dict_colors_indexes[tile.terrain_kind]] += 1
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][-1] += 1
                         elif Type[type(part_in_game[1])] == Type[City]:
-                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][self.dict_colors_indexes[tile.terrain_kind]] += 2
+                            self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][
+                                self.dict_colors_indexes[tile.terrain_kind]] += 2
                             self.players_recourses[self.dict_colors_players_indexes[part_in_game[1].color]][-1] += 2
 
     def check_parts_in_game_recources(self, building_part, first_round, color):
@@ -575,10 +641,14 @@ class GameRoom (object):
         elif first_round:
             return False
         if building_part == "settlement":
-            if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] > 0 and \
-                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] > 0 and \
-                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] > 0 and \
-                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] > 0:
+            if self.players_recourses[self.dict_colors_players_indexes[color]][
+                self.dict_colors_indexes["wheat"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][
+                        self.dict_colors_indexes["lumber"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][
+                        self.dict_colors_indexes["bricks"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][
+                        self.dict_colors_indexes["field"]] > 0:
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] -= 1
@@ -586,22 +656,28 @@ class GameRoom (object):
                 self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 4
                 return True
         elif building_part == "road":
-            if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] > 0 and \
-                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] > 0:
+            if self.players_recourses[self.dict_colors_players_indexes[color]][
+                self.dict_colors_indexes["lumber"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][
+                        self.dict_colors_indexes["bricks"]] > 0:
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["bricks"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 2
                 return True
         elif building_part == "boat":
-            if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] > 0 and \
-                self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] > 0:
+            if self.players_recourses[self.dict_colors_players_indexes[color]][
+                self.dict_colors_indexes["lumber"]] > 0 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][
+                        self.dict_colors_indexes["field"]] > 0:
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 2
                 return True
         elif building_part == "city":
-            if self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["iron"]] >= 3 and \
-                    self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] >= 2:
+            if self.players_recourses[self.dict_colors_players_indexes[color]][
+                self.dict_colors_indexes["iron"]] >= 3 and \
+                    self.players_recourses[self.dict_colors_players_indexes[color]][
+                        self.dict_colors_indexes["wheat"]] >= 2:
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["iron"]] -= 3
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["wheat"]] -= 2
                 self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 5
@@ -609,7 +685,8 @@ class GameRoom (object):
         return False
 
     def send_who_turns_of(self):
-        message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"], f"{self.turns_of.color}*{self.turns_of.player_name}*{self.is_first_round}")
+        message = protocol_library.build_message(server_game_rooms_commands["turn_who_cmd"],
+                                                 f"{self.turns_of.color}*{self.turns_of.player_name}*{self.is_first_round}")
         for player in self.players:
             player.conn.sendall(message.encode())
             print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message}")
@@ -620,7 +697,8 @@ class GameRoom (object):
             print(f"[SERVER] -> [CLIENT {player.conn.getpeername()}] {message}")
 
     def the_highest_amount_of_roads_and_boats(self, number_amount):
-        print(type(self.top_roads_and_boats), type(self.top_roads_and_boats) == int, type(self.top_roads_and_boats) == Player)
+        print(type(self.top_roads_and_boats), type(self.top_roads_and_boats) == int,
+              type(self.top_roads_and_boats) == Player)
         if type(self.top_roads_and_boats) == int:  # type(int)
             if number_amount > self.top_roads_and_boats:
                 # if not self.players[index].color == self.top_roads_and_boats.color:
@@ -629,18 +707,19 @@ class GameRoom (object):
                 # self.players_recourses[index][-1] += 2
                 # self.players_recourses[self.players.index(self.top_roads_and_boats)][-1] -= 2
                 # else:
-                self.top_roads_and_boats = [number_amount, self.players.index(self.turns_of)]  # (number_amount, index_player)
-        elif type(self.top_roads_and_boats) == list and number_amount > self.top_roads_and_boats[0]:  #  and number_amount > 5
+                self.top_roads_and_boats = [number_amount,
+                                            self.players.index(self.turns_of)]  # (number_amount, index_player)
+        elif type(self.top_roads_and_boats) == list and number_amount > self.top_roads_and_boats[0]:  # and number_amount > 5
             if not self.turns_of.color == self.players[self.top_roads_and_boats[1]].color:
                 self.turns_of.points += 2
                 self.players[self.top_roads_and_boats[1]].points -= 2
                 self.send_for_all_players(protocol_library.build_message(
-                    server_game_rooms_commands["update_points_cmd"], f"{self.players[self.top_roads_and_boats[1]].points}*{self.players[self.top_roads_and_boats[1]].color}"
+                    server_game_rooms_commands["update_points_cmd"],
+                    f"{self.players[self.top_roads_and_boats[1]].points}*{self.players[self.top_roads_and_boats[1]].color}"
                 ))
                 self.top_roads_and_boats = [number_amount, self.players.index(self.turns_of)]
             else:
                 self.top_roads_and_boats[0] = number_amount
-
 
 
 if __name__ == "__main__":
@@ -651,7 +730,8 @@ if __name__ == "__main__":
         print(leader_name, maximum_players, port, ip, session_id)
         print(sys.argv[:])
         time.sleep(0.5)
-        game_server1 = GameRoom(leader_name=leader_name, ip1=ip, port1=int(port), maximum_players=maximum_players, session_id=session_id)
+        game_server1 = GameRoom(leader_name=leader_name, ip1=ip, port1=int(port), maximum_players=maximum_players,
+                                session_id=session_id)
         game_server1.start()
         print("meow meow hav hav 123")
     except Exception as e:

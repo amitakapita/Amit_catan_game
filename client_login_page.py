@@ -260,7 +260,7 @@ class Client(object):
             self.back_btn["command"] = lambda: self.back_to_the_menu(conn=client_socket)
             self.profile_btn["command"] = lambda: self.profile_menu(client_socket)
             self.game_rooms_lobby_btn["command"] = lambda: self.Game_rooms_lobby_menu(client_socket)
-            self.root.bind("<Escape>", lambda x: self.back_to_the_menu(conn=client_socket))
+            # self.root.bind("<Escape>", lambda x: self.back_to_the_menu(conn=client_socket))
             self.refresh_button["command"] = lambda: self.refresh_lobby_rooms(client_socket,
                                                                               client_commands["get_lobby_rooms_cmd"])
             self.create_lobby_game_room_button["command"] = lambda: self.create_lobby_game_room()

@@ -500,7 +500,7 @@ class Client(object):
                 self.update_points(msg[0], msg[1])
             elif cmd == server_game_rooms_commands["Wined_cmd"]:
                 msg = msg.split("*")
-                self.handle_win_game(color=msg[1], player_name=msg[0])  # g
+                self.handle_win_game(color=msg[1], player_name=msg[0], conn=conn)  # g
 
     def check_in(self, conn):
         self.username, self.password = (self.name1_input.get(), self.password1_input.get())
@@ -1171,10 +1171,10 @@ class Client(object):
         self.tiles_images = []
         self.bytes_times_counter = 0
         self.map_storage = None
-        self.boats = []
-        self.roads = []
-        self.cities = []
-        self.settlements = []
+        self.boats = []  # (index, boat)
+        self.roads = []  # (index, road)
+        self.cities = []  # (index, city)
+        self.settlements = []  # (index, settlement)
         self.ids_placements = []
         self.current_button = None
         self.list_of_players = []
@@ -1220,10 +1220,11 @@ class Client(object):
     def update_points(self, points, player_color):
         self.Stats_screen.list_of_contents[2 + 5 * colors.index(player_color)]["text"] = f"points: {points}"
 
-    def handle_win_game(self, color, player_name):
+    def handle_win_game(self, color, player_name, conn):
+        conn.close()
         self.win_game_lbl["text"] = f"{player_name} wins"
         self.win_game_lbl["fg"] = color
-        self.win_game_lbl.place(x=300 + 300 + 200, y=20)
+        self.win_game_lbl.place(x=300 + 300 + 200 - 20, y=20)
         self.button_buy_boat["state"] = tk.DISABLED
         self.button_buy_road["state"] = tk.DISABLED
         self.button_next_turn["state"] = tk.DISABLED

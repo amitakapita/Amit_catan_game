@@ -36,8 +36,8 @@ class GameRoom(object):
         self.ids_placements = []
         self.settlements = []  # (index, settlement)
         self.cities = []  # (index, city)
-        self.roads = []
-        self.boats = []
+        self.roads = []  # (index, boat)
+        self.boats = []  # (index, road)
         self.results_cubes = None
         self.players_recourses = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
         self.dict_colors_indexes = {"bricks": 4, "iron": 3, "wheat": 2, "lumber": 1, "field": 0}

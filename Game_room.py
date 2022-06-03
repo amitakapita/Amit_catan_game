@@ -410,7 +410,7 @@ class GameRoom(object):
                         break
                 for boat in self.boats:
                     print(boat[1].index == index and boat[1].color == color, index, boat[1].index, color, boat[1].color)
-                    if boat.index[1] == index and boat[1].color == color:
+                    if boat[1].index == index and boat[1].color == color:
                         finished_check = True
                         break
             if not finished_check:

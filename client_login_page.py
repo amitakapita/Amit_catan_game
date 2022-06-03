@@ -381,6 +381,7 @@ class Client(object):
                 print(lobby_rooms)
                 self.show_game_rooms(lobby_rooms, conn)
             elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
+                self.back_btn["state"] = tk.DISABLED
                 conn.close()
                 time.sleep(0.5)
                 ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
@@ -798,6 +799,7 @@ class Client(object):
         self.participants_lbl.place(x=280, y=180)
         print(list_of_names, type(list_of_names))
         if from_creating and conn is not None:
+            self.back_btn["state"] = tk.NORMAL
             self.not_in_create_lobby_game_room()
             self.back_btn["text"] = "Close lobby"
             self.start_game_menu_button.place(x=1070, y=500)
@@ -809,6 +811,7 @@ class Client(object):
                 self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
                 space += 30
         else:
+            self.back_btn["state"] = tk.NORMAL
             self.not_in_Game_rooms_lobby_menu()
             self.back_btn["text"] = "Leave Room"
             self.name_leader["text"] = f"Waiting room - {list_of_names[0][0][0]}'s lobby"
@@ -880,6 +883,7 @@ class Client(object):
         conn1 = self.connect_to_game_room_server(ip1, port1)
         self.main_server = False
         self.temp_information_about_the_room = [[leader_name, colors[0]], session_id, False, conn1]
+        self.back_btn["state"] = tk.DISABLED
         self.send_messages(conn1, client_commands["join_my_player_cmd"], self.username)
 
     def leave_room_game_lobby(self, conn):
@@ -1196,6 +1200,8 @@ class Client(object):
         self.button_buy.place_forget()
         self.win_game_lbl.place_forget()
         self.button_pull_cubes["state"] = tk.DISABLED
+        self.button_declare_victory["state"] = tk.DISABLED
+        self.button_buy_city["state"] = tk.DISABLED
 
     def handle_error_message(self, message):
         self.error_message_game_building["text"] = message

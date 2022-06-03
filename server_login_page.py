@@ -22,7 +22,7 @@ wait_login = {}  # {client_socket: client_address, code, username}  # code and u
 login_dict = {}  # {client_socket: wait_login[client_socket][0], username}
 game_room_server_lobbies_session_ids_and_ports = {}  # {session_id: [creator, max_players, is_full, players, port_server]}
 in_game_dict = {}  # {username: True ?, session_id}
-bot_verify_sender = "catan.bot.verify@outlook.com"  # gmail
+bot_verify_sender = "catan.bot.verify1@outlook.com"  # gmail
 bot_verify_sender_password = "Catanbotver1"  # or catanbotver
 
 
@@ -304,7 +304,7 @@ class Server(object):
                 smtp.starttls()
                 smtp.ehlo()
                 smtp.login(bot_verify_sender, bot_verify_sender_password)
-                msg = f"From: {bot_verify_sender}\r\nTo: {email}\r\n\r\nHello! I'm Catan verification bot.\nThis is your code: {number}"
+                msg = f"From: {bot_verify_sender}\r\nTo: {email}\r\n\r\nHello! I'm Catan verification bot.\nThis is your code: \n{number}"
                 smtp.sendmail(bot_verify_sender, email, msg)
             print(f"The email verification has sent to {email}")
             return number

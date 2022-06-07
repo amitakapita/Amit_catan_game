@@ -22,7 +22,7 @@ wait_login = {}  # {client_socket: client_address, code, username}  # code and u
 login_dict = {}  # {client_socket: wait_login[client_socket][0], username}
 game_room_server_lobbies_session_ids_and_ports = {}  # {session_id: [creator, max_players, is_full, players, port_server]}
 in_game_dict = {}  # {username: True ?, session_id}
-bot_verify_sender = "catan.bot.verify1@outlook.com"  # gmail
+bot_verify_sender = "catan.bot.verify@outlook.com"  # gmail1
 bot_verify_sender_password = "Catanbotver1"  # or catanbotver
 
 
@@ -69,7 +69,7 @@ class Server(object):
                     raise ConnectionError
                 print(f"\n[Client] {request}")
                 # conn.sendall(request.upper().encode())
-                self.handle_client_commands(conn, number_of_clients, request, con)
+                self.handle_client_commands(conn, request, con)  # number_of_clients,
         except ConnectionError:
             if conn in wait_login.keys():
                 conn.close()
@@ -84,8 +84,12 @@ class Server(object):
         except OSError:
             self.count -= 1
             return
+        finally:
+            if con:
+                con.close()
+                print(f"DB Connection has closed with [Client] {conn}")
 
-    def handle_client_commands(self, conn, number_of_clients, request, con):
+    def handle_client_commands(self, conn, request, con):  # number_of_clients,
         cmd, msg = protocol_library.disassemble_message(request)
         to_send, msg_to_send = "", ""
         if cmd == client_commands["login_cmd"]:
@@ -194,14 +198,18 @@ class Server(object):
                 login_dict[conn] = wait_login[conn][0], player_name  # peer name, username
                 print("meow and hav")
                 del wait_login[conn]
+                cur.close()
                 return True
             if username_input not in map(lambda client: client[-2], login_dict.values()):
                 code = self.verify_sender(x[0][3])
                 if code is not None:
                     wait_login[conn] = wait_login[conn], str(code), username_input
+                    cur.close()
                     return True
                 else:
+                    cur.close()
                     return False
+        cur.close()
         return False
 
     def register_check(self, msg, con):
@@ -223,6 +231,7 @@ class Server(object):
         cur = con.cursor()
         cur.execute("SELECT Username FROM accounts WHERE Username = ?", (username,))  # the comma is for making the parameter a tuple and not char
         if cur.fetchall():
+            cur.close()
             return server_commands["sign_up_failed_cmd"], "The username is already taken."
         cur.execute("INSERT INTO accounts (Username, Password, Email, Played_games, Wined_games) values (?, ?, ?, ?, ?)", (username, password, email, 0, 0))
         """list1 = cur.fetchall()
@@ -235,6 +244,7 @@ class Server(object):
         print(f"INSERT INTO accounts(Username, Password, Email) VALUES ('{username}', '{password}', '{email}')")
         cur.execute(f"INSERT INTO accounts('Username', 'Password', 'Email', 'Played_games', 'Wined_games') VALUES ('{username}', '{password}', '{email}', '{0}', '{0}')")"""
         con.commit()
+        cur.close()
         return server_commands["sign_up_ok_cmd"], "registering has succeeded"
 
     """def handle_DB(self, query):
@@ -254,6 +264,7 @@ class Server(object):
         cur.execute("SELECT Played_games, Wined_games, Email FROM 'accounts' WHERE Username = ?", (login_dict[conn][1],))  # the comma is for making the parameter a tuple and not char
         msg = cur.fetchall()
         print(msg)
+        cur.close()
         return server_commands["get_profile_ok"], f"{msg[0][0]}#{msg[0][1]}#{msg[0][2]}"
 
     def lobby_rooms(self):

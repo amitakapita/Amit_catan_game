@@ -88,27 +88,6 @@ class Client(object):
         self.scrollbar_frame = tk.Frame(self.root, highlightbackground="black", highlightcolor="black", highlightthickness=2, bg="#2596be")
         self.scrollbar = tk.Scrollbar(self.scrollbar_frame, orient=tk.VERTICAL)
         self.game_rooms_lobby_lbl = tk.Label(self.root, font="Arial 35", bg="#2596be", text="Game rooms lobby")
-        self.games_rooms_list = tk.Listbox(self.scrollbar_frame, font="Arial 40", bg="#2596be", width=26, relief="flat", highlightbackground="black", height=9, highlightcolor="black")
-        # self.games_rooms_list.insert(1, game_room1)  # add an id and a game_room object
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
-        self.games_rooms_list.insert(1, "meow")
         self.game_rooms_lobby_canvas = tk.Canvas(self.scrollbar_frame, bg="#2596be", highlightbackground="#2596be", highlightcolor="#2596be", highlightthickness=2, height=900, width=755)
         self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 700))
         self.game_rooms_lobby_canvas.bind("<MouseWheel>", self.on_mousewheel)
@@ -121,7 +100,7 @@ class Client(object):
         self.message_failed_join_error_game = tk.Label(self.root, bg="#2596be", font="Arial 16")
 
         # create lobby room menu
-        self.lobby_name_game_room_lbl = tk.Label(self.root, font="Arial 30", bg="#2596be")
+        self.lobby_name_game_room_lbl = tk.Label(self.root, font="Arial 25", bg="#2596be")  # 30 28 26
         self.game_room_lobby_create_canvas = tk.Canvas(self.root, bg="#d0cece", width=700, height=300, highlightcolor="black", highlightbackground="black")
         self.maximum_players_entry = tk.Entry(self.root, bg="#AFABAB", font="Arial 20")
         self.maximum_players_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 20", text="Maximum participants: {2-4}")
@@ -134,7 +113,7 @@ class Client(object):
         self.start_game_menu_button = tk.Button(self.root, bg="#70ad47", text="Start", font="Arial 15", relief="solid")
         self.session_id_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 15")
         self.participants_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 17")
-        self.name_leader = tk.Label(self.root, bg="#2596be", font="Arial 30")
+        self.name_leader = tk.Label(self.root, bg="#2596be", font="Arial 25")  # 30 28 26
         self.list_of_players = []
         self.temp_information_about_the_room = []
         self.is_first_time_getting_players = True
@@ -383,7 +362,7 @@ class Client(object):
             elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
                 self.back_btn["state"] = tk.DISABLED
                 conn.close()
-                time.sleep(0.5)
+                time.sleep(1)
                 ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
                 conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
                 self.waiting_room_lobby_menu(list_of_names=[[(self.username, colors[0])]], session_id=session_id, conn=conn)
@@ -940,6 +919,7 @@ class Client(object):
         self.button_next_turn["command"] = lambda: self.close_placements(conn, finished_turn=True)
         self.back_btn["state"] = tk.NORMAL
         self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)
+        self.canvas_game.tag_raise("indexes_texts_rectangles", "all")
 
     def draw_map(self):
         for index, tile_image in enumerate(self.tiles_images):
@@ -999,6 +979,7 @@ class Client(object):
         print(building.type1)
         list_of_recourses = json.loads(list_of_recourses)  # else it gives only the characters
         print(is_my_turn)
+        self.canvas_game.tag_raise("indexes_texts_rectangles", "all")
         if is_my_turn == "True":
             self.count_labels_recourses["text"] = f"{list_of_recourses[0]}        {list_of_recourses[1]}        {list_of_recourses[2]}        {list_of_recourses[3]}        {list_of_recourses[4]}"
             self.Stats_screen.list_of_contents[3 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"number of resources: {list_of_recourses[-1]}"

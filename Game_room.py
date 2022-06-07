@@ -129,6 +129,10 @@ class GameRoom(object):
             # self.server_socket1.close()  #
             conn.close()
             sys.exit(0)
+        finally:
+            if con:
+                con.close()
+                print(f"DB Connection has closed with [Client] {conn}")
 
     def handle_client(self, conn):
         client_handler = threading.Thread(target=self.handle_player_conn,
@@ -225,6 +229,7 @@ class GameRoom(object):
                 for player in self.players:  # quits the players from the game room
                     print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_send}")
                     conn.sendall(msg_send.encode())
+                    self.update_DB_player_win(player.player_name, player.color == self.turns_of.color, con)  #
                     self.player_exits_the_room(player.conn)
                     player.conn.close()
                 self.server_open = False  # closing server
@@ -509,9 +514,9 @@ class GameRoom(object):
                         self.turns_of.sum_rounds_and_boats += 1
                         self.the_highest_amount_of_roads_and_boats(self.turns_of.sum_rounds_and_boats)
                 elif current_button == "boat":
-                    if self.checking_boats_is_near_a_settlement_or_city(position1,
+                    if (self.checking_boats_is_near_a_settlement_or_city(position1,
                                                                         self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(
-                        position1, self.turns_of.color) and self.check_parts_in_game_recources("boat", first_round,
+                        position1, self.turns_of.color)) and self.check_parts_in_game_recources("boat", first_round,
                                                                                                self.turns_of.color):
                         boat = Boat(index=position1, color=self.turns_of.color,
                                     position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
@@ -672,6 +677,7 @@ class GameRoom(object):
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 2
+                print("meow")
                 return True
         elif building_part == "city":
             if self.players_recourses[self.dict_colors_players_indexes[color]][
@@ -720,6 +726,18 @@ class GameRoom(object):
                 self.top_roads_and_boats = [number_amount, self.players.index(self.turns_of)]
             else:
                 self.top_roads_and_boats[0] = number_amount
+
+    def update_DB_player_win(self, player_name, is_winner, con):
+        cur = con.cursor()
+        cur.execute("SELECT Played_games, Wined_games FROM accounts WHERE Username = ?", (player_name,))
+        points = cur.fetchall()
+        print(int(str(points[0][0])) + 1, int(str(points[0][1])) + 1)
+        cur.execute("""UPDATE accounts SET Played_games = ? WHERE Username = ?""", (int(str(points[0][0])) + 1, player_name))
+        if is_winner:
+            cur.execute("""UPDATE accounts SET Wined_games = ? WHERE Username = ?""", (int(str(points[0][1])) + 1, player_name))
+        con.commit()
+        cur.close()
+
 
 
 if __name__ == "__main__":

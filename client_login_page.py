@@ -12,6 +12,7 @@ import typing
 from typing import Type
 import traceback
 from types import SimpleNamespace
+import hashlib
 
 # Constants:
 count1 = 1
@@ -38,7 +39,8 @@ class Client(object):
         self.root.geometry("500x500+30+30")
         self.back_btn = tk.Button(self.root, text="Back", relief="solid", font="Arial 15", background="#c76969")
         screen_width, screen_height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-        self.root.iconphoto(True, ImageTk.PhotoImage(Image.open(r"assets\favicon-32x32.png").convert("RGBA")))  # it works (the favicon works)
+        self.root.iconphoto(True, ImageTk.PhotoImage(
+            Image.open(r"assets\favicon-32x32.png").convert("RGBA")))  # it works (the favicon works)
 
         # Labels and Entries
         self.lbl_welcome_message = tk.Label(self.root, text="Welcome to Catan game!", font="Arial 17")
@@ -76,7 +78,8 @@ class Client(object):
         self.game_rooms_lobby_btn = tk.Button(self.root, text="Game rooms lobby", relief="solid", font="Arial 15")
 
         # Profile menu
-        self.canvas = tk.Canvas(self.root, width=screen_width, height=screen_height, background="#2596be", highlightbackground="#2596be")  # root, screen width, screen height
+        self.canvas = tk.Canvas(self.root, width=screen_width, height=screen_height, background="#2596be",
+                                highlightbackground="#2596be")  # root, screen width, screen height
         self.lbl_profile_message = tk.Label(self.root, font="Arial 35", bg="#2596be")
         self.lbl_games_played = tk.Label(self.root, text="Games played: ", font="Arial 16", bg="grey")
         self.lbl_statistics = tk.Label(self.root, text="My statistics", font="Arial 22", bg="grey")
@@ -85,14 +88,17 @@ class Client(object):
         self.lbl_email = tk.Label(self.root, text="E-mail: ", font="Arial 16", bg="grey")
 
         # Game rooms lobby menu
-        self.scrollbar_frame = tk.Frame(self.root, highlightbackground="black", highlightcolor="black", highlightthickness=2, bg="#2596be")
+        self.scrollbar_frame = tk.Frame(self.root, highlightbackground="black", highlightcolor="black",
+                                        highlightthickness=2, bg="#2596be")
         self.scrollbar = tk.Scrollbar(self.scrollbar_frame, orient=tk.VERTICAL)
         self.game_rooms_lobby_lbl = tk.Label(self.root, font="Arial 35", bg="#2596be", text="Game rooms lobby")
-        self.game_rooms_lobby_canvas = tk.Canvas(self.scrollbar_frame, bg="#2596be", highlightbackground="#2596be", highlightcolor="#2596be", highlightthickness=2, height=900, width=755)
+        self.game_rooms_lobby_canvas = tk.Canvas(self.scrollbar_frame, bg="#2596be", highlightbackground="#2596be",
+                                                 highlightcolor="#2596be", highlightthickness=2, height=900, width=755)
         self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 700))
         self.game_rooms_lobby_canvas.bind("<MouseWheel>", self.on_mousewheel)
         self.refresh_button = tk.Button(self.root, bg="#70ad47", text="Refresh", relief="solid", font="Arial 18")
-        self.create_lobby_game_room_button = tk.Button(self.root, bg="#70ad47", text="Create", relief="solid", font="Arial 18")
+        self.create_lobby_game_room_button = tk.Button(self.root, bg="#70ad47", text="Create", relief="solid",
+                                                       font="Arial 18")
         self.from_creating = False
         self.from_main_lobby = False
         self.is_active = False
@@ -101,15 +107,20 @@ class Client(object):
 
         # create lobby room menu
         self.lobby_name_game_room_lbl = tk.Label(self.root, font="Arial 25", bg="#2596be")  # 30 28 26
-        self.game_room_lobby_create_canvas = tk.Canvas(self.root, bg="#d0cece", width=700, height=300, highlightcolor="black", highlightbackground="black")
+        self.game_room_lobby_create_canvas = tk.Canvas(self.root, bg="#d0cece", width=700, height=300,
+                                                       highlightcolor="black", highlightbackground="black")
         self.maximum_players_entry = tk.Entry(self.root, bg="#AFABAB", font="Arial 20")
-        self.maximum_players_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 20", text="Maximum participants: {2-4}")
-        self.create_lobby_game_room_create_button = tk.Button(self.root, bg="#70ad47", text="Create lobby", font="Arial 15", relief="solid")
-        self.number_players_not_valid = tk.Label(self.root, bg="#d0cece", font="Arial 15", text="The maximum players should be between 2 (include 2) to 4 (include 4)")
+        self.maximum_players_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 20",
+                                            text="Maximum participants: {2-4}")
+        self.create_lobby_game_room_create_button = tk.Button(self.root, bg="#70ad47", text="Create lobby",
+                                                              font="Arial 15", relief="solid")
+        self.number_players_not_valid = tk.Label(self.root, bg="#d0cece", font="Arial 15",
+                                                 text="The maximum players should be between 2 (include 2) to 4 (include 4)")
 
         # waiting lobby room menu
         self.waiting_to_start_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
-        self.waiting_room_lobby_menu_canvas = tk.Canvas(self.root, bg="#d0cece", width=900, height=400, highlightcolor="black", highlightbackground="black")
+        self.waiting_room_lobby_menu_canvas = tk.Canvas(self.root, bg="#d0cece", width=900, height=400,
+                                                        highlightcolor="black", highlightbackground="black")
         self.start_game_menu_button = tk.Button(self.root, bg="#70ad47", text="Start", font="Arial 15", relief="solid")
         self.session_id_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 15")
         self.participants_lbl = tk.Label(self.root, bg="#d0cece", font="Arial 17")
@@ -119,7 +130,8 @@ class Client(object):
         self.is_first_time_getting_players = True
 
         # playing room
-        self.canvas_game = tk.Canvas(self.root, bg="#2596be", width=900, highlightbackground="black", highlightthickness=3)
+        self.canvas_game = tk.Canvas(self.root, bg="#2596be", width=900, highlightbackground="black",
+                                     highlightthickness=3)
         self.tiles = []
         self.ports = []
 
@@ -138,19 +150,22 @@ class Client(object):
         self.button_buy_settlement = tk.Button(self.root, text="Buy Settlement", relief="solid", font="Arial 15",
                                                bg="SkyBlue3",
                                                activebackground="SkyBlue2",
-                                               command=lambda: self.change_current_button("settlement"), state=tk.DISABLED)
+                                               command=lambda: self.change_current_button("settlement"),
+                                               state=tk.DISABLED)
         self.button_buy_city = tk.Button(self.root, text="Buy City", relief="solid", font="Arial 15", bg="SkyBlue3",
                                          activebackground="SkyBlue2",
                                          command=lambda: self.change_current_button("city"), state=tk.DISABLED)
-        self.button_declare_victory = tk.Button(self.root, text="Declare Victory", relief="solid", font="Arial 15",
+        """# self.button_declare_victory = tk.Button(self.root, text="Declare Victory", relief="solid", font="Arial 15",
                                                 bg="SkyBlue3",
                                                 activebackground="SkyBlue2",
-                                                command=lambda: self.change_current_button("declare_victory"), state=tk.DISABLED)
-        self.button_next_turn = tk.Button(self.root, text="Finished My Turn", relief="solid", font="Arial 15", bg="SkyBlue3",
+                                                command=lambda: self.change_current_button("declare_victory"), state=tk.DISABLED)"""
+        self.button_next_turn = tk.Button(self.root, text="Finished My Turn", relief="solid", font="Arial 15",
+                                          bg="SkyBlue3",
                                           activebackground="SkyBlue2", state=tk.DISABLED)
         self.where_place = tk.Label(self.root, text="Where to place?", bg="#2596be", font="Arial 15")
         self.place_entry = tk.Entry(self.root, bg="SkyBlue3", font="Arial 15")
-        self.button_buy = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Buy", relief="solid")
+        self.button_buy = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Buy",
+                                    relief="solid")
         self.image1 = Image.open(r"assets\Settlement_red.png").convert("RGBA")
         self.image1 = ImageTk.PhotoImage(self.image1)
         self.image2 = ImageTk.PhotoImage(Image.open(r"assets\Settlement_blue.png").convert("RGBA"))
@@ -163,19 +178,24 @@ class Client(object):
         self.image_city_green = ImageTk.PhotoImage(Image.open(r"assets/City_green.png").convert("RGBA"))
         self.image_city_yellow = ImageTk.PhotoImage(Image.open(r"assets/City_yellow.png").convert("RGBA"))
         self.roads = []
-        self.cancel_buying_button = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="Cancel", relief="solid", command=self.close_placements)
+        self.cancel_buying_button = tk.Button(self.root, bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15",
+                                              text="Cancel", relief="solid", command=self.close_placements)
         self.boats = []
         self.image_path_boat1 = fr"assets\Boat_red.png"
         self.image_boat_1 = ImageTk.PhotoImage(Image.open(self.image_path_boat1).convert("RGBA"))
         self.image_boat_2 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_blue.png").convert("RGBA"))
         self.image_boat_3 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_green.png").convert("RGBA"))
         self.image_boat_4 = ImageTk.PhotoImage(Image.open(fr"assets\Boat_yellow.png").convert("RGBA"))
-        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2", font="Arial 15", text="pull cubes", state=tk.DISABLED)
+        self.button_pull_cubes = tk.Button(self.root, relief="solid", bg="SkyBlue3", activebackground="SkyBlue2",
+                                           font="Arial 15", text="pull cubes", state=tk.DISABLED)
         self.lbl_cube1 = tk.Label(self.root, bg="#2596be")
         self.lbl_cube2 = tk.Label(self.root, bg="#2596be")
-        self.cubes_images = [ImageTk.PhotoImage(Image.open(fr"assets\cube_1.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_2.png").convert("RGBA")),
-                      ImageTk.PhotoImage(Image.open(fr"assets\cube_3.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_4.png").convert("RGBA")),
-                      ImageTk.PhotoImage(Image.open(fr"assets\cube_5.png").convert("RGBA")), ImageTk.PhotoImage(Image.open(fr"assets\cube_6.png").convert("RGBA"))]
+        self.cubes_images = [ImageTk.PhotoImage(Image.open(fr"assets\cube_1.png").convert("RGBA")),
+                             ImageTk.PhotoImage(Image.open(fr"assets\cube_2.png").convert("RGBA")),
+                             ImageTk.PhotoImage(Image.open(fr"assets\cube_3.png").convert("RGBA")),
+                             ImageTk.PhotoImage(Image.open(fr"assets\cube_4.png").convert("RGBA")),
+                             ImageTk.PhotoImage(Image.open(fr"assets\cube_5.png").convert("RGBA")),
+                             ImageTk.PhotoImage(Image.open(fr"assets\cube_6.png").convert("RGBA"))]
         self.sum_cubes_lbl = tk.Label(self.root, bg="#2596be", font="Arial 15")
         self.bytes_times_counter = 0
         self.map_storage = None
@@ -184,7 +204,8 @@ class Client(object):
         self.place_numbers_image = Image.open(self.place_numbers_path).convert("RGBA")
         self.numbers_path = r"assets\numbers2.png"
         self.numbers1_image = Image.open(self.numbers_path).convert("RGBA")
-        self.place_numbers_image = ImageTk.PhotoImage(self.place_numbers_image.resize((100, 100), PIL.Image.Resampling.LANCZOS))
+        self.place_numbers_image = ImageTk.PhotoImage(
+            self.place_numbers_image.resize((100, 100), PIL.Image.Resampling.LANCZOS))
         self.Stats_screen = StatsScreen(self.root)
         self.style1 = ttk.Style()
         self.style1.theme_create("notebook_style_catan", settings={
@@ -224,9 +245,6 @@ class Client(object):
         self.error_message_game_building = tk.Label(self.root, text="", font="Arial 10", bg="#2596be")
         self.temp = True
         self.win_game_lbl = tk.Label(self.root, font="Arial 15", bg="#2596be")
-
-
-
 
     def start(self, connection_lobby_not_failed=True):
         try:
@@ -278,16 +296,22 @@ class Client(object):
                 receive_connection_thread = threading.Thread(target=self.receive_messages, args=(client_socket,))
                 receive_connection_thread.daemon = True
                 receive_connection_thread.start()
+                self.back_btn["state"] = tk.NORMAL
                 if not connection_lobby_not_failed:
-                    self.send_messages(client_socket, client_commands["login_again_cmd"], "%s#%s" % (self.username, self.password))
+                    self.send_messages(client_socket, client_commands["login_again_cmd"],
+                                       "%s#%s" % (self.username, self.password))
                 else:
-                    self.send_messages(client_socket, client_commands["login_cmd"], "%s#%s" % (self.username, self.password))
-                    self.email_verify.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2)
-                    self.verify_check.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 + 20 + 5)
+                    self.send_messages(client_socket, client_commands["login_cmd"],
+                                       "%s#%s" % (self.username, self.password))
+                    self.email_verify.place(x=self.root.winfo_screenwidth() // 2 - 100,
+                                            y=self.root.winfo_screenheight() // 2)
+                    self.verify_check.place(x=self.root.winfo_screenwidth() // 2 - 100,
+                                            y=self.root.winfo_screenheight() // 2 + 20 + 5)
                     self.temp = connection_lobby_not_failed
                     self.current_lobby = "main_lobby"  # self.back_btn["command"] = lambda: self.send_messages(client_socket, client_commands["logout_cmd"])  # ["state"] = tk.DISABLED#
                     self.lbl1_message["text"] = f"An email code has sent to you, please enter the code right here"
-                    self.lbl1_message.place(x=self.root.winfo_screenwidth() // 2 - 100, y=self.root.winfo_screenheight() // 2 - 40)
+                    self.lbl1_message.place(x=self.root.winfo_screenwidth() // 2 - 100,
+                                            y=self.root.winfo_screenheight() // 2 - 40)
                     self.is_first_time_getting_players = True
 
         except socket.error as e:
@@ -362,10 +386,11 @@ class Client(object):
             elif cmd == server_commands["create_room_game_lobby_ok_cmd"]:
                 self.back_btn["state"] = tk.DISABLED
                 conn.close()
-                time.sleep(1)
+                time.sleep(1.9 + 1.5)
                 ip1_game_room_lobby_server, port1_game_room_lobby_server, session_id = msg.split("#")
                 conn = self.connect_to_game_room_server(ip1_game_room_lobby_server, port1_game_room_lobby_server)
-                self.waiting_room_lobby_menu(list_of_names=[[(self.username, colors[0])]], session_id=session_id, conn=conn)
+                self.waiting_room_lobby_menu(list_of_names=[[(self.username, colors[0])]], session_id=session_id,
+                                             conn=conn)
                 self.send_messages(conn, client_commands["join_my_player_cmd"], self.username)
                 self.main_server = False
                 self.temp_information_about_the_room = [self.username, colors[0], session_id, conn]
@@ -386,10 +411,11 @@ class Client(object):
                     # opening menu
                     self.lbl1_message["text"] = "login succeeded"
                     print("login succeeded")
-                    self.open_menu()    #
+                    self.open_menu()  #
                     self.create_lobby_game_room_create_button["state"] = tk.NORMAL
                 else:
-                    self.back_btn["command"] = lambda: self.back_to_the_menu(conn=conn)  # self.back_btn["state"] = tk.NORMAL
+                    self.back_btn["command"] = lambda: self.back_to_the_menu(
+                        conn=conn)  # self.back_btn["state"] = tk.NORMAL
                     self.email_verify.place_forget()
                     self.verify_check.place_forget()
                     self.lbl1_message.place_forget()
@@ -406,13 +432,20 @@ class Client(object):
                 self.lbl1_message["text"] = "verifying has failed"
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
-                if self.is_first_time_getting_players and self.username == self.temp_information_about_the_room[0]:  # [0]
+                if self.is_first_time_getting_players and self.username == self.temp_information_about_the_room[
+                    0]:  # [0]
                     print(self.temp_information_about_the_room)
-                    self.waiting_room_lobby_menu(list_of_names=[[(self.temp_information_about_the_room[0], self.temp_information_about_the_room[1])]], session_id=self.temp_information_about_the_room[2], conn=self.temp_information_about_the_room[3])
+                    self.waiting_room_lobby_menu(list_of_names=[
+                        [(self.temp_information_about_the_room[0], self.temp_information_about_the_room[1])]],
+                                                 session_id=self.temp_information_about_the_room[2],
+                                                 conn=self.temp_information_about_the_room[3])
                     self.is_first_time_getting_players = False
                 elif self.is_first_time_getting_players:
                     print(self.temp_information_about_the_room)
-                    self.waiting_room_lobby_menu(list_of_names=[[(self.temp_information_about_the_room[0])]], session_id=self.temp_information_about_the_room[1], conn=self.temp_information_about_the_room[3], from_creating=self.temp_information_about_the_room[2])
+                    self.waiting_room_lobby_menu(list_of_names=[[(self.temp_information_about_the_room[0])]],
+                                                 session_id=self.temp_information_about_the_room[1],
+                                                 conn=self.temp_information_about_the_room[3],
+                                                 from_creating=self.temp_information_about_the_room[2])
                     self.is_first_time_getting_players = False
                 print("meow meow hav hav")
                 self.update_list_of_players(json.loads(msg))
@@ -450,6 +483,7 @@ class Client(object):
                 msg = msg.split("*")
                 self.turn_who_label["text"] = "The turn of " + dict_colors[msg[0]]
                 self.turn_who_label["foreground"] = msg[0]
+                print(msg[1], self.username)
                 if msg[1] == self.username:
                     if msg[2] == "True":
                         self.button_buy_settlement["state"] = tk.NORMAL
@@ -465,12 +499,14 @@ class Client(object):
                         self.button_next_turn["state"] = tk.DISABLED
                         self.button_buy_settlement["state"] = tk.DISABLED
                         self.button_buy_city["state"] = tk.DISABLED
-                        self.button_declare_victory["state"] = tk.DISABLED
+                        # self.button_declare_victory["state"] = tk.DISABLED
             elif cmd == server_game_rooms_commands["join_player_failed_cmd"]:
-                self.message_failed_join_error_game["text"] = "could not connect to the lobby, maybe the game has started."
+                self.message_failed_join_error_game[
+                    "text"] = "could not connect to the lobby, maybe the game has started."
                 self.message_failed_join_error_game.place(x=465, y=115)
                 self.second_time_connect = True
                 self.start(connection_lobby_not_failed=False)
+                self.back_btn["state"] = tk.NORMAL
             elif cmd == server_game_rooms_commands["buy_building_failed_cmd"]:
                 pass
                 self.handle_error_message(msg)
@@ -494,7 +530,7 @@ class Client(object):
             self.lbl1_message["text"] = "the syntax of the username is not valid"
             print("the syntax of the username is not valid")
         else:
-            data, msg = client_commands["login_cmd"], "%s#%s" % (self.username, self.password)
+            data, msg = client_commands["login_cmd"], "%s#%s" % (self.username, hashlib.sha256(self.password.encode()).hexdigest())
             self.send_messages(conn, data, msg)
 
     def open_menu(self):
@@ -543,8 +579,11 @@ class Client(object):
         elif self.password != self.confirmed_password:
             self.lbl2_message["text"] = "the password does not match the confirmed password"
         else:
-            data, msg = client_commands["sign_up_cmd"], "{}#{}#{}#{}".format(self.username, self.password, self.confirmed_password,
-                                                        self.Email)
+            data, msg = client_commands["sign_up_cmd"], "{}#{}#{}#{}".format(self.username,
+                                                                             hashlib.sha256(self.password.encode()).hexdigest(),
+                                                                             hashlib.sha256(
+                                                                                 self.confirmed_password.encode()).hexdigest(),
+                                                                             self.Email)
             self.send_messages(conn, data, msg)
 
     def not_in_login_menu(self):
@@ -625,7 +664,6 @@ class Client(object):
             self.not_in_playing_room()
             self.start()
 
-
     def not_in_main_lobby(self):
         self.lbl1_welcome_message.pack_forget()
         if self.current_lobby != "profile" and self.current_lobby != "game_rooms_lobby":
@@ -684,7 +722,8 @@ class Client(object):
         self.message_failed_join_error_game.place_forget()
 
     def on_mousewheel(self, event):
-        self.game_rooms_lobby_canvas.yview_scroll(-1*event.delta//120, "units")  # the speed of scrolling and the units of it?
+        self.game_rooms_lobby_canvas.yview_scroll(-1 * event.delta // 120,
+                                                  "units")  # the speed of scrolling and the units of it?
 
     def show_game_rooms(self, game_rooms_dict, conn):
         """self.scrollbar_frame.pack_forget()
@@ -695,7 +734,8 @@ class Client(object):
         self.game_rooms_lobby_canvas.pack()"""
         if game_rooms_dict == {}:
             self.game_rooms_lobby_canvas.delete("all")
-            self.game_rooms_lobby_canvas.create_text(675, 195, text="There are no game lobby rooms", font="Arial 16", anchor=tk.CENTER, state=tk.DISABLED)
+            self.game_rooms_lobby_canvas.create_text(675, 195, text="There are no game lobby rooms", font="Arial 16",
+                                                     anchor=tk.CENTER, state=tk.DISABLED)
         else:
             space = 0
             for lobby_room1 in game_rooms_dict:
@@ -703,14 +743,20 @@ class Client(object):
                 # lbl1.place(x=100, y=100)
                 creator, max_players, is_full, players, port_server = game_rooms_dict[lobby_room1]
                 print(game_rooms_dict[lobby_room1])
-                rectangle1 = self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space, activewidth=3, width=2, fill="#AFABAB")
-                self.game_rooms_lobby_canvas.create_text(370, 195 + space, text=f"{creator}'s looby room", font="Arial 16", fill="black", state=tk.DISABLED, anchor=tk.NW)
-                self.game_rooms_lobby_canvas.create_text(370, 230 + space, text=f"Number of players: {players} out of {max_players}", font="Arial 14", fill="black", state=tk.DISABLED, anchor=tk.NW)
+                rectangle1 = self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space,
+                                                                           activewidth=3, width=2, fill="#AFABAB")
+                self.game_rooms_lobby_canvas.create_text(370, 195 + space, text=f"{creator}'s looby room",
+                                                         font="Arial 16", fill="black", state=tk.DISABLED, anchor=tk.NW)
+                self.game_rooms_lobby_canvas.create_text(370, 230 + space,
+                                                         text=f"Number of players: {players} out of {max_players}",
+                                                         font="Arial 14", fill="black", state=tk.DISABLED, anchor=tk.NW)
                 space += 170
                 position1 = int(self.game_rooms_lobby_canvas["height"])
                 self.game_rooms_lobby_canvas["height"] = position1 + space
                 self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 150 + space))
-                button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47", font="Arial 15", command=lambda: self.send_messages(conn, client_commands["join_game_room_cmd"], lobby_room1))
+                button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47",
+                                             font="Arial 15", command=lambda: self.send_messages(conn, client_commands[
+                        "join_game_room_cmd"], lobby_room1))
                 if is_full:
                     button_join_game["state"] = tk.DISABLED
                 button_join_game.place(x=500, y=170 + space)
@@ -738,7 +784,8 @@ class Client(object):
         self.from_main_lobby = True
         self.from_lobby_game_waiting_or_in_actual_game = True
         if not self.is_active:
-            self.root.after(5000, lambda: self.set_refresh_button_enabled())  # self.refresh_button disabled for 5 seconds
+            self.root.after(5000,
+                            lambda: self.set_refresh_button_enabled())  # self.refresh_button disabled for 5 seconds
             self.is_active = True
 
     def not_in_create_lobby_game_room(self):
@@ -767,7 +814,7 @@ class Client(object):
         self.is_active = False
         self.from_lobby_game_waiting_or_in_actual_game = False
 
-    def waiting_room_lobby_menu(self, list_of_names: list, session_id="", from_creating=True, conn = None):
+    def waiting_room_lobby_menu(self, list_of_names: list, session_id="", from_creating=True, conn=None):
         self.waiting_room_lobby_menu_canvas.place(x=240, y=150)
         self.session_id_lbl["text"] = "Game room id: " + session_id
         self.waiting_to_start_lbl.pack(padx=400, pady=10, side=tk.TOP)
@@ -781,13 +828,15 @@ class Client(object):
             self.back_btn["state"] = tk.NORMAL
             self.not_in_create_lobby_game_room()
             self.back_btn["text"] = "Close lobby"
+            self.start_game_menu_button["state"] = tk.DISABLED
             self.start_game_menu_button.place(x=1070, y=500)
             self.start_game_menu_button["command"] = lambda: self.send_messages(conn, client_commands["start_game_cmd"])
             self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0][0]} to start the game"
             for name_and_color in list_of_names:
                 (name, color) = name_and_color[0][0], name_and_color[0][1]
                 print("meow hav 1 1")
-                self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
+                self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17",
+                                                                state=tk.DISABLED, anchor=tk.NW)
                 space += 30
         else:
             self.back_btn["state"] = tk.NORMAL
@@ -806,7 +855,8 @@ class Client(object):
                 for name_and_color in list_of_names:
                     (name, color) = name_and_color[0][0], name_and_color[0][1]
                     print("meow hav 1 1")
-                    self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17",
+                    self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color,
+                                                                    font="Arial 17",
                                                                     state=tk.DISABLED, anchor=tk.NW)
                     space += 30
 
@@ -847,7 +897,6 @@ class Client(object):
         if out_lobby:
             self.list_of_players = []
 
-
     def update_list_of_players(self, new_list_of_players):
         if self.current_lobby == "waiting_game_room_lobby":
             space = 0
@@ -857,6 +906,10 @@ class Client(object):
                                                                 font="Arial 17", state=tk.DISABLED, anchor=tk.NW)
                 space += 30
             self.list_of_players = new_list_of_players
+            if len(new_list_of_players) >= 2:
+                self.start_game_menu_button["state"] = tk.NORMAL
+            else:
+                self.start_game_menu_button["state"] = tk.DISABLED
 
     def join_room_game_lobby(self, ip1, port1, session_id, leader_name):
         conn1 = self.connect_to_game_room_server(ip1, port1)
@@ -884,15 +937,18 @@ class Client(object):
         self.canvas_game.pack(side=tk.LEFT)
         self.canvas_game["height"] = self.root.winfo_screenheight()
         self.draw_map()
-        self.Stats_screen.start(map(lambda x: x[0], self.list_of_players))  # only the players from (players, colors) and start a Stats_screen
+        self.Stats_screen.start(map(lambda x: x[0],
+                                    self.list_of_players))  # only the players from (players, colors) and start a Stats_screen
         for index, placement1 in enumerate(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1]):
             id_placement = self.canvas_game.create_image(placement1[0], placement1[1], image=self.none_any_circle,
-                                                         activeimage=self.Circle_choosing_photo_image, tags="circle_tag")
+                                                         activeimage=self.Circle_choosing_photo_image,
+                                                         tags="circle_tag")
             print(id_placement, end=", ")
             self.ids_placements.append(id_placement)
             i = self.canvas_game.create_text(placement1[0], placement1[1], text=str(index), state=tk.DISABLED,
                                              tags="indexes_texts_rectangles")
-            r = self.canvas_game.create_rectangle(self.canvas_game.bbox(i), fill="#2596be", tags="indexes_texts_rectangles")
+            r = self.canvas_game.create_rectangle(self.canvas_game.bbox(i), fill="#2596be",
+                                                  tags="indexes_texts_rectangles")
             self.canvas_game.itemconfigure(i, state=tk.HIDDEN)
             self.canvas_game.itemconfigure(r, state=tk.HIDDEN)
             self.canvas_game.tag_lower(r, i)
@@ -901,7 +957,7 @@ class Client(object):
         self.button_buy_boat.place(x=self.root.winfo_screenwidth() - 250, y=self.root.winfo_screenheight() - 420)
         self.button_buy_settlement.place(x=self.root.winfo_screenwidth() - 430, y=self.root.winfo_screenheight() - 420)
         self.button_buy_city.place(x=self.root.winfo_screenwidth() - 112, y=self.root.winfo_screenheight() - 360)
-        self.button_declare_victory.place(x=self.root.winfo_screenwidth() - 174, y=self.root.winfo_screenheight() - 300)
+        # self.button_declare_victory.place(x=self.root.winfo_screenwidth() - 174, y=self.root.winfo_screenheight() - 300)
         self.button_next_turn.place(x=self.root.winfo_screenwidth() - 367, y=self.root.winfo_screenheight() - 300)
         self.button_buy["command"] = lambda: self.close_placements(conn)
         # self.canvas.tag_lower("road", "settlement")
@@ -912,7 +968,8 @@ class Client(object):
         self.button_pull_cubes.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 150)
         self.resources_label.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 100)
         for i in range(5):
-            self.list_of_labels[i].place(x=self.root.winfo_screenwidth() - 60 * i - 50, y=self.root.winfo_screenheight() - 100)
+            self.list_of_labels[i].place(x=self.root.winfo_screenwidth() - 60 * i - 50,
+                                         y=self.root.winfo_screenheight() - 100)
             self.count_labels_recourses.place(x=self.root.winfo_screenwidth() - 57 * i - 50,
                                               y=self.root.winfo_screenheight() - 50)
         self.turn_who_label.place(x=self.root.winfo_screenwidth() - 350, y=10)
@@ -924,11 +981,15 @@ class Client(object):
     def draw_map(self):
         for index, tile_image in enumerate(self.tiles_images):
             if self.tiles[index].terrain_kind != "sea":
-                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1], image=tile_image[0])
-                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1], image=self.place_numbers_image)
-                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1], image=tile_image[1])
+                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1],
+                                              image=tile_image[0])
+                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1],
+                                              image=self.place_numbers_image)
+                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1],
+                                              image=tile_image[1])
             else:
-                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1], image=tile_image)
+                self.canvas_game.create_image(self.tiles[index].placement[0], self.tiles[index].placement[1],
+                                              image=tile_image)
             # self.canvas_game.create_text(self.tiles[index].placement[0], self.tiles[index].placement[1], text=self.index)
         # for index in range(len(self.tiles)):
         # for index1, middle in enumerate(placements_middle_hexes_vertex_hexes[index][0]):
@@ -957,7 +1018,7 @@ class Client(object):
             self.button_buy_boat["state"] = tk.DISABLED
             self.button_buy_city["state"] = tk.DISABLED
             self.button_next_turn["state"] = tk.DISABLED
-            self.button_declare_victory["state"] = tk.DISABLED
+            # self.button_declare_victory["state"] = tk.DISABLED
             return "finished my turn"
         position1 = self.place_entry.get()
         if position1 != "":
@@ -979,15 +1040,17 @@ class Client(object):
         print(building.type1)
         list_of_recourses = json.loads(list_of_recourses)  # else it gives only the characters
         print(is_my_turn)
-        self.canvas_game.tag_raise("indexes_texts_rectangles", "all")
         if is_my_turn == "True":
-            self.count_labels_recourses["text"] = f"{list_of_recourses[0]}        {list_of_recourses[1]}        {list_of_recourses[2]}        {list_of_recourses[3]}        {list_of_recourses[4]}"
-            self.Stats_screen.list_of_contents[3 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"number of resources: {list_of_recourses[-1]}"
+            self.count_labels_recourses[
+                "text"] = f"{list_of_recourses[0]}        {list_of_recourses[1]}        {list_of_recourses[2]}        {list_of_recourses[3]}        {list_of_recourses[4]}"
+            self.Stats_screen.list_of_contents[3 + 5 * self.dict_colors_players_indexes[building.color]][
+                "text"] = f"number of resources: {list_of_recourses[-1]}"
         else:
             self.Stats_screen.list_of_contents[3 + 5 * self.dict_colors_players_indexes[building.color]][
-            "text"] = f"number of resources: {list_of_recourses}"  # [-1]
+                "text"] = f"number of resources: {list_of_recourses}"  # [-1]
+
         self.Stats_screen.list_of_contents[2 + 5 * self.dict_colors_players_indexes[building.color]][
-        "text"] = f"points: {points}"
+            "text"] = f"points: {points}"
         if building.type1 == "Road":
             building = Road(building.color, building.index, building.position)
             self.roads.append((building.index, building))
@@ -1004,7 +1067,9 @@ class Client(object):
                 self.button_buy_boat["state"] = tk.DISABLED
                 # self.canvas_game.tag_lower("road",
                 #                            "settlement")  # that for the assuming that roads are built after placing settlements and over and more
-            self.Stats_screen.list_of_contents[4 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"number of roads and boats: {number_of_roads_and_boats_included}"
+
+            self.Stats_screen.list_of_contents[4 + 5 * self.dict_colors_players_indexes[building.color]][
+                "text"] = f"number of roads and boats: {number_of_roads_and_boats_included}"
         elif building.type1 == "Boat":
             building = Boat(building.color, building.index, building.position, self.image_boat_1)
             if building.color == "firebrick4":
@@ -1031,7 +1096,8 @@ class Client(object):
                 self.button_buy_road["state"] = tk.DISABLED
                 self.button_buy_boat["state"] = tk.DISABLED
             building.draw_boat(self.canvas_game)
-            self.Stats_screen.list_of_contents[4 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"number of roads and boats: {number_of_roads_and_boats_included}"
+            self.Stats_screen.list_of_contents[4 + 5 * self.dict_colors_players_indexes[building.color]][
+                "text"] = f"number of roads and boats: {number_of_roads_and_boats_included}"
         elif building.type1 == "City":
             for index, settlement in self.settlements:
                 if index == building.index and settlement.color == building.color:
@@ -1054,8 +1120,9 @@ class Client(object):
                             tile_index1 = self.tiles[tile_index]
                             tile_index1.delete_building(
                                 places_in_each_placements_for_the_hexes[1][building.index - 155][index2])
-                            tile_index1.add_building(building, places_in_each_placements_for_the_hexes[1][building.index - 155][
-                                index2], is_settlement_or_city=False)
+                            tile_index1.add_building(building,
+                                                     places_in_each_placements_for_the_hexes[1][building.index - 155][
+                                                         index2], is_settlement_or_city=False)
                             print(index2, tile_index1, tile_index)
                     print(self.settlements)
                     print(self.cities)
@@ -1087,7 +1154,10 @@ class Client(object):
                 self.button_buy_boat["state"] = tk.NORMAL
                 self.button_buy_road["state"] = tk.NORMAL
                 self.button_buy_settlement["state"] = tk.DISABLED
-            self.Stats_screen.list_of_contents[2 + 5 * self.dict_colors_players_indexes[building.color]]["text"] = f"points: {points}"
+            self.Stats_screen.list_of_contents[2 + 5 * self.dict_colors_players_indexes[building.color]][
+                "text"] = f"points: {points}"
+        self.canvas_game.tag_raise("indexes_texts_rectangles", "all")
+        self.place_entry.delete(0, "end")
 
     def change_current_button(self, new_current):
         self.current_button = new_current
@@ -1109,7 +1179,7 @@ class Client(object):
             self.button_buy_road["state"] = tk.NORMAL
             self.button_next_turn["state"] = tk.NORMAL
             self.button_buy_settlement["state"] = tk.NORMAL
-            self.button_declare_victory["state"] = tk.NORMAL
+            # self.button_declare_victory["state"] = tk.NORMAL
         self.lbl_cube1["image"] = self.cubes_images[results[0] - 1]
         self.lbl_cube2["image"] = self.cubes_images[results[1] - 1]
         self.lbl_cube1.place(x=self.root.winfo_screenwidth() - 450, y=self.root.winfo_screenheight() - 210)
@@ -1117,19 +1187,22 @@ class Client(object):
         self.sum_cubes_lbl["text"] = str(results[2])
         self.sum_cubes_lbl.place(x=self.root.winfo_screenwidth() - 340, y=self.root.winfo_screenheight() - 135)
         print(self.count_labels_recourses)
-        self.count_labels_recourses["text"] = f"{self.count_recourses[0]}        {self.count_recourses[1]}        {self.count_recourses[2]}        {self.count_recourses[3]}        {self.count_recourses[4]}"
+        self.count_labels_recourses[
+            "text"] = f"{self.count_recourses[0]}        {self.count_recourses[1]}        {self.count_recourses[2]}        {self.count_recourses[3]}        {self.count_recourses[4]}"
         self.button_pull_cubes["state"] = tk.DISABLED
         for i in range(len(amount_resources_players)):
             print(len(self.Stats_screen.list_of_contents), 3 + 5 * i)
-            self.Stats_screen.list_of_contents[3 + 5 * i]["text"] = f"number of resources: {amount_resources_players[i]}"
-
+            self.Stats_screen.list_of_contents[3 + 5 * i][
+                "text"] = f"number of resources: {amount_resources_players[i]}"
 
     def configure_tiles(self):
         for tile in self.tiles:
             self.tiles[tile.index] = TerrainTile1(tile.number, tile.placement, tile.terrain_kind, tile.index)
         for tile in self.tiles:
-            image1 = ImageTk.PhotoImage(Image.open(fr"assets\{tile.terrain_kind}_hex_rotated1.png").convert("RGBA").resize((150, int(150 * (258 / 269))),
-                                                                      PIL.Image.Resampling.LANCZOS))  # resampling is the change from the PIL module update
+            image1 = ImageTk.PhotoImage(
+                Image.open(fr"assets\{tile.terrain_kind}_hex_rotated1.png").convert("RGBA").resize(
+                    (150, int(150 * (258 / 269))),
+                    PIL.Image.Resampling.LANCZOS))  # resampling is the change from the PIL module update
             if tile.terrain_kind != "sea":
                 image_number = self.numbers1_image.crop((0 + 40 * (tile.number - 1) - 2, 0, 0 + 40 * tile.number, 40))
                 image_number = ImageTk.PhotoImage(image_number.resize((30, 30), PIL.Image.Resampling.LANCZOS))
@@ -1141,7 +1214,7 @@ class Client(object):
         self.canvas_game.delete("all")
         self.canvas_game.pack_forget()
         self.button_buy_city.place_forget()
-        self.button_declare_victory.place_forget()
+        # self.button_declare_victory.place_forget()
         self.button_next_turn.place_forget()
         self.button_buy_boat.place_forget()
         self.button_buy_settlement.place_forget()
@@ -1181,12 +1254,13 @@ class Client(object):
         self.button_buy.place_forget()
         self.win_game_lbl.place_forget()
         self.button_pull_cubes["state"] = tk.DISABLED
-        self.button_declare_victory["state"] = tk.DISABLED
+        # self.button_declare_victory["state"] = tk.DISABLED
         self.button_buy_city["state"] = tk.DISABLED
 
     def handle_error_message(self, message):
         self.error_message_game_building["text"] = message
-        self.error_message_game_building.place(x=self.root.winfo_screenwidth() - 440, y=self.root.winfo_screenheight() - 480)
+        self.error_message_game_building.place(x=self.root.winfo_screenwidth() - 440,
+                                               y=self.root.winfo_screenheight() - 480)
         self.root.after(5000, lambda: self.error_message_game_building.place_forget())
 
     def verify_code(self, conn):

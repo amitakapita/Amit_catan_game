@@ -46,6 +46,7 @@ class GameRoom(object):
         self.turns_of = None
         self.server_socket1 = None
         self.top_roads_and_boats = 5  # None 0
+        self.current_index_turns_of = 0
 
     def join_a_player(self, player_name, conn):
         if self.count_players <= self.maximum_players:
@@ -114,6 +115,24 @@ class GameRoom(object):
             print(f"There was an error with the client {conn.getpeername()}, so the server closed the socket with him")
             self.player_exits_the_room(conn)
             self.send_information_of_players(is_leave=True)
+            if self.current == "playing":
+                if not self.count_players == 1:
+                    if 2 <= self.count_players <= 3 and self.current_index_turns_of == 0:
+                        self.turns_of = self.players[self.current_index_turns_of % self.count_players]
+                        self.current_index_turns_of = self.current_index_turns_of % self.count_players
+                    elif 2 <= self.count_players <= 3 and self.current_index_turns_of >= 1:
+                        self.turns_of = self.players[(self.current_index_turns_of + 1) % self.count_players]
+                        self.current_index_turns_of = (self.current_index_turns_of + 1) % self.count_players
+                    print(f"Current player: {self.turns_of.player_name}, current index: {self.current_index_turns_of}")
+                    self.send_who_turns_of()
+                else:
+                    msg_send = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"],
+                                                              "game server closed, switched back to the main server")
+                    print(f"[Server] -> [Client {self.players[0].conn.getpeername()}] {msg_send}")
+                    self.players[0].conn.sendall(msg_send.encode())
+                    self.players[0].conn.close()
+                    self.server_open = False  # closing server
+                    self.server_socket1.close()  # closing server
         except ConnectionRefusedError or ConnectionResetError or ConnectionAbortedError:
             pass
         except OSError:
@@ -145,7 +164,7 @@ class GameRoom(object):
         cmd, msg = protocol_library.disassemble_message(request)
         cmd_send, msg_send = "", ""
         if cmd == client_commands["join_my_player_cmd"]:
-            if not self.is_full and self.current == "waiting":
+            if not self.is_full and self.current == "waiting" and msg not in [player.player_name for player in self.players]:
                 print("meow hav meow 2 1 hav")
                 self.join_a_player(msg, conn)
                 self.send_information_of_players()
@@ -189,9 +208,10 @@ class GameRoom(object):
                 self.players[0].conn.close()
             return
         elif cmd == client_commands["start_game_cmd"]:
-            print("meow meow")
-            self.generate_map()
-            self.start_game(self.tiles)
+            if self.count_players >= 2:
+                print("meow meow")
+                self.generate_map()
+                self.start_game(self.tiles)
             return
         elif cmd == client_commands["buy_building_cmd"]:
             msg = msg.split("#")
@@ -237,7 +257,18 @@ class GameRoom(object):
                 print("The server has closed")  # closing server
             elif self.is_first_round and self.players.index(self.turns_of) + 1 >= self.count_players:
                 self.is_first_round = False
+            if self.turns_of.player_name == self.players[(self.players.index(self.turns_of) + 1) % self.count_players].player_name:
+                msg_send = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"],
+                                                             "game server closed, switched back to the main server")
+                for player in self.players:  # quits the players from the game room
+                    print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_send}")
+                    conn.sendall(msg_send.encode())
+                    player.conn.close()
+                self.server_open = False  # closing server
+                self.server_socket1.close()  # closing server
+                return "CLOSING SERVER"
             self.turns_of = self.players[(self.players.index(self.turns_of) + 1) % self.count_players]
+            self.current_index_turns_of = (self.players.index(self.turns_of) + 1) % self.count_players
             self.send_who_turns_of()
             return
         message = protocol_library.build_message(cmd_send, msg_send)

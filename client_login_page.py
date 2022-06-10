@@ -40,7 +40,8 @@ class Client(object):
         self.back_btn = tk.Button(self.root, text="Back", relief="solid", font="Arial 15", background="#c76969")
         screen_width, screen_height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
         self.root.iconphoto(True, ImageTk.PhotoImage(
-            Image.open(r"assets\favicon-32x32.png").convert("RGBA")))  # it works (the favicon works)
+            Image.open(r"assets\favicon-32x32.png").convert(
+                "RGBA")))  # it works (the favicon works although the warning here)
 
         # Labels and Entries
         self.lbl_welcome_message = tk.Label(self.root, text="Welcome to Catan game!", font="Arial 17")
@@ -205,17 +206,15 @@ class Client(object):
         self.numbers_path = r"assets\numbers2.png"
         self.numbers1_image = Image.open(self.numbers_path).convert("RGBA")
         self.place_numbers_image = ImageTk.PhotoImage(
-            self.place_numbers_image.resize((100, 100), PIL.Image.Resampling.LANCZOS))
+            self.place_numbers_image.resize((100, 100),
+                                            PIL.Image.Resampling.LANCZOS))  # resampling is the change from the PIL module update
         self.Stats_screen = StatsScreen(self.root)
         self.style1 = ttk.Style()
         self.style1.theme_create("notebook_style_catan", settings={
             "TNotebook":
-                {"configure":
-                     {"background": "DeepSkyBlue4"}},
+                {"configure": {"background": "DeepSkyBlue4"}},
             "TNotebook.Tab":
-                {"configure":
-                     {"background": "SkyBlue2",
-                      "font": "Arial 15"},
+                {"configure": {"background": "SkyBlue2", "font": "Arial 15"},
                  "map":
                      {"background": [("selected", "SkyBlue3")],  # when selected
                       "expand": [("selected", [0, 5, 0, 0])]}}  # when selected the expanding of the tab
@@ -248,7 +247,7 @@ class Client(object):
 
     def start(self, connection_lobby_not_failed=True):
         try:
-            print("meow")
+            # print("meow")
             client_socket = self.connect_to_server(self.ip, self.port)
 
             self.submit_btn["command"] = lambda: self.check_in(client_socket)
@@ -335,7 +334,7 @@ class Client(object):
                 conn.sendall(message.encode())
                 break
         except ConnectionResetError:
-            print("hi meow")
+            # print("hi meow")
             self.back_btn["text"] = "Back"
             self.second_time_connect = True
             self.not_in_waiting_room_lobby_menu()
@@ -432,13 +431,12 @@ class Client(object):
                 self.lbl1_message["text"] = "verifying has failed"
         else:
             if cmd == server_game_rooms_commands["join_player_ok_cmd"]:
-                if self.is_first_time_getting_players and self.username == self.temp_information_about_the_room[
-                    0]:  # [0]
+                if self.is_first_time_getting_players and self.username == self.temp_information_about_the_room[0]:  # [0]
                     print(self.temp_information_about_the_room)
                     self.waiting_room_lobby_menu(list_of_names=[
                         [(self.temp_information_about_the_room[0], self.temp_information_about_the_room[1])]],
-                                                 session_id=self.temp_information_about_the_room[2],
-                                                 conn=self.temp_information_about_the_room[3])
+                        session_id=self.temp_information_about_the_room[2],
+                        conn=self.temp_information_about_the_room[3])
                     self.is_first_time_getting_players = False
                 elif self.is_first_time_getting_players:
                     print(self.temp_information_about_the_room)
@@ -447,7 +445,7 @@ class Client(object):
                                                  conn=self.temp_information_about_the_room[3],
                                                  from_creating=self.temp_information_about_the_room[2])
                     self.is_first_time_getting_players = False
-                print("meow meow hav hav")
+                # print("meow meow hav hav")
                 self.update_list_of_players(json.loads(msg))
             elif cmd == server_game_rooms_commands["close_lobby_ok_cmd"]:
                 print(msg)
@@ -492,7 +490,7 @@ class Client(object):
                         self.button_next_turn["state"] = tk.DISABLED
                     else:
                         self.button_pull_cubes["state"] = tk.NORMAL
-                        print("meow")
+                        # print("meow")
                         self.button_next_turn["state"] = tk.DISABLED
                         self.button_buy_road["state"] = tk.DISABLED
                         self.button_buy_boat["state"] = tk.DISABLED
@@ -530,7 +528,8 @@ class Client(object):
             self.lbl1_message["text"] = "the syntax of the username is not valid"
             print("the syntax of the username is not valid")
         else:
-            data, msg = client_commands["login_cmd"], "%s#%s" % (self.username, hashlib.sha256(self.password.encode()).hexdigest())
+            data, msg = client_commands["login_cmd"], "%s#%s" % (
+                self.username, hashlib.sha256(self.password.encode()).hexdigest())
             self.send_messages(conn, data, msg)
 
     def open_menu(self):
@@ -580,7 +579,8 @@ class Client(object):
             self.lbl2_message["text"] = "the password does not match the confirmed password"
         else:
             data, msg = client_commands["sign_up_cmd"], "{}#{}#{}#{}".format(self.username,
-                                                                             hashlib.sha256(self.password.encode()).hexdigest(),
+                                                                             hashlib.sha256(
+                                                                                 self.password.encode()).hexdigest(),
                                                                              hashlib.sha256(
                                                                                  self.confirmed_password.encode()).hexdigest(),
                                                                              self.Email)
@@ -629,7 +629,7 @@ class Client(object):
         self.register_btn.pack()
         self.name1_input.focus_force()
 
-    def back_to_the_menu(self, event=None, conn=None):
+    def back_to_the_menu(self, conn=None):  # , event=None
         if self.current_lobby == "register":
             self.not_in_register_menu()
             self.login_menu()
@@ -745,7 +745,7 @@ class Client(object):
                 print(game_rooms_dict[lobby_room1])
                 rectangle1 = self.game_rooms_lobby_canvas.create_rectangle(353, 170 + space, 985, 300 + space,
                                                                            activewidth=3, width=2, fill="#AFABAB")
-                self.game_rooms_lobby_canvas.create_text(370, 195 + space, text=f"{creator}'s looby room",
+                self.game_rooms_lobby_canvas.create_text(370, 195 + space, text=f"{creator}'s loobby room",
                                                          font="Arial 16", fill="black", state=tk.DISABLED, anchor=tk.NW)
                 self.game_rooms_lobby_canvas.create_text(370, 230 + space,
                                                          text=f"Number of players: {players} out of {max_players}",
@@ -755,12 +755,11 @@ class Client(object):
                 self.game_rooms_lobby_canvas["height"] = position1 + space
                 self.game_rooms_lobby_canvas.configure(scrollregion=(300, 150, 900, 150 + space))
                 button_join_game = tk.Button(self.scrollbar_frame, text="Join", relief="solid", bg="#70ad47",
-                                             font="Arial 15", command=lambda: self.send_messages(conn, client_commands[
-                        "join_game_room_cmd"], lobby_room1))
+                                             font="Arial 15", command=lambda: self.send_messages(conn, client_commands["join_game_room_cmd"], lobby_room1))
                 if is_full:
                     button_join_game["state"] = tk.DISABLED
                 button_join_game.place(x=500, y=170 + space)
-                canvas_window = self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
+                self.game_rooms_lobby_canvas.create_window(950, 100 + space, window=button_join_game)
                 self.game_rooms_lobby_canvas.itemconfigure(rectangle1, state=tk.NORMAL)
 
     def create_lobby_game_room(self):
@@ -834,7 +833,7 @@ class Client(object):
             self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0][0]} to start the game"
             for name_and_color in list_of_names:
                 (name, color) = name_and_color[0][0], name_and_color[0][1]
-                print("meow hav 1 1")
+                # print("meow hav 1 1")
                 self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color, font="Arial 17",
                                                                 state=tk.DISABLED, anchor=tk.NW)
                 space += 30
@@ -844,7 +843,7 @@ class Client(object):
             self.back_btn["text"] = "Leave Room"
             self.name_leader["text"] = f"Waiting room - {list_of_names[0][0][0]}'s lobby"
             self.back_btn["command"] = lambda: self.leave_room_game_lobby(conn)  # 4
-            print("button is set")
+            # print("button is set")
             self.name_leader.pack(padx=450, pady=20, side=tk.TOP)
             self.waiting_to_start_lbl["text"] = f"Waiting for {list_of_names[0][0][0]} to start the game"
             if len(list_of_names) == 2:
@@ -854,7 +853,7 @@ class Client(object):
             else:
                 for name_and_color in list_of_names:
                     (name, color) = name_and_color[0][0], name_and_color[0][1]
-                    print("meow hav 1 1")
+                    # print("meow hav 1 1")
                     self.waiting_room_lobby_menu_canvas.create_text(50, 70 + space, text=name, fill=color,
                                                                     font="Arial 17",
                                                                     state=tk.DISABLED, anchor=tk.NW)
@@ -877,7 +876,7 @@ class Client(object):
             return conn
         except socket.error as e:
             print(e)
-            print("meow hav meow hav 1 2 1 2", conn)
+            # print("meow hav meow hav 1 2 1 2", conn)
 
     def connect_to_server(self, ip_server, port_server):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -919,7 +918,7 @@ class Client(object):
         self.send_messages(conn1, client_commands["join_my_player_cmd"], self.username)
 
     def leave_room_game_lobby(self, conn):
-        print("meow meow hav bye hav")
+        # print("meow meow hav bye hav")
         try:
             self.send_messages(conn, client_commands["leave_my_player_cmd"])
         except Exception:
@@ -1205,7 +1204,8 @@ class Client(object):
                     PIL.Image.Resampling.LANCZOS))  # resampling is the change from the PIL module update
             if tile.terrain_kind != "sea":
                 image_number = self.numbers1_image.crop((0 + 40 * (tile.number - 1) - 2, 0, 0 + 40 * tile.number, 40))
-                image_number = ImageTk.PhotoImage(image_number.resize((30, 30), PIL.Image.Resampling.LANCZOS))
+                image_number = ImageTk.PhotoImage(image_number.resize((30, 30),
+                                                                      PIL.Image.Resampling.LANCZOS))  # resampling is the change from the PIL module update
                 self.tiles_images.append((image1, image_number))
             else:
                 self.tiles_images.append(image1)

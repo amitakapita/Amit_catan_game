@@ -9,8 +9,6 @@ from player_game import Player
 import sys
 import time
 import subprocess
-import signal
-import os
 import traceback
 from some_from_hex_tile import *
 import time
@@ -21,11 +19,11 @@ threads1 = []
 
 
 class GameRoom(object):
-    def __init__(self, leader_name, maximum_players, ip1, port1, session_id):
-        self.session_id = session_id
-        self.leader_name = leader_name
+    def __init__(self, leader_name1, maximum_players1, ip1, port1, session_id1):
+        self.session_id = session_id1
+        self.leader_name = leader_name1
         self.players = []
-        self.maximum_players = int(maximum_players)
+        self.maximum_players = int(maximum_players1)
         self.current = "waiting"  # "creating"
         self.count_players = 0
         self.ip = ip1
@@ -63,19 +61,11 @@ class GameRoom(object):
                 del self.players[index]
                 break
 
-    """def create_lobby(self):
-        # self.players.append({self.leader_name})
-        self.current = "waiting"""""
-
-    def check_who_is_on(self):
-        # if the cubes got 5, so it searches in the tiles that has 5 which player has a settlement or a city on it, then gives the source to him.
-        pass
-
     def start(self):
         try:
             print(f"The server starts in ip: {self.ip}, and port: {self.port}, session_id is: {self.session_id}")
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            print("meow hi hav")
+            # print("meow hi hav")
             server_socket.bind((self.ip, self.port))
             server_socket.listen()
             self.server_socket1 = server_socket  # a pointer
@@ -83,22 +73,18 @@ class GameRoom(object):
             while self.server_open:
                 if self.count_players == 0:
                     print("Listening for new clients...")
-                print("meow meow hav hav 1 1 hav meow")
+                # print("meow meow hav hav 1 1 hav meow")
                 client_socket, client_address = server_socket.accept()
-                print(f"A new client has conencted! {client_address}")
+                print(f"A new client has connnected! {client_address}")
                 if self.current == "waiting":
                     self.count_players += 1
                 print(f"Players: {self.count_players} out of {self.maximum_players}")
-                """if self.count_players == 1:
-                    self.join_a_player(self.leader_name)
-                else:
-                    self.join_a_player()"""
-                print("hi meow hav")
+                # print("hi meow hav")
                 self.handle_client(client_socket)
             server_socket.close()
 
-        except socket.error as e:
-            print(e)
+        except socket.error as e1:
+            print(e1)
 
     def handle_player_conn(self, conn):
         try:
@@ -143,9 +129,9 @@ class GameRoom(object):
                 self.server_open = False
                 self.server_socket1.close()  # #
                 print("The server has closed")
-        except BaseException as e:
-            print("meow hav meow meow hav hav meow hav", e, traceback.format_exc())
-            # self.server_socket1.close()  #
+        except BaseException as e1:
+            print(e1, traceback.format_exc())  # "meow hav meow meow hav hav meow hav",
+            self.server_socket1.close()  # #
             conn.close()
             sys.exit(0)
         finally:
@@ -164,8 +150,9 @@ class GameRoom(object):
         cmd, msg = protocol_library.disassemble_message(request)
         cmd_send, msg_send = "", ""
         if cmd == client_commands["join_my_player_cmd"]:
-            if not self.is_full and self.current == "waiting" and msg not in [player.player_name for player in self.players]:
-                print("meow hav meow 2 1 hav")
+            if not self.is_full and self.current == "waiting" and msg not in [player.player_name for player in
+                                                                              self.players]:
+                # print("meow hav meow 2 1 hav")
                 self.join_a_player(msg, conn)
                 self.send_information_of_players()
                 return
@@ -209,7 +196,7 @@ class GameRoom(object):
             return
         elif cmd == client_commands["start_game_cmd"]:
             if self.count_players >= 2:
-                print("meow meow")
+                # print("meow meow")
                 self.generate_map()
                 self.start_game(self.tiles)
             return
@@ -259,7 +246,7 @@ class GameRoom(object):
                 self.is_first_round = False
             if self.turns_of.player_name == self.players[(self.players.index(self.turns_of) + 1) % self.count_players].player_name:
                 msg_send = protocol_library.build_message(server_game_rooms_commands["close_lobby_ok_cmd"],
-                                                             "game server closed, switched back to the main server")
+                                                          "game server closed, switched back to the main server")
                 for player in self.players:  # quits the players from the game room
                     print(f"[Server] -> [Client {player.conn.getpeername()}] {msg_send}")
                     conn.sendall(msg_send.encode())
@@ -286,10 +273,11 @@ class GameRoom(object):
                 elif self.current != "waiting" or player_name.get_color() == colors[index]:
                     list1.append((player_name.player_name, player_name.color))
             list1 = json.dumps(
-                list1 if list1 != [] else [(player_name.player_name, player_name.color) for player in self.players])
+                list1 if list1 != [] else [(player_name.player_name, player_name.color) for player_name in
+                                           self.players])
             return list1
-        except Exception as e:
-            print(e)
+        except Exception as e1:
+            print(e1)
 
     def start_game(self, tiles):
         self.current = "playing"  # starting the game from the waiting room
@@ -416,8 +404,7 @@ class GameRoom(object):
                 counter_none_and_sea_tiles += 1
         if counter_none_and_sea_tiles >= 2:
             return False
-        for placement in near_road_boat_numbers_indexes[
-            index_road]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
+        for placement in near_road_boat_numbers_indexes[index_road]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
             for index_road1 in self.roads:
                 if index_road1[0] == placement and index_road1[1].color == color:
                     return True
@@ -452,15 +439,15 @@ class GameRoom(object):
             if not finished_check:
                 return False
         counter_sea_tiles_and_Nones = 0
-        for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][
-            position - 155]]):  # if there is not only seas or Nones
+        for index3, tile in enumerate([index for index in what_part_is_on_what_tile_hex[1][position - 155]]):  # if there is not only seas or Nones
             if tile is None or self.tiles[tile].terrain_kind == "sea":
                 counter_sea_tiles_and_Nones += 1
                 print(counter_sea_tiles_and_Nones, tile)
                 continue
             tile = self.tiles[tile]
             print(
-                f"\n{tile}\n{places_in_each_placements_for_the_hexes[1][position - 155][index3]}\n{tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][index3])}\n{counter_sea_tiles_and_Nones}")
+                f"\n{tile}\n{places_in_each_placements_for_the_hexes[1][position - 155][index3]}\n"
+                f"{tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][index3])}\n{counter_sea_tiles_and_Nones}")
             if not tile.check_validation_parts_in_the_game(places_in_each_placements_for_the_hexes[1][position - 155][
                                                                index3]):  # fi it's valid from the fact that it can be only after 2 roads and that
                 return False
@@ -469,10 +456,10 @@ class GameRoom(object):
         return True
 
     def checking_boats_is_near_the_road_or_a_boat(self, index_boat, color):
-        for index_boat1 in self.boats:  # there is there a road
+        for index_boat1 in self.boats:  # there is already there a road
             if index_boat1[0] == index_boat:
                 return False
-        for index_road1 in self.roads:  # there is there a boat
+        for index_road1 in self.roads:  # there is already there a boat
             if index_road1[0] == index_boat:
                 return False
         counter_none_and_sea_tiles = 0
@@ -482,8 +469,7 @@ class GameRoom(object):
                 counter_none_and_sea_tiles += 1
         if counter_none_and_sea_tiles == 0:  # only land
             return False
-        for placement in near_road_boat_numbers_indexes[
-            index_boat]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
+        for placement in near_road_boat_numbers_indexes[index_boat]:  # a road is near the placement that is of the player or a boat is near the placement that is of the player
             for index_road1 in self.roads:
                 if index_road1[0] == placement and index_road1[1].color == color:
                     return True
@@ -546,9 +532,9 @@ class GameRoom(object):
                         self.the_highest_amount_of_roads_and_boats(self.turns_of.sum_rounds_and_boats)
                 elif current_button == "boat":
                     if (self.checking_boats_is_near_a_settlement_or_city(position1,
-                                                                        self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(
+                                                                         self.turns_of.color) or self.checking_boats_is_near_the_road_or_a_boat(
                         position1, self.turns_of.color)) and self.check_parts_in_game_recources("boat", first_round,
-                                                                                               self.turns_of.color):
+                                                                                                self.turns_of.color):
                         boat = Boat(index=position1, color=self.turns_of.color,
                                     position=(indexes_roads_xyx1y1_positions[position1]), image1=None)
                         # boat.draw_boat(self.canvas)
@@ -575,7 +561,8 @@ class GameRoom(object):
                             # self.canvas.delete(settlement.id)
                             self.settlements.remove((index, settlement))
                             city1 = City(color=self.turns_of.color, index=position1,
-                                         position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)],
+                                         position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[
+                                             int(position1)],
                                          img=None)
                             print(city1)  # not to delete
                             # city1.draw_city(self.canvas)
@@ -596,10 +583,11 @@ class GameRoom(object):
                             self.turns_of.points += 1
                             break
                 elif current_button == "settlement":
-                    if self.checking_settlement(position1, self.turns_of.color, first_round) and self.check_parts_in_game_recources(
-                            "settlement", first_round, self.turns_of.color):
+                    if self.checking_settlement(position1, self.turns_of.color,
+                                                first_round) and self.check_parts_in_game_recources("settlement", first_round, self.turns_of.color):
                         settlement1 = Settlement(color=self.turns_of.color, index=int(position1),
-                                                 position=(placements_parts_builds_in_game[0] + placements_parts_builds_in_game[1])[int(position1)],
+                                                 position=(placements_parts_builds_in_game[0] +
+                                                           placements_parts_builds_in_game[1])[int(position1)],
                                                  img=None)
                         print(settlement1)
                         # settlement1.draw_settlement(self.canvas)
@@ -708,7 +696,7 @@ class GameRoom(object):
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["lumber"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][self.dict_colors_indexes["field"]] -= 1
                 self.players_recourses[self.dict_colors_players_indexes[color]][-1] -= 2
-                print("meow")
+                # print("meow")
                 return True
         elif building_part == "city":
             if self.players_recourses[self.dict_colors_players_indexes[color]][
@@ -763,12 +751,13 @@ class GameRoom(object):
         cur.execute("SELECT Played_games, Wined_games FROM accounts WHERE Username = ?", (player_name,))
         points = cur.fetchall()
         print(int(str(points[0][0])) + 1, int(str(points[0][1])) + 1)
-        cur.execute("""UPDATE accounts SET Played_games = ? WHERE Username = ?""", (int(str(points[0][0])) + 1, player_name))
+        cur.execute("""UPDATE accounts SET Played_games = ? WHERE Username = ?""",
+                    (int(str(points[0][0])) + 1, player_name))
         if is_winner:
-            cur.execute("""UPDATE accounts SET Wined_games = ? WHERE Username = ?""", (int(str(points[0][1])) + 1, player_name))
+            cur.execute("""UPDATE accounts SET Wined_games = ? WHERE Username = ?""",
+                        (int(str(points[0][1])) + 1, player_name))
         con.commit()
         cur.close()
-
 
 
 if __name__ == "__main__":
@@ -779,10 +768,10 @@ if __name__ == "__main__":
         print(leader_name, maximum_players, port, ip, session_id)
         print(sys.argv[:])
         time.sleep(0.5)
-        game_server1 = GameRoom(leader_name=leader_name, ip1=ip, port1=int(port), maximum_players=maximum_players,
-                                session_id=session_id)
+        game_server1 = GameRoom(leader_name1=leader_name, ip1=ip, port1=int(port), maximum_players1=maximum_players,
+                                session_id1=session_id)
         game_server1.start()
-        print("meow meow hav hav 123")
+        # print("meow meow hav hav 123")
     except Exception as e:
-        print(e, "meow hav")
+        print(e)  # , "meow hav"
         time.sleep(5)

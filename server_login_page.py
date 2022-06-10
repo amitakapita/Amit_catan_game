@@ -179,7 +179,7 @@ class Server(object):
                 for player_name in in_game_dict.keys():
                     print(player_name)
                     if player_name == username_input:
-                        print("mewo meow meow")
+                        # print("mewo meow meow")
                         self.count_in_lobby_games_rooms -= 1
                         # self.count += 1
                         session_id1 = in_game_dict[player_name][1]
@@ -196,7 +196,7 @@ class Server(object):
                         break
             if again:
                 login_dict[conn] = wait_login[conn][0], player_name  # peer name, username
-                print("meow and hav")
+                # print("meow and hav")
                 del wait_login[conn]
                 cur.close()
                 return True
@@ -302,7 +302,7 @@ class Server(object):
                 return server_commands["verify_failed_cmd"], False
         if code == wait_login[conn][1]:
             login_dict[conn] = wait_login[conn][0], wait_login[conn][2], str(code)  # peername, username, code
-            print("meow and hav")
+            # print("meow and hav")
             del wait_login[conn]
             return server_commands["verify_ok_cmd"], True
         return server_commands["verify_failed_cmd"], False

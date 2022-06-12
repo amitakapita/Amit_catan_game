@@ -225,7 +225,7 @@ class Server(object):
             return server_commands["sign_up_failed_cmd"], "The passwords does not match each other"
         if not protocol_library.check_username_validation(username):
             return server_commands["sign_up_failed_cmd"], "The username should be in letters a-z, A-Z, 0-9 include."
-        if not protocol_library.check_email_validation(email) or not validate_email(email_address=email):
+        if not protocol_library.check_email_validation(email) or not validate_email(email):  # email_address=
             return server_commands["sign_up_failed_cmd"], "The email is not valid"
             # first with regex, second with checking its validation with the package validate_email
         cur = con.cursor()

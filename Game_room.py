@@ -284,7 +284,7 @@ class GameRoom(object):
         for value in self.players:
             conn = value.conn  # conn
             for i in range(0, 41, 5):  # 9 times in average the last one is 38 + 5 = 43 the last index in the tiles
-                time.sleep(0.01)
+                time.sleep(0.01 + 0.4)
                 print(i, i + 5)
                 conn.sendall(protocol_library.build_message(server_game_rooms_commands["start_game_ok"],
                                                             f"{json.dumps(tiles[i:i + 5], cls=BitPortGameEncoder)}").encode())  # #{len(json.dumps(ports, cls=BitPortGameEncoder))} len()

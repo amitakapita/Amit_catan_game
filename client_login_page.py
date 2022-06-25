@@ -298,10 +298,10 @@ class Client(object):
                 self.back_btn["state"] = tk.NORMAL
                 if not connection_lobby_not_failed:
                     self.send_messages(client_socket, client_commands["login_again_cmd"],
-                                       "%s#%s" % (self.username, self.password))
+                                       "%s#%s" % (self.username, hashlib.sha256(self.password.encode()).hexdigest()))
                 else:
                     self.send_messages(client_socket, client_commands["login_cmd"],
-                                       "%s#%s" % (self.username, self.password))
+                                       "%s#%s" % (self.username, hashlib.sha256(self.password.encode()).hexdigest()))
                     self.email_verify.place(x=self.root.winfo_screenwidth() // 2 - 100,
                                             y=self.root.winfo_screenheight() // 2)
                     self.verify_check.place(x=self.root.winfo_screenwidth() // 2 - 100,
@@ -421,7 +421,13 @@ class Client(object):
                     if self.temp:
                         self.Game_rooms_lobby_menu(conn=conn)
                         self.create_lobby_game_room_create_button["state"] = tk.NORMAL
+                        self.refresh_button["state"] = tk.DISABLED
                         self.temp = False
+                        self.from_lobby_game_waiting_or_in_actual_game = True
+                        if not self.is_active:
+                            self.root.after(5000,
+                                            lambda: self.set_refresh_button_enabled())  # self.refresh_button disabled for 5 seconds
+                            self.is_active = True
                     else:
                         self.refresh_lobby_rooms(conn=conn, cmd=client_commands["get_lobby_rooms_cmd"])
                         self.message_failed_join_error_game.place(x=465, y=115)
